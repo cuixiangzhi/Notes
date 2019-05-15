@@ -18,11 +18,32 @@ ShadowMap
                     o.proj = mul(objectToLightProj,v.vertex);
                     o.depth = o.proj.zw
                 像素shader比较深度
-                    fixed4 depth_texture_color = tex2Dproj(_DepthTexture,o.proj);
+                    fixed4 depth_texture_color = tex2Dproj(_LightDepthTexture,o.proj);
                     float depth_texture = DecodeFloatRGBA(depth_texture_color);
                     float depth_current = o.depth.x / o.depth.y
                     if(depth_texture < depth_current) 阴影
     ScreenSpaceShadowMap
+        1.首先在当前摄像机处创建相机渲染一张深度图
+            o.pos = UnityObjectToClipPos(v.vertex);
+            o.depth = o.pos.z / o.pos.w
+            有的平台默认支持DepthTexture,因此不需要自己生成
+            生产结果是_CameraDepthTexture
+        2.然后在灯光位置创建相机渲染一张深度图
+            生产结果是_LightDepthTexture
+        3.对_CameraDepthTexture进行一次后处理操作
+            顶点shader直接转存uv坐标
+                o.uv = v.uv
+            像素shader计算屏幕空间阴影图
+                首先需要把当前像素点从屏幕坐标系变换到灯光坐标系
+                屏幕坐标系->摄像机坐标系
+                float3 vpos = computeCameraSpacePosFromDepth
+                摄像机坐标系->世界坐标系
+                float4 worldPos = mul(unity_CameraToWorld,vpos)
+                世界坐标系->灯光坐标系
+                float4 lightPos = mul(unity_WorldToLightProj,worldPos)
+            生产结果是_ShadowMapTexture
+        4.正常渲染物体
+            像素shader采样_ShadowMapTexture
 Projector
     1.以实时灯光位置作为视点,渲染一张透明纹理
         生成过程:
