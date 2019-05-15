@@ -31,16 +31,28 @@
 		文件编码
 			大端模式: 把字节按顺序存储,即低地址存储高字节,高地址存储低字节
 			小端模式: 正好相反
-			字符集和字符编码,字符集是一个字库表,编码是这个数字的存储方式
-			UNICODE字符集,有UTF-8 UTF-16 UTF-32等
-			ASCII既是字符集也是字符编码
-			GB2312是字符集
-			zh_cn.utf-8 是本地系统语言及字符集,国家_语言.字符编码
-			C# string是unicode对象,静态字符串初始化会根据cs文件编码解码,一个char是一个字符
-			C++string是char数组,一个char不一定是一个有效字符,需要自己根据编码来解析真实的字符个数
-			   wstring是wchar_t数组,一个wchar_t占用两个字节,代表一个字符
-			python 分为str和unicode两种对象,decode解码为unicode对象,encode编码为str对象
-			terminal 会根据设置的编码来显示传输的字节
+			字符集
+				许多字符的集合,每个字符有一个编号,例如Unicode字符集
+			字符编码
+				字符集编号的存储表示方式,也就是存储格式,例如UTF8 UTF16 UTF32
+				UNICODE与UTF8编码转换 中文UNICODE编码范围是0x4E00到0x9FA5
+			        0000 0000 - 0000 007F | 0xxxxxxx
+			        0000 0080 - 0000 07FF | 110xxxxx 10xxxxxx 
+			        0000 0800 - 0000 FFFF | 1110xxxx 10xxxxxx 10xxxxxx 
+			        0001 0000  -0010 FFFF | 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx 
+			系统编码
+				zh_cn.utf-8 是本地系统语言及字符集,国家_语言.字符编码
+				ASCII、GB2312既是字符集也是字符编码,表示的不是UNICODE编号,是自己字符集的编号
+			语言编码
+				C# 
+					string是unicode对象,静态字符串初始化会根据cs文件编码解码,一个char是一个字符
+				C++
+					string是char数组,一个char不一定是一个有效字符,需要自己根据编码来解析真实的字符个数
+			   		wstring是wchar_t数组,一个wchar_t占用两个字节,代表一个字符
+				python 
+					分为str和unicode两种对象,decode解码为unicode对象,encode编码为str对象
+				terminal 
+					会根据设置的编码来显示传输的字节
 			MSVC
 				bom 字节序标记,表明了文件编码,不带BOM的话会按照系统编码来解释
 					不同的编码有不同的字节序标记 UTF-8是0xEFBBBF
