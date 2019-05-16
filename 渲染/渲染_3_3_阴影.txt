@@ -23,14 +23,14 @@ ShadowMap
                     float depth_current = o.depth.x / o.depth.y
                     if(depth_texture < depth_current) 阴影
     ScreenSpaceShadowMap
+        ZBuffer
+            zbuffer=(az+b)/(z|-z)
+            深度图记录的是非线性变换的zbuffer值,采样之后要使用Linear01Depth映射到[0,1]或者[n,f]
         1.首先在当前摄像机处创建相机渲染一张深度图
-            o.pos = UnityObjectToClipPos(v.vertex);
-            o.depth = o.pos.z / o.pos.w
-            有的平台默认支持DepthTexture,因此不需要自己生成
-            生产结果是_CameraDepthTexture
+            生成结果是_CameraDepthTexture
         2.然后在灯光位置创建相机渲染一张深度图
-            生产结果是_LightDepthTexture
-        3.对_CameraDepthTexture进行一次后处理操作
+            生成结果是_LightDepthTexture
+        3.对屏幕进行一次后处理操作,输入两张深度图,输出ScreenShadowMap
             顶点shader直接转存uv坐标
                 o.uv = v.uv
             像素shader计算屏幕空间阴影图
@@ -43,7 +43,7 @@ ShadowMap
                 float4 lightPos = mul(unity_WorldToLightProj,worldPos)
             生产结果是_ShadowMapTexture
         4.正常渲染物体
-            像素shader采样_ShadowMapTexture
+            像素shader使用屏幕坐标采样ScreenShadowMap
 Projector
     1.以实时灯光位置作为视点,渲染一张透明纹理
         生成过程:
