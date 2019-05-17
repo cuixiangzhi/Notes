@@ -414,7 +414,7 @@ ShaderForOgre
 		technique定义显卡适配参数
 		pass内定义shader初始参数,使用哪个shader程序
 Shader&库
-
+	lerp函数 lerp(a,b,f)=a*(1-f)+b*f blend计算类似lerp a*src+dst*(1-a)
 OC: 面向对象的语言
 	基础函数类库 
 		#import <Foundation/Foundation.h>

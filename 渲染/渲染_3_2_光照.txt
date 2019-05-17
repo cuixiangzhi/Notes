@@ -119,20 +119,35 @@
             https://www.cnblogs.com/luxishi/p/6409716.html
             http://www.voidcn.com/article/p-uamrlclq-brb.html
         	通用公式
-        		Lo(r)=∫*f(l,v)*Li(l)*cos0*dwi
-        CookTorranceBRDF
-            fr = kdfd+ksfs+ao kd是折射比例 ks是反射比例 ao是环境光遮蔽
-            fd = albedo/π
-                 albedo是漫反射表面颜色
-                 Unity使用的漫反射项 
-                    Disney fd=albedo/π * (1+(Fd-1)(1-dot(n,l))⁵*(1+(Fd-1)(1-dot(n,v))⁵)) Fd=0.5+2m(n,l)²
-            fs = DFG/[4*dot(n,l)*dot(n,v)]
-                 D是法线分布函数 F是菲涅尔反射量 G是遮挡比例函数
-                 UnrealEngine4中使用的DFG函数分别是
-                    Trowbridge-Reitz GGX  D=m²/π*[dot(n,h)²*(m²-1)+1]² m是粗糙度 h是半角向量                    
-                    Fresnel-Schlick       F=F0+(1-F0)(1-dot(n,v))⁵ F0=mix(F0,albedo,metalness) 非金属F0值一般在0.17以下,金属一般在0.5-1.0之间
-                    Smith's Schlick-GGX   Gs=dot(n,v)/[dot(n,v)(1-k)+k] G=Gs(n,v,k)Gs(n,l,k) m是粗糙度 k=(m+1)²/8
-                 Unity使用的DFG函数与UnrealEngine一致
+        		Lo(r)=∫*f(l,v)*Li(l)*dot(n,l)*dwi
+            f(l,v)分为diffuse和specular两部分,采用不同的公式
+                LambertDiffuse
+                    fd=albedo/π * dot(n,l)
+                DisneyDiffuse 
+                    fd=albedo/π * (1+(Fd-1)(1-dot(n,l))⁵*(1+(Fd-1)(1-dot(n,v))⁵)) Fd=0.5+2m(n,l)²
+                CookTorranceBRDF
+                    fs=DFG/[4*dot(n,l)*dot(n,v)]
+                    D是法线分布函数 F是菲涅尔反射量 G是遮挡比例函数
+                    UnrealEngine4中使用的DFG函数分别是
+                        Trowbridge-Reitz GGX  D=m²/π*[dot(n,h)²*(m²-1)+1]² m是粗糙度 h是半角向量                    
+                        Fresnel-Schlick       F=F0+(1-F0)(1-dot(n,v))⁵ F0=mix(F0,albedo,metalness) 非金属F0值一般在0.17以下,金属一般在0.5-1.0之间
+                        Smith's Schlick-GGX   Gs=dot(n,v)/[dot(n,v)(1-k)+k] G=Gs(n,v,k)Gs(n,l,k) m是粗糙度 k=(m+1)²/8
+                    Unity使用的DFG函数与UnrealEngine一致
+            最终结果
+                漫反射系数 * (GI.diffuse + Fd(L,V) * 光源颜色) + 镜面反射系数 * Fs(L,V) * 光源颜色
+                其中
+                    漫反射系数 
+                        diffColor = albedo * (1 - metallic) * Ka,非金属接近albedo,金属接近0,Ka是因为没有绝对的纯金属
+                    镜面反射系数 
+                        specColor = lerp(Krgb,albedo,metallic) 非金属接近Krgb,金属接近albedo
+                    全局光照GI
+                注意
+                    固有色贴图
+                        一定没有光照和阴影的颜色信息,只包含物体本身的颜色
+                    金属度贴图
+                        一定是接近黑白图的,一个金属材质的金属度一定是接近1的,非金属一定是接近0的
+                    法线贴图
+                        一定是偏蓝色的,存储了切线空间的法线信息
 渲染路径
 	Vertex
 		支持8个点光源,按照亮度排序,位置颜色信息存储在指定数组内

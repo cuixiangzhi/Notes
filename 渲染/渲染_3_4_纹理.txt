@@ -1,6 +1,8 @@
 Albedo
+    一定没有光照和阴影的颜色信息,只包含物体本身的颜色
 AmbientOcclusion
 Metalness
+    一定是接近黑白图的,一个金属材质的金属度一定是接近1的,非金属一定是接近0的
 NormalMap
     原理
         T:切线 B:副切线 N:法线
