@@ -90,6 +90,10 @@
         除了光源的直接照射,还加入对光源多次反射的计算,也就是直接光+间接光
     环境光
         在局部光照模型中用来模拟所有的间接光,是一个常量 UNITY_LIGHTMODEL_AMBIENT
+        理论:
+            通过BRDF方程可以把直接光和间接光的diffuse和specular属性计算出来
+            环境光由于物体遮挡关系的存在,表面接收到的ambient值不是一个固定的值a=KaIa
+            AO是指表面的环境光遮挡比例,例如对上半球采样方向,发出N条指定长度的射线,检测到H条射线有碰撞,遮挡比例为H/N
     自发光
         物体本身在给定方向上辐射多少能量,它不会照亮其他物体,只是本身会变亮
         局部光照中自发光只是物体本身发光,不会照亮周围的物体
@@ -129,11 +133,6 @@
                     Fresnel-Schlick       F=F0+(1-F0)(1-dot(n,v))⁵ F0=mix(F0,albedo,metalness) 非金属F0值一般在0.17以下,金属一般在0.5-1.0之间
                     Smith's Schlick-GGX   Gs=dot(n,v)/[dot(n,v)(1-k)+k] G=Gs(n,v,k)Gs(n,l,k) m是粗糙度 k=(m+1)²/8
                  Unity使用的DFG函数与UnrealEngine一致
-        UnityPBR工作流
-            金属工作流(Standard)
-                Albedo
-                    固有色贴图,非金属一般在50-243之间,金属一般在186-255之间
-            高光反射工作流(StandardSpecular)
 渲染路径
 	Vertex
 		支持8个点光源,按照亮度排序,位置颜色信息存储在指定数组内
