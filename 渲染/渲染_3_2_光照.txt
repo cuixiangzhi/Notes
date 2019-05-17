@@ -134,13 +134,16 @@
                         Smith's Schlick-GGX   Gs=dot(n,v)/[dot(n,v)(1-k)+k] G=Gs(n,v,k)Gs(n,l,k) m是粗糙度 k=(m+1)²/8
                     Unity使用的DFG函数与UnrealEngine一致
             最终结果
-                漫反射系数 * (GI.diffuse + Fd(L,V) * 光源颜色) + 镜面反射系数 * Fs(L,V) * 光源颜色
+                漫反射系数 * (GI.diffuse + Fd(L,V) * 光源颜色) + 镜面反射系数 * Fs(L,V) * 光源颜色 + 间接光高光系数 * GI.specular * Fresnel
                 其中
                     漫反射系数 
                         diffColor = albedo * (1 - metallic) * Ka,非金属接近albedo,金属接近0,Ka是因为没有绝对的纯金属
                     镜面反射系数 
                         specColor = lerp(Krgb,albedo,metallic) 非金属接近Krgb,金属接近albedo
+                    间接光高光系数
+                        surfaceReduction = 1 / (m^2+1)
                     全局光照GI
+                        
                 注意
                     固有色贴图
                         一定没有光照和阴影的颜色信息,只包含物体本身的颜色
