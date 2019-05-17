@@ -1,5 +1,14 @@
-总结
+前言
     优化是一点点积累的
+高中低配选项控制
+    项目资源规范
+        
+    机型分类规则
+
+    可调节选项
+        1.ShaderLOD
+            shader实现多个不同LOD的subshader,LOD越低效果越差但是性能越好,例如PBS有高中低三个版本
+        2.
 内存方面的优化
     variants
             shader_feature
@@ -62,13 +71,3 @@
     数组[]
         1.自定义一个全局的数组管理类,创建List数组代替[]数组,减少临时数组的分配和数量
         2.不要使用GetComponents返回[],传递一个List数组来获取,减少GC
-高中低配选项控制
-    机型分类规则
-
-    可调节选项
-        1.ShaderLOD
-            shader实现多个不同LOD的subshader,LOD越低效果越差但是性能越好,例如PBS有高中低三个版本
-        2.
-
-
-
