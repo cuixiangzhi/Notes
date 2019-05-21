@@ -38,14 +38,6 @@
                     间接光高光系数
                         surfaceReduction = 1 / (m^2+1)
                     全局光照GI
-                        光照
-                             混合模式          动态对象                静态对象
-                                            直接光    间接光       直接光    间接光
-                            BakeIndirect   Realtime  LightProbe   Realtime   LightMap 
-                            ShadowMask     Realtime  LightProbe   Realtime   LightMap
-                            Subtractive    Realtime  LightProbe   LightMap   LightMap
-                        阴影
-
                 注意
                     固有色贴图
                         一定没有光照和阴影的颜色信息,只包含物体本身的颜色
@@ -53,6 +45,21 @@
                         一定是接近黑白图的,一个金属材质的金属度一定是接近1的,非金属一定是接近0的
                     法线贴图
                         一定是偏蓝色的,存储了切线空间的法线信息
+光照模式
+    Realtime
+        对动态物体提供直接光和阴影(ShadowMap)
+        RealTimeGI勾选之后对动态和静态物体提供间接光(GI)和阴影(ShadowMap)
+        Indirect Multiplier设置为0会关闭GI计算
+    Mixed
+        BakeIndirect:对静态物体烘焙间接光,直接光和阴影都实时计算
+        ShadowMask:烘焙间接光,
+      Baked
+
+     混合模式          动态对象                静态对象
+                    直接光    间接光       直接光    间接光
+    BakeIndirect   Realtime  LightProbe   Realtime   LightMap 
+    ShadowMask     Realtime  LightProbe   Realtime   LightMap
+    Subtractive    Realtime  LightProbe   LightMap   LightMap
 渲染路径
 	Vertex
 		支持8个点光源,按照亮度排序,位置颜色信息存储在指定数组内
