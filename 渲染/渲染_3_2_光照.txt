@@ -47,21 +47,24 @@
                         一定是偏蓝色的,存储了切线空间的法线信息
 光照模式
     Realtime
-        光照
-            对动态物体提供直接光,间接光和静态物体需要勾选RealTimeGI
-        阴影
-            ShadowMap实时计算
+        直接光实时计算,阴影使用ShadowMap计算(ShadowMap只计算ShadowDistance以内的动态对象)
+        RealtimeGI计算静态物体表面所有可能的反射光线,运行时动态计算间接光
+        IndirectMultiplier在强度不是0并且不开启RealtimeGI时会把间接光烘焙到LightMap
     Mixed
-        光照
-            BakeIndirect
-                直接光实时计算,间接光存储在lightMap
-            ShadowMask
-                直接光实时计算,间接光存储在lightMap
-        阴影
-            
+        BakeIndirect
+            直接光实时计算,间接光存储在LightMap和LightProbes,阴影使用ShadowMap计算
+        ShadowMask
+            直接光实时计算,间接光存储在LightMap和LightProbes,阴影使用ShadowMask(最多4个Mixed光源,存储直接光被静态物体遮挡信息)
+                            动态物体Receive     静态物体Receive
+            动态物体Cast    ShadowMap           ShadowMap+ShadowMask
+            静态物体Cast    LightProbes         ShadowMask
+        Subtractive
+            直接光、间接光、阴影烘焙到LightMap和LightProbes
+                            动态物体Receive     静态物体Receive
+            动态物体Cast    ShadowMap           主光ShadowMap+DistanceLightMap
+            静态物体Cast    LightProbes         ShadowMask
     Baked
-        直接光和间接光以及阴影信息都烘焙到LightMap
-        默认只对静态物体生效
+        直接光、间接光、阴影烘焙到LightMap和LightProbes,只对静态物体生效,LightProbes对动态物体生效
 渲染路径
 	Vertex
 		支持8个点光源,按照亮度排序,位置颜色信息存储在指定数组内
