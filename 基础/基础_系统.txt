@@ -50,7 +50,9 @@
 					string是char数组,一个char不一定是一个有效字符,需要自己根据编码来解析真实的字符个数
 			   		wstring是wchar_t数组,一个wchar_t占用两个字节,代表一个字符
 				python 
-					分为str和unicode两种对象,decode解码为unicode对象,encode编码为str对象
+					分为str和unicode两种对象,decode解码为unicode对象,encode编码为str对象,encode方式有gbk、utf8等等
+					获取控制台编码 sys.stdin.encoding sys.stdout.encoding
+					获取字符串编码 chardet.detect
 				terminal 
 					会根据设置的编码来显示传输的字节
 			MSVC
