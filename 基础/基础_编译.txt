@@ -22,25 +22,40 @@ VI编辑器
 		:set number 显示行号
 	
 NDK编译 
-	LOCAL_PATH := $(call my-dir)
-	include $(CLEAR_VARS)
-	LOCAL_MODULE := module_name
-	LOCAL_CFLAGS :=
-	LOCAL_CPPFLAGS := $(LOCAL_CFLAGS)
-	LOCAL_LDLIBS := 
-	LOCAL_C_INCLUDES := 
-	LOCAL_SRC_FILES :=
-  	$(call import-add-path, $(LOCAL_PATH)/)
-  	LOCAL_WHOLE_STATIC_LIBRARIES +=
-  	include $(BUILD_STATIC_LIBRARY) 当前模块是一个静态库 .lib or .a
-  	include $(BUILD_SHARED_LIBRARY) 当前模块是一个动态库 .dll or .so
-  	include $(BUILD_EXECUTABLE)     当前模块是一个可执行程序
-  	$(call import-module,../../xxx)
+	Android.mk
+		指定编译路径,
+		LOCAL_PATH := $(call my-dir)
 
-	APP_STL := gnustl_static
-	APP_ABI := armeabi-v7a x86
-	APP_OPTIM := release
-	APP_PLATFORM := android-16
+		#编译当前模块
+		include $(CLEAR_VARS)
+		LOCAL_MODULE := module_name
+
+		设置编译选项
+		LOCAL_CFLAGS :=
+		LOCAL_CPPFLAGS := $(LOCAL_CFLAGS)
+		LOCAL_LDLIBS := 
+
+		设置包含文件
+		LOCAL_C_INCLUDES := 
+		LOCAL_SRC_FILES :=
+
+		#添加包含目录
+	  	$(call import-add-path, $(LOCAL_PATH)/)
+
+	  	#设置依赖库(whole表示全链接,没有只链接使用到的函数)
+	  	LOCAL_WHOLE_STATIC_LIBRARIES +=
+
+	  	include $(BUILD_STATIC_LIBRARY) 当前模块是一个静态库 .lib or .a
+	  	include $(BUILD_SHARED_LIBRARY) 当前模块是一个动态库 .dll or .so
+	  	include $(BUILD_EXECUTABLE)     当前模块是一个可执行程序
+
+	  	#添加依赖模块目录
+	  	$(call import-module,../../xxx)
+	Application.mk
+		APP_STL := gnustl_static
+		APP_ABI := armeabi-v7a x86
+		APP_OPTIM := release
+		APP_PLATFORM := android-16
 MAC编译
 	一个scheme对应一个target
 	导出archive  
