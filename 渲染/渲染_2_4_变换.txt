@@ -193,9 +193,21 @@
                     映射到CVV范围内是[-N,-F]->[-1,1]
                     z=-N时-(az+b)/z=-1 z=-F时-(az+b)/z=1
                     联立方程得出变换系数
-                      a = (f+n)/(n-f) 
-                      b = (2fn)/(n-f)
-                    齐次坐标系数不变
+                      a = (f+n)/(n-f)  或者 a = f/f-n
+                      b = (2fn)/(n-f)       b = nf/(n-f)
+                    逆变换
+                        EZ = 2nf/(n+f-z*(f-n)) 或者 EZ = nf/(f-z*(f-n))
+                        LZnf01 = (EZ-n)/(f-n) = n(z+1)/(n+f-z*(f-n)) 或者 LZnf01 = (EZ-n)/(f-n) = z/(f-z*(f-n))
+                        LZ0f01 = EZ/f = 2n/(f+n-z*(f-n)) 或者 LZ0f01 = EZ/f = n/(f-z*(f-n))
+                    优化后
+                        LZ0f01 = 1 / (a*z + b) 
+                        a=(1-f/n)/2 b=(1+f/n)/2 或者 a=1-f/n b=f/n
+                    屏幕坐标转世界坐标
+                        首先计算出cameraPosZ = LinearDepth01(zbuffer)
+                        根据投影矩阵 cot(fov/2)=2n/(top-bottom)=2*cameraPosZ/height height=2z/matrix.m11 
+                        根据屏幕宽高比得出width=height*_ScreenParam.x/_ScreenParam.y
+                        然后根据比例和UV计算 cameraPosX = (uv.x-0.5)*width cameraPosY = (uv.y-0.5)*height
+                    http://www.cnblogs.com/jaffhan/p/7448579.html
             投影矩阵
                 |cot(fov/2)/aspect 0                 0            0          ||x|
                 |0                 cot(fov/2)        0            0          ||y|
