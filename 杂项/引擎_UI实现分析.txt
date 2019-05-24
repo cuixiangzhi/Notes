@@ -375,9 +375,11 @@ UGUI源码分析
             通过之前的流程获取到eventdata(和NGUI的MouseOrTouch结构相似的数据),然后检测应该触发什么事件->ExecuteEvents.Execute
 
 ANDROID界面
+    SurfaceView
+        窗口对象
 IOS界面
-    UIView是所有UI控件的基类,UIView是一个容器,可以容纳其它UIView,
-        一个view可以有多个子view,只有一个父view
+    UIView
+        所有UI控件的基类,UIView是一个容器,可以容纳其它UIView,类似于UIWidget,一个view可以有多个子view,只有一个父view
         基础属性
             superview,父控件对象 subviews,子控件列表
             frame 控件的尺寸和位置,以父控件左上角为原点
@@ -385,7 +387,18 @@ IOS界面
             center 控件中心位置
             tag 控件ID
             transform 控件的位置缩放旋转
-    UIButton 按钮 UILabel 文本 UIImage 图片 UIScrollView 滑动列表 UITextField 输入框 UISlider滑动条 UISwitch开关
-    UIApplication 应用程序运行入口,管理声明周期、事件转发,一些系统事件都有对应的函数,类似于monobeahviour
-    UIWindow UIViewController
-    View是用于显示的控件 ViewController是用于控制view布局的控件
+        View是用于显示的控件 
+        ViewController是用于控制view布局的控件
+    UI组件
+        UIButton 按钮 
+        UILabel 文本 
+        UIImage 图片 
+        UIScrollView 滑动列表 
+        UITextField 输入框 
+        UISlider 滑动条 
+        UISwitch 开关
+        UIWindow 主View
+    UIApplication 
+        应用程序运行入口,管理声明周期、事件转发,一些系统事件都有对应的函数
+        UIApplicationDelegate是接收事件的地方
+        UIApplicationMain函数是启动入口,会创建UIApplication对象和Delegate对象,并开始主循环
