@@ -37,13 +37,15 @@
                 根据能量守恒(金属度强弱会影响比例分配)
                     高光反射率   
                         specColor=lerp(Crgb,albedo,metallic)
-                    漫反射率   
+                    漫反射率
                         oneMinusReflectivity = 0.96 - metallic * 0.96
                         diffColor=albedo*oneMinusReflectivity; 
                     间接高光衰减
                         surfaceReduction = 1/(m^2+1) 表面越粗糙,间接高光越弱
-            阴影计算
+            GI计算
                 GI.light.color是经过了阴影和衰减计算后的颜色
+                GI.diffuse是从LightMap或者LightProbe读取然后经过AO遮挡计算的颜色
+                GI.specular是通过RelectionProbe中保存的Cude贴图采样然后经过AO遮挡计算的颜色
             固有色贴图
                 一定没有光照和阴影的颜色信息,金属HSB亮度范围是72.9-100,非金属HSB亮度范围是19.6–95.2
                 颜色看起来很平,没有亮度渐变,可以支持多张Albedo混合
