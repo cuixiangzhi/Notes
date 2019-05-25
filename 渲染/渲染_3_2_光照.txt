@@ -28,38 +28,34 @@
                         Fresnel-Schlick       F=F0+(1-F0)(1-dot(n,v))⁵ 非金属F0值一般在0.17以下,金属一般在0.5-1.0之间
                         Smith's Schlick-GGX   Gs=dot(n,v)/[dot(n,v)(1-k)+k] G=Gs(n,v,k)Gs(n,l,k) m是粗糙度 k=(m+1)²/8
                     Unity使用的DFG函数与UnrealEngine一致
+            理论计算
+                FinalColor = 直接光(diffuse+specular)*shadow+间接光(diffuse+specular)*AO
             最终结果
-                diffColor * (GI.diffuse + Fd(L,V) * 光源颜色) + specColor * Fs(L,V) * 光源颜色 + 间接高光衰减 * GI.specular * Fresnel
-                注意
-                    反射率计算
-                        现实中的物体都存在或多或少的漫反射和高光反射,非金属高光反射率一般是Crgb=0.04              
-                        根据能量守恒(金属度强弱会影响比例分配)
-                            高光反射率   
-                                specColor=lerp(Crgb,albedo,metallic)
-                            漫反射率   
-                                oneMinusReflectivity = 0.96 - metallic * 0.96
-                                diffColor=albedo*oneMinusReflectivity; 
-                            间接高光衰减
-                                surfaceReduction = 1/(m^2+1) 表面越粗糙,间接高光越弱
-                    间接光计算
-
-                    固有色贴图
-                        一定没有光照和阴影的颜色信息,金属HSB亮度范围是72.9-100,非金属HSB亮度范围是19.6–95.2
-                    金属度贴图
-                        一定是接近黑白图的,一个金属材质的金属度一定是接近1的,非金属一定是接近0的,加了金属度背光面会发黑
-                    粗糙度贴图
-                        可以任意设置,主要表现划痕、磨损等细节
-                    法线贴图
-                        一定是偏蓝色的,存储了切线空间的法线信息
-                    AO贴图
-
-光照分类
-    直接光
-        光源直接照射表面的光
-    环境光
-        天空光,太阳光经过大气散射形成的漫反射光
-    间接光
-        除了直接光和天空光之外的所有光
+                diffColor * (GI.diffuse + diffBRDF * GI.light.color) + specBRDF * GI.light.color + surfaceReduction * GI.specular * Fresnel
+            反射率计算
+                现实中的物体都存在或多或少的漫反射和高光反射,非金属高光反射率一般是Crgb=0.04              
+                根据能量守恒(金属度强弱会影响比例分配)
+                    高光反射率   
+                        specColor=lerp(Crgb,albedo,metallic)
+                    漫反射率   
+                        oneMinusReflectivity = 0.96 - metallic * 0.96
+                        diffColor=albedo*oneMinusReflectivity; 
+                    间接高光衰减
+                        surfaceReduction = 1/(m^2+1) 表面越粗糙,间接高光越弱
+            阴影计算
+                GI.light.color是经过了阴影和衰减计算后的颜色
+            固有色贴图
+                一定没有光照和阴影的颜色信息,金属HSB亮度范围是72.9-100,非金属HSB亮度范围是19.6–95.2
+                颜色看起来很平,没有亮度渐变,可以支持多张Albedo混合
+            金属度贴图
+                一定是接近黑白图的,一个金属材质的金属度一定是接近1的,非金属一定是接近0的,加了金属度背光面会发黑
+            粗糙度贴图
+                可以任意设置,主要表现划痕、磨损等细节
+            法线贴图
+                一定是偏蓝色的,存储了切线空间的法线信息
+            AO贴图
+                半球积分、遮挡关系、天空光
+光照模式
     Realtime
         直接光实时计算,阴影使用ShadowMap计算(ShadowMap只计算ShadowDistance以内的动态对象)
         RealtimeGI计算静态物体表面所有可能的反射光线,运行时动态计算间接光

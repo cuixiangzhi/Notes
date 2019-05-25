@@ -67,6 +67,15 @@
         合并多个后处理效果
             1.使用Unity提供的PostProcessing，关闭不使用的效果
             2.使用统一的脚本管理自定义的一些效果,例如淡入淡出、屏幕水波、景深等等
+    custombuffer
+        自定义颜色和深度缓冲区
+            为了使用HDR,颜色图需要使用Float格式,RGB111110Float 
+            为了兼容机型,深度图格式用Depth、RHalf、RFloat
+            Camera.SetTargetBuffers(RenderBuffer color,RenderBuffer depth)
+            有时候需要用深度图来做额外处理,而UNITY需要多渲染一次场景生成深度图
+        自定义渲染命令
+            CommandBuffer.Blit()->Camera.AddCommandBuffer()
+            AfterForwardOpaque深度图就不会再更新了,因为只有不透明物体才会更新深度图
 代码方面的优化
     数组[]
         1.自定义一个全局的数组管理类,创建List数组代替[]数组,减少临时数组的分配和数量
