@@ -76,6 +76,9 @@
         自定义渲染命令
             CommandBuffer.Blit()->Camera.AddCommandBuffer()
             AfterForwardOpaque深度图就不会再更新了,因为只有不透明物体才会更新深度图
+    setpass
+        一个DC分为setpass和draw两部分,相同的setpass也就是使用相同的材质,batch是MESH个数
+        setpass是在CPU内处理的,需要做很多拷贝、校验,占用了大部分渲染时间
 代码方面的优化
     数组[]
         1.自定义一个全局的数组管理类,创建List数组代替[]数组,减少临时数组的分配和数量
