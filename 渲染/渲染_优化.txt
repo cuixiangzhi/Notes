@@ -67,7 +67,7 @@
         合并多个后处理效果
             1.使用Unity提供的PostProcessing，关闭不使用的效果
             2.使用统一的脚本管理自定义的一些效果,例如淡入淡出、屏幕水波、景深等等
-    custombuffer
+    commandbuffer
         自定义颜色和深度缓冲区
             为了使用HDR,颜色图需要使用Float格式,RGB111110Float 
             为了兼容机型,深度图格式用Depth、RHalf、RFloat
@@ -75,7 +75,7 @@
             有时候需要用深度图来做额外处理,而UNITY需要多渲染一次场景生成深度图
         自定义渲染命令
             CommandBuffer.Blit()->Camera.AddCommandBuffer()
-            AfterForwardOpaque深度图就不会再更新了,因为只有不透明物体才会更新深度图
+            后期特效可以利用Blend命令减少内存的拷贝操作
     setpass
         一个DC分为setpass和draw两部分,相同的setpass也就是使用相同的材质,batch是MESH个数
         setpass是在CPU内处理的,需要做很多拷贝、校验,占用了大部分渲染时间
