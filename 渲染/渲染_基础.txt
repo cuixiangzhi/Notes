@@ -51,9 +51,9 @@
 编程接口
 	opengl和directx都属于操作系统层面的编程接口
 	directx是windows平台的专属API
-	opengl是跨平台的API,windows也提供了支持
 	metal是苹果系列设备的API
 	opengles是android设备的的API
+	vlukan是跨平台的API,不是所有手机都支持
 版本对比
     DX版本 OGL版本 ES版本   SM版本  特点    						
     8.0    1.0	   1.0		1.0   	固定管线
