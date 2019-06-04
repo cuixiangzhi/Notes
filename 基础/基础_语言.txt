@@ -432,7 +432,9 @@ OC: 面向对象的语言
 		}
 		@end
 	类函数:
-		-(void)name:(bool)param;  -是成员函数,+是静态函数,:前面是函数名字和返回值,类型用括号括起来
+		-(void)name:(bool)param;  
+		-是成员函数,+是静态函数
+		:前面是函数名字和返回值
 	类对象:
 		创建
 			cls* ptr = [[cls alloc] init];
