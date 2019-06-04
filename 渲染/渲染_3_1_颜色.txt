@@ -64,7 +64,7 @@
 	HDR
 		原理
 			人眼瞳孔会根据光线射入量进行自适应调节,太亮时缩小瞳孔减少射入量,太暗放大增加射入量
-			RGB颜色分量是8位,最多0-255,大部分高亮的颜色都超过了255,光照计算时很可能会计算出大于255的值
+			RGB颜色分量是8位,最多存储0-255,大部分高亮的颜色都超过了255,光照计算时很可能会计算出大于255的值
 			Bloom效果会提取指定阈值内的亮度颜色进行模糊,不做HDR处理会使得白色物体也出现泛光效果
 		BUFFER
 			unity开启hdr选项会增加一个hdr buffer,存储超过1的颜色
@@ -72,29 +72,14 @@
 	基础
 		源颜色是指当前计算出的颜色 
 		目标颜色是指帧缓冲区内的颜色
-	加法混合
-		叠加模式 AlphaBlend One One
-		混合模式 AlphaBlend SrcAlpha OneMinusSrcAlpha
-		颜色与透明度一起混合
-			源颜色带透明度*源系数+目标颜色带透明度*目标系数
-		颜色与透明度分开混合
-			源颜色*源颜色系数+目标颜色*目标颜色系数
-			源颜色透明度*源颜色透明度系数+目标颜色透明度*目标颜色透明度系数
-	乘法混合
-		正片叠底 srcColor * dstColor,暗室照明效果,白光经过两个颜色过滤,用来模拟阴影效果
-	光照贴图是加法混合,光照计算是乘法混合
-	开启blend
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		glDisable(GL_BLEND);
-颜色缓存
-	帧缓存,存储当前帧每个像素的颜色
-	摄像机的清理选项一般包括:天空盒、固定颜色、深度、不清理 
-		glClearColor*() 设置摄像机的颜色缓存清理颜色值
-		glClearDepth(1);
-		glClearStencil(0); 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT)	
-	透明度测试
-		glEnable(GL_ALPHA_TEST);
-		glAlphaFunc(GL_GREATER,0);
-		glDisable(GL_ALPHA_TEST);
+	混合模式
+		传统透明度 
+			Blend SrcAlpha OneMinusSrcAlpha
+		预乘透明度
+			Blend One OneMinusSrcAlpha
+		正片叠底(变暗)
+			Blend DstColor Zero
+		叠加(线性减淡,变亮)
+			Blend One One
+		柔和叠加(滤色,变亮)
+			Blend OneMinusDstColor One
