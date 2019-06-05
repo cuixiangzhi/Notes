@@ -133,40 +133,23 @@
                 欧拉角无法平滑差值,因为旋转每次都是从(0,0,0)开始按顺序旋转,跟当前状态没有任何关系
                 旋转矩阵很复杂,有很多三角函数计算
             四元数
-                旋转轴向量为(vx,vy,vz) 旋转角度为0 轴角表达式为(vx,vy,vz,0),轴角表达方式无法直接应用于变换,必须转换为矩阵或者四元数
-                四元数是经过处理的轴角表达式, quaternion = (vx*sin(0/2),vy*sin(0/2),vz*sin(0/2),cos(0/2))
-                乘法
-                    四元数p*四元数q: 
-                        4D向量叉乘,先旋转q在旋转p
-                            w' = w * rkQ.w - x * rkQ.x - y * rkQ.y - z * rkQ.z,
-                            x' = w * rkQ.x + x * rkQ.w + y * rkQ.z - z * rkQ.y,
-                            y' = w * rkQ.y + y * rkQ.w + z * rkQ.x - x * rkQ.z,
-                            z' = w * rkQ.z + z * rkQ.w + x * rkQ.y - y * rkQ.x
-                        4D向量点乘,两个旋转角度之差(-1,1)
-                    四元数p*向量v:   
-                        常规算法
-                            向量v旋转p
-                            向量使用四元数表示为(x,y,z,0)
-                            q*v=q*v扩展*q逆
-                        OGRE算法
-                            Vector3 uv, uuv;
-                            Vector3 qvec(x, y, z);
-                            uv = qvec.crossProduct(v);
-                            uuv = qvec.crossProduct(uv);
-                            uv *= (2.0f * w);
-                            uuv *= 2.0f;
-                            return v + uv + uuv;
-                共轭
-                    四元数的模^2=x^2+y^2+z^2+w^2
-                    旋转轴取负即可得出共轭四元数,相当于旋转轴反向
-                    旋转轴的共轭/模=四元数的逆
-                差值
-                    slerp(p,q,percent)
-                转换
-                    四元数<-->欧拉角 四元数<-->旋转矩阵
-        组合变换
-            已知的是模型顶点在模型坐标系下的坐标(x,y,z,1)
-            该顶点变换到世界坐标系下列向量=TRS*列向量,递归计算父结点T父R父S父,得出localToWorld矩阵
+                旋转轴向量为(vx,vy,vz) 旋转角度为0 轴角表达式为(vx,vy,vz,0)
+                轴角表达方式无法直接应用于变换,必须转换为矩阵或者四元数
+                quaternion = (vx*sin(0/2),vy*sin(0/2),vz*sin(0/2),cos(0/2))
+                向量旋转(四元数*向量)
+                    OGRE实现
+                        Vector3 uv, uuv;
+                        Vector3 qvec(x, y, z);
+                        uv = qvec.crossProduct(v);
+                        uuv = qvec.crossProduct(uv);
+                        uv *= (2.0f * w);
+                        uuv *= 2.0f;
+                        return v + uv + uuv;
+                欧拉角->四元数
+                    qx = cos(y)cos(x)sin(z) + sin(y)sin(x)cos(z)
+                    qy = cos(y)sin(x)cos(z) - sin(y)cos(x)sin(z)
+                    qz = sin(y)cos(x)cos(z) + cos(y)sin(x)sin(z)
+                    qw = cos(y)cos(x)cos(z) - sin(y)sin(x)sin(z)
     视图变换    
         视图坐标系是右手坐标系,因此Z轴方向需要使用摄像机朝向的反方向
         视图->世界矩阵如下,世界->视图求其逆矩阵

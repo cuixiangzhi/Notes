@@ -78,22 +78,18 @@
     Baked
         直接光、间接光、阴影烘焙到LightMap和LightProbes,只对静态物体生效,LightProbes对动态物体生效
 渲染路径
-	Vertex
-		支持8个点光源,按照亮度排序,位置颜色信息存储在指定数组内
-		MESH->VS(光照计算)->FS->FRAME_BUFFER
 	Forward
-		根据配置的逐像素光源个数,提取最亮的几个光源计算光照,其余的光源都以球谐函数
 		MESH->VS->FS(光照计算)->FRAME_BUFFER
 		ForwardBase: 
 			#pragma multi_compile_fwdbase
-			计算自发光、环境光、主平行光、逐顶点光、SH光、光照贴图、阴影
+			计算自发光、环境光、主平行光、SH光、光照贴图、阴影
 			Unity中设置为NotImporant的光会被按照逐顶点或者SH处理
 			逐顶点光照计算 Shade4PointLights(...) unity_4LightPosXYZColorAtten
 			球谐光照计算 
 		ForwardAdd:  
 			Blend One One 
 			#pragma multi_compile_fwdadd
-			计算额外的逐像素光源,AddPASS会根据照亮该物体的光源数量被执行多次
+			计算额外的逐像素光源,AddPass会根据照亮该物体的光源数量被执行多次
 			照亮每个物体的逐像素光源个数有限制,Unity会根据光源的类型及对物体的影响程度(距离、强度、类型等)进行排序
 			_LightColor0和_WorldSpaceLightPos0存储当前逐像素光源的颜色和位置
 		光源信息
