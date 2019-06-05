@@ -146,6 +146,7 @@
                         uuv *= 2.0f;
                         return v + uv + uuv;
                 欧拉角->四元数
+                    xyz = xyz * 0.5 * 2π/360 = xyz * 0.0087266462599716
                     qx = cos(y)cos(x)sin(z) + sin(y)sin(x)cos(z)
                     qy = cos(y)sin(x)cos(z) - sin(y)cos(x)sin(z)
                     qz = sin(y)cos(x)cos(z) + cos(y)sin(x)sin(z)
