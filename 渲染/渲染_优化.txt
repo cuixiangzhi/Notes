@@ -6,9 +6,23 @@
     机型分类规则
 
     可调节选项
-        1.ShaderLOD
+        1.LODGroup
+            使用LODGroup组件设置Render列表,根据网格占屏比选择适当的LODMESH,支持淡入淡出(unity_LODFade)
+            物体占屏比是通过当前屏幕空间AABB和近平面时物体的AABB的比例值来计算
+        2.ShaderLOD
             shader实现多个不同LOD的subshader,LOD越低效果越差但是性能越好,例如PBS有高中低三个版本
-        2.
+            shader.globalMaximumLODLevel设置当前渲染质量,低于该值的shader的pass才会被使用
+            shader.maximumLodLevel设置特定shader的渲染质量
+        3.QualityLevel
+            运行时通过修改Unity的渲染配置,来提高质量或者降低消耗,通过QualitySettings.SetQualityLevel调节
+            渲染 
+                PixelLightCount Important模式一定是逐像素的,Important个数小于指定个数会选取Auto模式的作为逐像素光源
+                TextureQuality  降低显存占用(0级MipMap,贴图R/W一定要关闭),FullRes是完整分辨率,HalfRes是一半分辨率
+                AnisoTropicTex  各向异性纹理采样是否开启,开启之后远处的细节会变清晰,PerTexture会使用贴图的设置,ForceOn会强制设置所有贴图
+                AntiAliasing    MSAA抗锯齿的采样点个数,可以是2x、4x、8x,需要配合Camera的MSAA选项使用
+                SoftParticles   开启之后粒子会计算深度差dz来柔化边缘(当粒子距离物体特别近的时候穿插不会出现硬边),计算需要深度图
+            阴影
+            其它
 内存方面的优化
     variants
             shader_feature
@@ -42,27 +56,7 @@
         ModelImporter
             Read/Write Enabled  开启会在多一份内存
             MeshCompression     使用压缩算法减少硬盘空间占用,默认关闭
-渲染方面的优化
-    lod
-        层次细节,根据物体所处的位置显示不同精度的模型或者使用不同的渲染策略
-        MESH_LOAD
-            使用方式:
-                添加LODGroup组件,增加LOD,摄像机图标拖拽可以查看具体LOD效果
-                每个LOD设置Renderer列表
-                每个LOD左侧标识的百分比代表物体在屏幕空间占屏比低于该值时使用这个LOD的策略
-                物体占屏比是通过当前屏幕空间AABB和近平面时物体的AABB的比例值来计算
-                LOD支持淡入淡出,通过uniform变量unity_LODFade.x来获取blendfactor,LOD_FADE_PERCENTAGE|LOD_FADE_CROSSFADE
-            全局配置
-                Unity->Edit->QualitySetting
-                MaximumLODLevel控制使用的最大LOD级别,超过这个值不会被编译
-                LODBias控制在两个LOD之间的如何使用,0到1越接近1越靠前
-        SHADER_LOD
-            使用方式:
-                给每个shader的pass增加 LOD 限定值
-                通过shader.globalMaximumLODLevel设置当前渲染质量,低于该值的shader的pass才会被使用
-                通过shader.maximumLodLevel设置特定shader的渲染质量
-        CULL
-            自己实现四叉树或者八叉树动态分块加载,执行遮挡剔除
+代码方面的优化
     postprocess
         合并多个后处理效果
             1.使用Unity提供的PostProcessing，关闭不使用的效果
@@ -79,7 +73,6 @@
     setpass
         一个DC分为setpass和draw两部分,相同的setpass也就是使用相同的材质,batch是MESH个数
         setpass是在CPU内处理的,需要做很多拷贝、校验,占用了大部分渲染时间
-代码方面的优化
-    数组[]
+    Array[]
         1.自定义一个全局的数组管理类,创建List数组代替[]数组,减少临时数组的分配和数量
         2.不要使用GetComponents返回[],传递一个List数组来获取,减少GC
