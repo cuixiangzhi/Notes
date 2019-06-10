@@ -33,37 +33,37 @@
             其它
 内存方面的优化
     variants
-            shader_feature
-                定义的变体没有使用到不会被编译
-                使用#pragma shader_feature 来定义
-                使用[Toggle(feature) ..]在材质上显示该选项
-            multi_compile
-                定义的变体都会编译
-                使用Shader.EnableKeywords和Material.EnableKeywords开启全局或单个材质的宏定义
-                keyword最多256个,超过这个值会报错
-            variants
-                宏定义太多导致shader变体很多,不仅增加了build时间,运行时由于变体太多增加加载时间并增加内存占用
-            判断是否被使用:
-                shader如果单独打包,此时shader不会编译生成任何变体
-                shader和材质打包,shader会根据材质的keyword信息编译生成对应的变体
-            强制生成变体:
-                1.把shader放在always include shaders
-                2.把shader放在resources内
-                3.增加多余的材质,定义对应的变体keyword
-                4.5.0以后版本提供的shader_variant_collection,针对每个shader指定要使用哪些keyword
-                把collection放在preload或者和shader打包在一起
-    mesh
-        PlayerSettings
-            DynamicBatching     300顶点以下的MESH无论是否开启R/W,内存都会翻倍
-            OptimizeMeshData    用来在打bundle时剔除shader没有使用到的顶点属性,可以减小包体
-            VertexCompression   降低顶点属性的精度
-                                该选项是否生效包含以下几种条件
-                                    1.是否开启了DynamicBatching,开启后300顶点以下的MESH不会执行顶点压缩
-                                    2.是否开启了R/W,开启后不会执行顶点压缩
-                                    3.是否开启了MeshCompression,开启后会覆盖掉顶点压缩配置
-        ModelImporter
-            Read/Write Enabled  开启会在多一份内存
-            MeshCompression     使用压缩算法减少硬盘空间占用,默认关闭
+        shader_feature
+            定义的变体没有使用到不会被编译
+            使用#pragma shader_feature 来定义
+            使用[Toggle(feature) ..]在材质上显示该选项
+        multi_compile
+            定义的变体都会编译
+            使用Shader.EnableKeywords和Material.EnableKeywords开启全局或单个材质的宏定义
+            keyword最多256个,超过这个值会报错
+        variants
+            宏定义太多导致shader变体很多,不仅增加了build时间,运行时由于变体太多增加加载时间并增加内存占用
+        判断是否被使用:
+            shader如果单独打包,此时shader不会编译生成任何变体
+            shader和材质打包,shader会根据材质的keyword信息编译生成对应的变体
+        强制生成变体:
+            1.把shader放在always include shaders
+            2.把shader放在resources内
+            3.增加多余的材质,定义对应的变体keyword
+            4.5.0以后版本提供的shader_variant_collection,针对每个shader指定要使用哪些keyword
+            把collection放在preload或者和shader打包在一起
+    r/w_memory
+        read/write enabled
+            开启该选项的纹理、网格会在内存中存在两份(显存+内存)
+        dynamic_batching
+            开启之后300顶点以下的网格会强制开启R/W
+    mesh_memory
+        MeshCompression
+            使用压缩算法减少硬盘空间占用,默认关闭
+        OptimizeMeshData
+            打bundle时剔除shader没有使用到的顶点属性,可以减小包体
+        VertexCompression
+            降低顶点属性的精度,针对300顶点以上、未开启R/W的网格生效
 渲染方面的优化
     postprocess
         合并多个后处理效果
