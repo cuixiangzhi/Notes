@@ -57,6 +57,15 @@
                 一定是偏蓝色的,存储了切线空间的法线信息
             AO贴图
                 烘焙的AO贴图存储了静态物体的表面环境光的遮挡情况
+光照探头
+    LightProbe
+        给动态物体提供间接光,避免实时补光的方式来提高角色的亮度
+        添加间接光的采样点(LightProbe),记录场景的间接光信息
+        采样点把整个空间分割为一个个四面体,物体在一个四面体内根据权重获取不同采样点的影响程度
+        采样点尽量布置在光照变化较大的地方(进入阴影的地方)
+        LightmapSettings.lightProbes.bakedProbes可以获取烘焙后的信息
+    ReflectionProbe
+
 光照模式
     Realtime
         直接光实时计算,阴影使用ShadowMap计算(ShadowMap只计算ShadowDistance以内的动态对象)

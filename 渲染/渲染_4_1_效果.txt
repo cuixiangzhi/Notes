@@ -1,9 +1,13 @@
-模糊
+基础
     降采样
         对一幅M*N的图像进行s倍的降采样,得到一张(M>>s)*(N>>s)的图像,原图中s*s个像素合并为一个像素
-    相交测试
+    深度差
         根据屏幕深度的差和阈值来判断是否距离很近,在Soft粒子上有应用
         ComputeScreenPos计算齐次视口坐标->tex2DProj+LinearEyeDepth获取不透明物体深度->ObjectToView计算透明物体深度
+    颜色差
+        根据相邻像素颜色的差异突变判断图像边缘
+    亮度差
+        根据相邻像素亮度的差异突变判断图像边缘
 描边
     边缘发光
         利用视线和法线的点乘计算边缘,模型越边缘的地方点乘越接近0,用1减去点乘结果作为边缘光的强度
@@ -18,26 +22,13 @@
             3.clipNormal = mul(P,viewNormal.xy);
             4.clipPos.xy += clipNormal.xy * outline;
         第二次正常渲染,Cull Back,正常计算颜色即可
-    后期处理
-        首先渲染纯色图片,并对图片做模糊处理扩大物体边缘
-        然后正常渲染模型
-        最后做一次后处理,叠加三张图片(正常结果、纯色结果、模糊结果)
-            OnPreRender渲染纯色图片
-                camera.cullingmask = outline_mask
-                camera.targetTexture = render_texture
-                camera.renderwithshader(outline_shader_pre,"")
-                shader直接返回纯色
-            OnRenderImage模糊纯色图片
-                首先模糊纯色图片
-                    Graphics.Blit(render_texture,temp1)
-                    Graphics.Blit(temp1,temp2,outline_shader,0) 水平模糊
-                    Graphics.Blit(temp2,temp1,outline_shader,1) 垂直模糊
-                此时原图为render_texture,模糊图片为temp1
-                    Graphics.Blit(source,destination,outline_shader,2) 模糊颜色减去纯色
-                shader分为3个pass
-                    pass0和pass1使用高斯模糊算法,加权平均得出颜色
-                    pass2执行相减和叠加操作
-                    tex2D(MAIN,o.uv)+saturate(tex2D(BLUR)-tex2D(SRC))
+后期
+    SSAO
+    Bloom
+    Grain
+    DepthOfField
+    ColorGrading
+    MotionBlur
 波纹
     原理:UV动画,屏幕每个像素的UV坐标以中心点为圆心,向圆外偏移,根据距离中心点的距离和偏移的时间计算偏移程度
     顶点shader: 
@@ -60,8 +51,6 @@
     草树
     云雾
     镜子
-    玻璃
     头发
     皮肤
-    Bloom
     昼夜

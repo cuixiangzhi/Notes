@@ -1,13 +1,15 @@
 前言
     优化是一点点积累的
 基础知识
-    setpass
-        一个DrawCall分为setpass和batch两部分,相同的setpass也就是使用相同的材质,batch是MESH个数
+    Gfx.SetPass
+        一个DrawCall分为setpass和batch两部分,相同的setpass也就是使用相同的材质,batch是合并的Mesh个数
         setpass是在CPU内处理的,需要做很多拷贝、校验,占用了大部分渲染时间
     Gfx.WaitForTargetFPS
         CPU速度很快,超出了目标帧率,例如限帧30帧,上一帧耗时15ms,那么当前帧WaitForTargetFPS=33-15=18ms
     Gfx.WaitForPresent
         CPU等待GPU渲染完成或者VSync信号到来,GPU负载很高
+    if分支
+        GPU会执行所有的分支
 高中低配选项控制
     项目资源规范
         

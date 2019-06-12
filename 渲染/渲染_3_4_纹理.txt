@@ -5,6 +5,7 @@ Metalness
 Smoothness
     光滑度单通道贴图,用来计算BRDF中的DFG
 AmbientOcclusion
+    环境光遮挡贴图,用于计算表面接收到的光的遮挡情况,和阴影以及衰减共同影响光的强度
 NormalMap
     原理
         T:切线 B:副切线 N:法线
@@ -20,16 +21,14 @@ NormalMap
           rgb=normal*0.5+0.5 normal=rgb*2-1 法线贴图法线不会偏移Z轴太远,因此法线贴图都是偏蓝色的
           对应CGINC内的UnpackNormal函数
 CubeMap
+    通过摄像机拍摄六个方向的观察结果得出由六个面组成的立方体纹理
     纹理映射
         1.根据方向向量得出最大维度所在方向的纹理
         2.其它两个维度除以最大维度,缩放到[-1,1]
         3.通过2n+0.5把纹理坐标映射到[0,1]之内
         4.RenderToCubeMap会使用摄像机的位置和远裁面等渲染CubeMap
-    反射原理
-        1.通过摄像机拍摄六个方向的观察结果得出由六个面组成的立方体纹理
-        2.根据视点方向和法线求出反射方向reflect,通过反射向量在纹理中采样得出反射结果
-        3.根据视点方向和法线求出折射方向refract,通过折射向量在纹理中采样得出折射结果
-GrabScreen
-    通过 GrabPass {"_Texture"} 可以获取当前屏幕的渲染结果并保存到_Texture内
+    反射折射
+        1.texCUBE(reflect(-v,n))
+        2.texCUBE(refract(-v,n,ratio))
 RenderTexture
     渲染纹理,包含一个ColorBuffer和一个DepthBuffer,DepthBuffer包含16位depth和8位stencil
