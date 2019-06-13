@@ -344,8 +344,20 @@ lua
 		字符串哈希表    LuaState.l_G.strt
 		GC对象
 		函数LocVar 		Proto.localvars
-		函数UpVar       Proto.upvalues存储名字,LClosure.upvals存储具体变量(new时赋值,具体指在LuaState.openupval)
-
+		函数UpVar       LClosure.upvals
+						注意点
+							如果upval不在直接外层函数内,那么这个upval也会成为直接外层函数的upval
+							upval一定在外层函数的localvars或者upvals中
+							外层函数的local是通过openupval间接引用的
+	变量引用关系
+		LUA_TSTRING    	没有对其它对象的引用
+		LUA_TTABLE 		keys values array metatable
+		LUA_TFUNCTION   proto upvals
+						CCLOSURE upvals proto
+						LCLOSURE upvals
+						PROTO    source constants upvalnames varnames
+		LUA_TUSERDATA   envtable metatable
+		LUA_TTHREAD     luastate
 ShaderForUnity
 	定义shader名字,用于Shader.Find
 	Shader "" 
