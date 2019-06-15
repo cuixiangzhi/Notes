@@ -30,7 +30,11 @@ CubeMap
     反射折射
         1.texCUBE(reflect(-v,n))
         2.texCUBE(refract(-v,n,ratio))
+    BoxProjection
+        1.CubeMap采样的uvw向量是从CUBE中心点指向采样点的
+        2.视线向量需要经过计算转换为正确的uvw向量(向量与aabb碰撞检测)
+        3.根据v+t*d=边界计算射线与AABB交点,根据交点和CUBE中心点计算uvw 
 RenderTexture
     渲染纹理,包含一个ColorBuffer和一个DepthBuffer,DepthBuffer包含16位depth和8位stencil
 LightMap
-    光照贴图,存储了针对静态物体的间接光照信息,利用光线追踪算法使用环境CudeMap作为光源生成
+    光照贴图,存储了针对静态物体的间接光照信息,利用光线追踪算法使用HDRCudeMap作为光源生成

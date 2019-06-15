@@ -10,15 +10,21 @@
     物理模型
     	公式原理以及输入参数
             https://www.cnblogs.com/timlly/p/10631718.html
+            https://zhuanlan.zhihu.com/p/35495074
+            http://artisaverb.info/PBT.html
             终极公式
                 反射方程
                     Lo(p,wo) = ∫(fdkd+fs)Li(p,wi)dot(n,wi)dwi
                     fr(l,v)分为diffuse和specular两部分,采用不同的公式
                 IBL漫反射
-                    1.设置环境贴图CubeMap
+                    1.设置环境贴图HDRCubeMap
                     2.半球采样,针对每个采样方向加和计算Lo,生成diffuse和lightmapuv
                     3.根据UV采样LightMap即可
                     4.运行时积分性能不足,采样球谐函数和光照探针近似模拟
+                IBL镜面反射
+                    1.计算环境反射贴图HDRCubeMap,可以设置多个,生成到ReflectionProbe中存储
+                    2.根据观察方向和法线计算反射方向,根据反射方向采样CudeMap
+                    3.根据采样结果和反射方程计算反射颜色,预计算需要表面粗糙度来计算DG,F项运行时计算
             输入参数
                 Albedo贴图
                     一定没有光照和阴影的颜色信息,金属HSB亮度范围是72.9-100,非金属HSB亮度范围是19.6–95.2
@@ -41,6 +47,7 @@
                 间接光
                     静态物体通过LightMap直接读取,动态物体通过SH函数计算
                     indirect.diffuse = (sh|lightmap) * ao
+                    indirect.specular = envirmap * ao
             反射比例
                 ks=lerp(vec3(0.04),albedo.rgb,metallic)
                 kd=lerp(vec(0.96),0,metallic)
@@ -56,8 +63,8 @@
             终极结果
                 直接光 diff = diffTerm * light.color * dot(n,l) * kd
                 直接光 spec = specTerm * light.color * dot(n,l)
-                间接光 diff =
-                间接光 spec =
+                间接光 diff = indirect.diffuse * kd * albedo
+                间接光 spec = indirect.specular * F
 光照探头
     LightProbe
         给动态物体提供间接光,避免实时补光的方式来提高角色的亮度
