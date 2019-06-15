@@ -32,3 +32,5 @@ CubeMap
         2.texCUBE(refract(-v,n,ratio))
 RenderTexture
     渲染纹理,包含一个ColorBuffer和一个DepthBuffer,DepthBuffer包含16位depth和8位stencil
+LightMap
+    光照贴图,存储了针对静态物体的间接光照信息,利用光线追踪算法使用环境CudeMap作为光源生成

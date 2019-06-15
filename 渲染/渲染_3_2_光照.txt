@@ -10,9 +10,15 @@
     物理模型
     	公式原理以及输入参数
             https://www.cnblogs.com/timlly/p/10631718.html
-            Lo(p,wo) = ∫(fdkd+fs)Li(p,wi)dot(n,wi)dwi
-            fr(l,v)分为diffuse和specular两部分,采用不同的公式
-
+            终极公式
+                反射方程
+                    Lo(p,wo) = ∫(fdkd+fs)Li(p,wi)dot(n,wi)dwi
+                    fr(l,v)分为diffuse和specular两部分,采用不同的公式
+                IBL漫反射
+                    1.设置环境贴图CubeMap
+                    2.半球采样,针对每个采样方向加和计算Lo,生成diffuse和lightmapuv
+                    3.根据UV采样LightMap即可
+                    4.运行时积分性能不足,采样球谐函数和光照探针近似模拟
             输入参数
                 Albedo贴图
                     一定没有光照和阴影的颜色信息,金属HSB亮度范围是72.9-100,非金属HSB亮度范围是19.6–95.2
@@ -33,9 +39,7 @@
                     实时计算,由于强度、距离、阴影、环境遮挡的影响会发生衰减
                     directlight.color *= shadow*atten*ao
                 间接光
-                    动态物体通过SH函数计算,输入参数保存在LightProbe中
-                    静态物体通过LightMap直接读取
-                    由于环境遮挡的影响会发生衰减
+                    静态物体通过LightMap直接读取,动态物体通过SH函数计算
                     indirect.diffuse = (sh|lightmap) * ao
             反射比例
                 ks=lerp(vec3(0.04),albedo.rgb,metallic)
