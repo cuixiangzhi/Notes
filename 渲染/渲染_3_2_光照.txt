@@ -9,9 +9,9 @@
             pow(dot(n,h),α),h是l和v的半角向量,v在趋向于平行表面过程中h与n的夹角始终在90度之内,也就是边缘有一个渐变过程
     物理模型
     	公式原理以及输入参数
-            https://www.cnblogs.com/timlly/p/10631718.html
-            https://zhuanlan.zhihu.com/p/35495074
-            http://artisaverb.info/PBT.html
+            http://artisaverb.info/PBT.html 资源库
+            https://www.cnblogs.com/timlly/p/10631718.html 原理介绍
+            https://blog.csdn.net/i_dovelemon/article/details/79091105 IBL算法
             终极公式
                 反射方程
                     Lo(p,wo) = ∫(fdkd+fs)Li(p,wi)dot(n,wi)dwi
