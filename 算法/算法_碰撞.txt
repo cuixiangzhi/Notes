@@ -42,12 +42,14 @@ AABB
 	点到线段的距离 圆和线段 圆和扇形
 		先通过计算AB*AP求出夹角是锐角还是钝角,然后判断APcos∠PAB大小,也就是P点在线段AB上的投影点clamp到0,1
 		然后根据向量加法PA + t*AB = P'P得出垂线段向量,t是0那么就是A点,t是1就是B点
-		t = AP * AB / ab * ab
+		t = AP * AB / AB * AB
 		t < 0,最近点是A,距离为PA
 		t > 1,最近点为B,距离为PB
 		d = len(PA + t*AB)
 	点到矩形的距离 可用于判断圆和矩形是否相交
-		计算V向量(矩形中心指向圆心P,并且x、y都取绝对值) U向量(V-H(矩形中心指向右上角顶点))(x、y取第一象限的值),计算U向量和圆半径大小
+		V向量(矩形中心指向圆心P,并且x、y都取绝对值,保证P点在右上角) 
+		H向量(矩形中心指向右上角顶点)
+		U向量(右上角指向圆心P,x、y都大于等于0)
 		vector2 v = abs(p-c);
 		vector2 u = max(v-h,vector2.zero);
 		return u * u <= r * r;
@@ -56,14 +58,15 @@ AABB
 		AP = u * AB + v * AC
 		AP * AB = u * AB * AB + v * AC * AB
 		AP * AC = u * AB * AC + v * AC * AC
-		令 d00 = AB * AB; d11 = AC * AC; d20 = AP * AB; d21 = AP * AC; d01 = d10 = AB * AC;
-		简化之后
-		d20 = u * d00 + v * d01
-		d21 = u * d01 + v * d11
+		简化代码
+			d20 = AP * AB; d00 = AB * AB; d01 = AB * AC; 
+			d21 = AP * AC; d10 = AB * AC; d11 = AC * AC;   
+			d20 = u * d00 + v * d01
+			d21 = u * d10 + v * d11
 		联立解得
-		denom = d01 * d01 - d11 * d00
-		u = (d11 * d02 - d01 * d12) / denom;
-		v = (d01 * d02 - d00 * d12) / denom
+		denom = d01 * d10 - d00 * d11
+		u = (d20 * d11 - d01 * d21) / denom;
+		v = (d20 * d10 - d00 * d21) / denom
 		return (u >= 0) && (v >= 0) && (u + v < 1) 
 	点和凸多边形的关系
 		pnpoly算法,从该点沿坐标轴X向右或者向左发射射线,检测射线与凸多边形的交点个数,奇数个则相交
@@ -80,7 +83,7 @@ AABB
 		normalize(cross(CD,CA)) == normalize(cross(CB,CD)) 
 	凸多边形和凸多边形的关系
 		分离轴算法,遍历所有的边,取边的垂线作为分离轴,计算两个凸多边形在轴上的投影范围,投影有一个不相交则两个多边形是分离的
-		已知两点A、B,分离轴经过原点,向量AB和OP互相垂直,那么分离轴为向量 n = (ABz,0,-ABx)
+		已知两点A、B,分离轴经过原点,向量AB和OP互相垂直(斜率相乘为1),那么分离轴为向量 n = (ABz,0,-ABx)
 		计算投影范围,也就是计算原点指向边的顶点的向量在n上的投影(可以直接通过点乘计算)
 		
 精确测试阶段3D
