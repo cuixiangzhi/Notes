@@ -64,6 +64,15 @@ January February March April May June July August Spetember October November Dec
 		后缀表达式,方便堆栈操作实现任意复杂度的表达式,一次扫描即可得出结果,遇到操作数压栈,遇到运算符弹出操作数并运算
 		波兰式即前缀表达式,对应于二叉树的前序遍历结果,逆波兰式对应于后序遍历结果
 
+汇编语言
+	寄存器分类
+	R0-R10 通用数据
+	IP-R11 函数栈帧
+	FP-R12 暂存数据
+	SP-R13 栈顶指针
+	LR-R14 返回地址
+	PC-R15 指令指针
+	CPSR   程序状态
 C/C++
 	关键字
 		指针	
