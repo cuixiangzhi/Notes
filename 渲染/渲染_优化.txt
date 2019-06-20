@@ -12,7 +12,16 @@
         GPU会执行所有的分支
 高中低配选项控制
     项目资源规范
-        
+        界面
+            字体一个
+            公共图集 2048*2048*(3~4)
+            功能图集 1024*512|512*512*(20~40)
+            特殊功能 2048*1024|1024*1024*(3~5)
+            特殊背景 
+        角色
+        场景
+        特效
+        音频
     机型分类规则
 
     可调节选项
@@ -25,7 +34,7 @@
             shader.maximumLodLevel设置特定shader的渲染质量
         3.QualityLevel
             运行时通过修改Unity的渲染配置,来提高质量或者降低消耗,通过QualitySettings.SetQualityLevel调节
-            渲染 
+            渲染
                 PixelLightCount Important模式一定是逐像素的,Important个数小于指定个数会选取Auto模式的作为逐像素光源
                 TextureQuality  降低显存占用(0级MipMap,贴图R/W一定要关闭),FullRes是完整分辨率,HalfRes是一半分辨率
                 AnisoTropicTex  各向异性纹理采样是否开启,开启之后远处的细节会变清晰,PerTexture会使用贴图的设置,ForceOn会强制设置所有贴图
@@ -34,7 +43,7 @@
             阴影
             其它
 内存方面的优化
-    variants
+    shaderlab
         shader_feature
             定义的变体没有使用到不会被编译
             使用#pragma shader_feature 来定义
@@ -66,6 +75,11 @@
             打bundle时剔除shader没有使用到的顶点属性,可以减小包体
         VertexCompression
             降低顶点属性的精度,针对300顶点以上、未开启R/W的网格生效
+    component_memory
+        Animator
+            FBX导入时Rig不要生成Avatar(除非需要动作混合)
+        Rigidbody
+
 渲染方面的优化
     postprocess
         合并多个后处理效果
