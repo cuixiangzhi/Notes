@@ -6,6 +6,17 @@
           	滑动窗口,即字典,字典查找过程就是查找最大子串
   	加密    基于异或运算的位加密算法,A^B=C C^B=A   RSA SHA
   	BASE64  HTTP请求发送数据只能发送ASCII码,因此需要进行编码操作,编码后+号传输会变成空格
+    VARINT  对原始数据每7位作为一个字节,大于7位时高位补1,不足7位时高位补0,因此0x80表示有效数据,否则表示最后一个字节
+    ZIGZAG  VARINT表示负数时一定是5个字节,该算法对它进行优化
+    PROTO   TAG-LENGTH(可选)-VALUE TAG=field_number << 3 | wire_type
+            VARINT=0
+                针对int32 uint32 int64 uint64、bool、enum，采用varint算法(负数使用zigzag)
+            FIXED64=1
+                针对double,使用64bit编码
+            LENGTH-DELIMI
+                针对string bytes,tag采用varint,length采用varint,string使用utf-8
+            FIXED32
+                针对float,使用32bit编码
 数据结构
   	二叉树 
   		完全二叉树;深度为d,结点个数为2^d-1;父结点为n,左子结点为2n+1,右子结点为2n+2;结点数为n,深度为log₂n
