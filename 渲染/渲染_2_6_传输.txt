@@ -64,6 +64,13 @@ context与object的关系
             纹理Buffer
         Bind:
             指定当前状态机指定的目标使用的是哪个对象 glBind(objType,objID)
+        渲染:
+            glDrawElements(图元类型,图元数量,图元INDEX类型,图元INDEX指针)
+            glDrawElementsInstanced(..,instanceCount)
+            实例化绘制实现
+                Instance会在对每个顶点执行instanceCount次来进行实例化操作
+                gl_InstanceID可以获取当前是第几个实例
+                VAO内会包含一个VBO来存储针对每个实例的数据
     VBO创建过程
         分配VBO句柄 glGenBuffer(1,vboID|eboID)
         绑定VBO对象 glBindBuffer(GL_ARRAY_BUFFER|GL_ELEMENT_ARRAY_BUFFER,vboID|eboID)
@@ -75,6 +82,7 @@ context与object的关系
             绑定VBO-传输数据-启用属性-设置格式
             启用VBO属性 glEnableVertexAttribArray(shaderLocation)
             指定VBO格式 glVertexAttribPointer(shaderLocation,3,GL_FLOAT,GL_FALSE,0,NULL)
+            指定VBO间隔 glVertexAttribDivisor(shaderLocation,1)
         解除VAO绑定 glBindVertexArray(NULL)
         解除VBO绑定 glBindBuffer(GL_ARRAY_BUFFER|GL_ELEMENT_ARRAY_BUFFER,NULL)
     VAO渲染过程
