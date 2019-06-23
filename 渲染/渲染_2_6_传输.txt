@@ -71,6 +71,7 @@ context与object的关系
             DynamicBatching
                 首先按照材质和距离以及渲染顺序对带渲染物体进行排序
                 一次遍历待渲染物体,检测是否可以加入到当前批次内,是则合批
+                每个批次有顶点上限限制,能够合批的顶点也需要限制,合批需要一定CPU消耗
             GPUInstance
                 Instance会在对每个顶点执行instanceCount次来进行实例化操作
                 gl_InstanceID可以获取当前是第几个实例
