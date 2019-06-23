@@ -65,9 +65,13 @@ context与object的关系
         Bind:
             指定当前状态机指定的目标使用的是哪个对象 glBind(objType,objID)
         渲染:
-            glDrawElements(图元类型,图元数量,图元INDEX类型,图元INDEX指针)
-            glDrawElementsInstanced(..,instanceCount)
-            实例化绘制实现
+            绘制命令
+                glDrawElements(图元类型,图元数量,图元INDEX类型,图元INDEX指针)
+                glDrawElementsInstanced(..,instanceCount)
+            DynamicBatching
+                首先按照材质和距离以及渲染顺序对带渲染物体进行排序
+                一次遍历待渲染物体,检测是否可以加入到当前批次内,是则合批
+            GPUInstance
                 Instance会在对每个顶点执行instanceCount次来进行实例化操作
                 gl_InstanceID可以获取当前是第几个实例
                 VAO内会包含一个VBO来存储针对每个实例的数据
