@@ -40,6 +40,7 @@
                 AnisoTropicTex  各向异性纹理采样是否开启,开启之后远处的细节会变清晰,PerTexture会使用贴图的设置,ForceOn会强制设置所有贴图
                 AntiAliasing    MSAA抗锯齿的采样点个数,可以是2x、4x、8x,需要配合Camera的MSAA选项使用
                 SoftParticles   开启之后粒子会计算深度差dz来柔化边缘(当粒子距离物体特别近的时候穿插不会出现硬边),计算需要深度图
+                Resolution      通过ScreenAPI设置渲染目标分辨率或者自定义RT作为渲染目标或者使用Camera的动态分辨率选项
             阴影
             其它
 内存方面的优化
