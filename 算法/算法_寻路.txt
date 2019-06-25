@@ -482,4 +482,6 @@
                 flag和area可以扩展,但是flag最多有16位(ushort类型)
                 在寻路时通过dtQueryFilter的includeFlag和excludeFlag来过滤掉不可行走的区域
             方法2,对生成的NAVMESH进行裁剪
+        障碍物导航
+            根据移动方向和速度阈值计算前方两点是否与障碍物相交,是则给物体一个离开的力
                 
