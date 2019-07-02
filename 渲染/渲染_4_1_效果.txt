@@ -40,12 +40,46 @@
                 计算出亮度值并分别求和计算Gx、Gy
                 计算出梯度向量的长度,和指定阈值比较得出边缘
         边缘检测(深度)
-            
+
     皮肤
     头发
 后期特效
     SSAO
     ColorGrading-
+    雨雪天气
+    景深效果
+    运动模糊
+        原理:摄像机原理(拍摄100帧,每4帧叠加,最终为25帧),对连续的几帧图像进行累加
+        实现:游戏不可能实时渲染N倍的帧,可以利用一张RT存储上一帧的结果和当前帧做混合,但是效果可能不够真实
+             也可以利用几张纹理对特定物体进行处理模拟运动模糊效果
+        顶点shader
+            普通vertex变换
+        像素shader
+            pass 
+                使用指定的模糊程度作为源像素的alpha值
+                Blend SrcAlpha OneMinusSrcAlpha
+                ColorMask RGB
+            pass
+                使用源像素的alpha作为源像素的alpha值
+                Blend One Zero
+                ColorMask A
+    辉光效果
+        原理:先利用亮度提取出超过指定阈值的部分,然后对其做高斯模糊处理,最后叠加到原图上
+        需要4张RT,SRC->TMP0提取高亮部分,TMO0->TMP1->TMP0水平和垂直模糊,,SRC->DST用TMP0叠加得出最终结果
+        顶点shader
+            普通vertex变换
+        像素shader
+            模糊计算 加权平均
+            提取计算 亮度阈值 col *= clamp(luminance(c) - _LuminanceThreshold,0,1)
+            叠加计算 直接相加 tex2D(SRC) + tex2D(TMP0)
+    高斯模糊
+        原理:利用高斯分布公式对周围像素点做加权平均 G(x,y)=(1/2πσ²)exp(-(x²+y²)/2σ²),方差σ可以取1
+        需要4张RT,SRC->TMP0,TMO0->TMP1->TMP0水平和垂直模糊,TMP0->DST得出最终结果
+        顶点shader
+            由于对称性可以只计算出中心点和横向左半部分的像素UV
+            高斯模糊可以分成两部分做叠加,也就是先做水平方向模糊,在对模糊后的图像做垂直方向模糊
+        像素shader
+            根据高斯核采样像素点加权平均,得出最终结果
     屏幕亮度
         原理:RGB颜色模型与HSV颜色模型转换
         顶点shader:
@@ -61,10 +95,6 @@
             对比度修改,灰度区间从[A,B]变换到[C,D]
                 contrastColor = fixed3(0.5,0.5,0.5)
                 finalColor = lerp(contrastColor,finalColor,_Contrast)
-    辉光效果
-    雨雪天气
-    景深效果
-    运动模糊
     屏幕波纹
         原理:UV动画,屏幕每个像素的UV坐标以中心点为圆心,向圆外偏移,根据距离中心点的距离和偏移的时间计算偏移程度
         顶点shader: 

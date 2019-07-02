@@ -367,7 +367,7 @@ lua
 		基础类型元表    LuaState.l_G.mt
 		基础元函数名字 	LuaState.l_G.tmnames
 		字符串哈希表    LuaState.l_G.strt
-		GC对象
+		GC对象          LuaState.gclist
 		函数LocVar 		Proto.localvars
 		函数UpVar       LClosure.upvals
 						注意点
