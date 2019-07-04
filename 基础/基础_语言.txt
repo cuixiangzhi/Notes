@@ -383,6 +383,22 @@ lua
 						PROTO    source constants upvalnames varnames
 		LUA_TUSERDATA   envtable metatable
 		LUA_TTHREAD     luastate
+	it优化
+        原理
+            JIT是把字节码编译成机器码,放到可执行内存中执行,需要申请带可执行权限的内存空间
+        工具
+            jit/*.lua 可以用来控制JIT的编译过程
+            开启/关闭JIT模式 jit.on/jit.off
+            
+        问题1
+            ARM限制跳转指令只能跳转前后32MB的空间,如果连续的64MB空间内被其他代码占用,LUAJIT就分配不出可执行内存
+            能否进行JIT只能不断重复尝试编译,导致性能急速下降,如何预分配这些内存空间?
+        问题2
+            ARM可用寄存器比X86少,LUAJIT会尽可能使用寄存器存储LOCAL变量,LOCAL太多会导致寄存器分配失败
+        问题3
+            调用C函数的代码无法JIT,可以使用FFI库调用C函数是可以JIT优化的
+        问题4
+            某些字节码无法JIT优化,有哪些?
 ShaderForUnity
 	定义shader名字,用于Shader.Find
 	Shader "" 
