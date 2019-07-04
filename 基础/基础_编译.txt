@@ -87,3 +87,21 @@ Mono编译
 		mcs -r:*.dll -target:library *.cs 把cs文件编译成dll文件
 		java *.jar|*.class
 		mono --aot-only *.exe 以FULL_AOT模式执行exe
+Cmake配置
+	#最低版本
+	cmake_minimum_required(VERSION 2.8)
+	#项目名字
+	project(ProjName)
+	#源码信息
+	aux_source_directory(<dir> DIR_SRCS)
+	#包含目录
+	include_directories(<dir> <dir> <dir>)
+	#子级目录
+	add_subdirectory(<dir>)
+	#链接目录
+	link_directories(<dir>)
+	#生成目标
+	add_executable(ProjName ${DIR_SRCS})
+	add_library(LibName ${DIR_SRCS})
+	#链接目标
+	target_link_libraries(ProjName LibName)
