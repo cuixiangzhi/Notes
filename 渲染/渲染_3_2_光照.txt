@@ -138,7 +138,3 @@
             RT3,存储自发光+光照贴图+反射探针
     ShadowCaster
         渲染阴影映射纹理时调用该shader,没有会调用Fallback的对应shader,否则不产生阴影
-光照缺陷
-    使用前向渲染时只能使用单方向光+LightMap,背光面的法线效果会比较弱
-        解决方案:
-            修正LightMap计算,加入法线计算 indirect.diffuse*dot(normal_texture,normal_vertex)
