@@ -10,21 +10,14 @@
         根据相邻像素亮度的差异突变判断图像边缘
 场景渲染
     光照
-        背光面
-            修正LightMap计算,加入法线计算 indirect.diffuse*dot(normal_texture,normal_vertex)
-        主光源
-            一个Mixed模式平行光,模拟太阳光的方向和强度,运行时可调整颜色和方向
-        辅光源
-            任意多个Bake模式平行光,与主光形成冷暖对比,运行时不可调整
-        点光源
-            任意多个Bake模式点光源,一般放在灯笼、草丛或者树木附近,运行时不可调整
-        环境光
-            整个场景间接光的总体色调,HDRGradient模式,运行时不可调整
-        天空盒
-            背景:双层背景 太阳&月亮:大小、颜色、方向 云层:两层叠加运动
+        背光面 修正LightMap计算,加入法线计算 indirect.diffuse*dot(normal_texture,normal_vertex)
+        主光源 一个Mixed模式平行光,模拟太阳光的方向和强度,运行时可调整颜色和方向
+        辅光源 任意多个Bake模式平行光,与主光形成冷暖对比,运行时不可调整
+        点光源 任意多个Bake模式点光源,一般放在灯笼、草丛或者树木附近,运行时不可调整
+        环境光 整个场景间接光的总体色调,HDRGradient模式,运行时不可调整
+        天空盒 背景:双层背景 太阳&月亮:大小、颜色、方向 云层:两层叠加运动
     地形
-        编辑
-            使用Unity进行编辑,用工具导出MESH
+        编辑 使用Unity进行编辑,用工具导出MESH
     植被
     雾效
     水面
@@ -73,16 +66,7 @@
         顶点shader
             普通vertex变换
         像素shader
-            pass 
-                使用指定的模糊程度作为源像素的alpha值
-                Blend SrcAlpha OneMinusSrcAlpha
-                ColorMask RGB
-            pass
-                使用源像素的alpha作为源像素的alpha值
-                Blend One Zero
-                ColorMask A
-            pass
-
+            两张纹理混合 Blend SrcAlpha OneMinusSrcAlpha
     辉光效果
         原理:先利用亮度提取出超过指定阈值的部分,然后对其做高斯模糊处理,最后叠加到原图上
         需要4张RT,SRC->TMP0提取高亮部分,TMO0->TMP1->TMP0水平和垂直模糊,,SRC->DST用TMP0叠加得出最终结果
@@ -92,6 +76,8 @@
             模糊计算 加权平均
             提取计算 亮度阈值 col *= clamp(luminance(c) - _LuminanceThreshold,0,1)
             叠加计算 直接相加 tex2D(SRC) + tex2D(TMP0)
+    ToneMap
+        原理:ACES公式 saturate([x*(a*x+b)]/[x*(c*x+d)+e]) a=2.51 b=0.03 c=2.43 d=0.59 e=0.14
     高斯模糊
         原理:利用高斯分布公式对周围像素点做加权平均 G(x,y)=(1/2πσ²)exp(-(x²+y²)/2σ²),方差σ可以取1
         需要4张RT,SRC->TMP0,TMO0->TMP1->TMP0水平和垂直模糊,TMP0->DST得出最终结果
@@ -100,8 +86,8 @@
             高斯模糊可以分成两部分做叠加,也就是先做水平方向模糊,在对模糊后的图像做垂直方向模糊
         像素shader
             根据高斯核采样像素点加权平均,得出最终结果
-    屏幕亮度
-        原理:RGB颜色模型与HSV颜色模型转换
+    屏幕颜色
+        原理:RGB颜色模型与HSV颜色模型转换,YUV亮度计算,对比度插值
         顶点shader:
             普通的vertex变换和uv赋值
         像素shader:
