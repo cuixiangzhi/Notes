@@ -172,20 +172,7 @@
                     OpenGL和DX的zbuffer数值范围都是(0,1),而且都是非线性的
                     把zbuffer的非线性映射到线性,需要用到DX的投影公式aZe(0,f)+b=Zb(因为DX的NDC范围是0到1,Zbuffer=Zndc)
                     根据投影矩阵的a和b可以计算出Ze0f=nf/(f-Zb*(f-n)) Ze01=Ze0f/f=1/(aZb+b)
-                        解得a=1-f/n b=f/n 或者 a=-1+f/n b=1 (Zb可能是反转的,因此要做1-Zb)      
-                    屏幕坐标转世界坐标
-                        正常公式
-                            首先计算出 Ze01 = LinearDepth01(zbuffer)
-                            根据投影矩阵和屏幕宽高比计算出Z值对应的宽度和高度
-                                Ze=n+Ze01*(f-n)
-                                MATRIX_P.m11=cot(fov/2)=2n/(top-bottom)=2*Ze/height
-                                height=2Ze/MATRIX_P.m11
-                                width=height*_ScreenParam.x/_ScreenParam.y
-                            然后根据UV计算Eye坐标 
-                                Xe = (uv.x-0.5)*width 
-                                Ye = (uv.y-0.5)*height
-                            根据CameraToWorld矩阵计算World坐标
-                                Pworld = mul(unity_CameraToWorld,(Xe,Ye,Ze,1))
+                        解得a=1-f/n b=f/n 或者 a=-1+f/n b=1 (Zb为了提高远处的精度可能是反转的,因此要做1-Zb)
             投影矩阵
                 |cot(fov/2)/aspect 0                 0            0          ||x|
                 |0                 cot(fov/2)        0            0          ||y|
@@ -199,9 +186,8 @@
                 dx,metal等平台是(0,1) opengl/opengles是(-1,1)
             深度精度
                 z-fighting问题
-                因为从投影的z值变换不是线性的
-                距离远裁面越近z-fighting问题越严重
-                距离近裁面越近z-fighting问题越严重
+                因为z值变换不是线性的,Zndc=a+b/Zcamera,反比例函数Zcamera从Near到Far,Zndc从0到1
+                默认情况下近裁剪面Z值分布更加密集,精度更高,Z-fighting现象更弱,开启Reverse-Z之后远裁剪面更加密集,精度更高
                 glPolygonOffset(factor,units)可以解决z-fighting闪烁问题
                     算法Offset=DZ*factor+r*units
                     (-1,-1)表示距离摄像机更近,用来渲染前景 
