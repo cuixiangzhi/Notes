@@ -66,6 +66,7 @@ TCP连接与断开
 		server收到syn请求,发送syn+ack,进入recv状态
 		client收到syn+ack,发送ack,进入establistened
 		server收到ack,进入establistened
+		syn报文中包含了TCP的MSS选项,用来控制本地最大TCP报文长度
 	四次挥手
 	  	client发送fin请求断开连接,表示我不会再给你发数据了进入FIN_WAIT1
 	  	server收到fin请求,返回ack给client,表示我还有数据要发送,client进入FIN_WAIT2状态,server进入close_wait
