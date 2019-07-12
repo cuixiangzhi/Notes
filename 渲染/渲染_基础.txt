@@ -1,24 +1,25 @@
-图形学
+图形
 	图形 线框图 真实感图形 图像 图形方程 几何属性 非几何属性
-	渲染流水线
-		主循环->逻辑循环->renderOneFrame->renderTarget(window|texture)->camera->scene->renderqueue->不透明物体(VBO/VAO/EBO)->半透明物体(VBO/VAO/EBO)
-		顶点着色器(MVP变换)->细分曲面着色器->几何着色器->图元装配->裁剪->透视除法->视口变换->光栅化
-		片段着色器->像素归属测试->裁剪测试->Alpha测试->深度测试->模板测试->颜色混合
 	渲染指令调用顺序
 		应用程序->操作系统->驱动程序->显卡
 	渲染顺序
-		不透明物体从前往后渲染,利用EarlyZ技术减少OverDraw的像素shader计算
+		不透明物体从前往后渲染,利用EarlyZ技术减少OverDraw
 		半透明物体从后向前渲染,半透明物体不写入深度,执行AlphaBlend操作,EZ在这里也可以用
-		AlphaTest无法使用EZ技术,AlphaTest在像素shader之后进行,Z-PRE-PASS不能写深度,因为此时不确定这个像素会不会被剔除掉
 	多线程渲染
-		逻辑线程和渲染线程分离,采样CommandBuffer队列
+		逻辑线程和渲染线程分离,使用RingCommandBuffer产生和消耗渲染命令
 		逻辑线程更新帧N,渲染线程渲染帧N-1,逻辑帧N结束后等待渲染帧结束再开始下一帧计算
-		使用环形BUFFER产生和消耗渲染命令
 	渲染管线
 		ForwardShading前向渲染
-			DepthTexture->DepthNormalTexture->OpaqueObjects->OpaqueImageEffects->SkyBox->Transparent->ImageEffects
+			DepthTexture->OpaqueObjects->OpaqueImageEffects->SkyBox->Transparent->ImageEffects
 		DeferredShading延迟渲染
 			G-Buffer->Lighting->OpaqueImageEffects->SkyBox->Transparent->ImageEffects
+	渲染状态
+		基本状态 Cull AlphaTest Offset Ztest ZWrite Blend ColorMask
+		状态分组 queue->lightmap->distance->shader->material->pass->objects
+		状态切换 根据当前分组的数据检查需要切换哪些状态
+	渲染流水线
+		顶点着色器(MVP变换)->曲面细分着色器->几何着色器->图元装配->CVV裁剪->透视除法->视口变换->光栅化->Early-Z优化
+		片段着色器->归属测试->裁剪测试->Alpha测试->深度测试->模板测试->颜色混合
 	Batch&CPU&GPU
 		batch是指相同的渲染状态(shader、texture、transform等)
 		batch的尺寸是指包含的三角形个数
@@ -27,10 +28,6 @@
 		渲染性能瓶颈
 			batch数量(CPU端) shader计算(GPU端)
 硬件
-	概念
-		显卡即显示适配器是一个硬件,显示芯片即GPU是一个芯片
-		显示芯片是安装在显卡上的,显卡用来接收数字信号,显示芯片则负责将数字信号转化为图形信号,并由显卡输出到显示器上
-		CPU->GPU->显存->RAMDAC->Display 
 	显卡分类
 		独立显卡 集成显卡 核心显卡
 	显卡型号
@@ -45,25 +42,21 @@
 		DVI接口输入是数字信号,显卡直接传输
 	显示器刷新
 		https://blog.csdn.net/a740169405/article/details/70548443
-	单元
-		GTX1080有88个光栅单元rops
-		统一渲染架构(流处理器,不区分像素处理单元和顶点处理单元)
 	GPU架构
 		ALU
 		输入寄存器
 		常量寄存器
 		纹理寄存器
-驱动
-	驱动程序不同平台有不同的规范以及扩展
-	硬件加速部分渲染指令由硬件执行,例如光栅、矩阵变换、着色、采样、光照计算等等
-	硬件加速需要显卡支持
-编程接口
+	驱动程序
+		驱动程序不同平台有不同的规范以及扩展
+		硬件加速部分渲染指令由硬件执行,例如光栅、矩阵变换、着色、采样、光照计算等等
+接口
 	opengl和directx都属于操作系统层面的编程接口
 	directx是windows平台的专属API
 	metal是苹果系列设备的API
 	opengles是android设备的的API
 	vlukan是跨平台的API,不是所有手机都支持
-版本对比
+版本
     DX版本 OGL版本 ES版本   SM版本  特点    						
     8.0    1.0	   1.0		1.0   	固定管线
 	9.0    2.0	   2.0		2.0 	可编程管线
@@ -75,5 +68,3 @@
 	SM3.0版本特性
 		32位浮点运算 MSAA抗锯齿 65535条指令上限 HDR支持
 		GPUInstance
-shader函数
-	tex2D根据UV采样纹理,tex2DProj传入齐次坐标,除以uv.w后进行采样
