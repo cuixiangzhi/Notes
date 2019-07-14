@@ -49,7 +49,7 @@
             镜面反射BRDF
                 D=k/π*[dot(n,h)²*(k-1)+1]²                          k=rough²
                 F=F0+(1-F0)(1-dot(l,h))⁵                            F0=ks
-                G=Gs(n,v,k)*Gs(n,l,k) Gs=nv/[nv(1-k)+k]             k=rough²/2
+                G=Gs(n,v,k)*Gs(n,l,k) Gs=nv/[nv(1-k)+k]             k=(rough+1)²/8
                 specTerm = DFG / 4*nl*nv
             终极结果
                 直接光 diff = diffTerm * light.color * dot(n,l) * kd
