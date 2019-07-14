@@ -42,16 +42,15 @@
                     indirect.specular = envirmap * ao
             反射比例
                 ks=lerp(vec3(0.04),albedo.rgb,metallic)
-                kd=lerp(vec(0.96),0,metallic)
+                kd=lerp(vec(0.96),(1-albedo.rgb),metallic)
             漫反射BRDF
                 diffTerm = albedo/π
                 diffTerm = albedo/π * (1+(Fd-1)(1-dot(n,l))⁵*(1+(Fd-1)(1-dot(n,v))⁵)) Fd=0.5+2m(n,l)²
             镜面反射BRDF
-                D=rough²/π*[dot(n,h)²*(rough²-1)+1]²
-                F=F0+(1-F0)(1-dot(n,v))⁵ F0=ks
-                G=Gs(n,v,k)*Gs(n,l,k) Gs=dot(n,v)/[dot(n,v)(1-k)+k] k=rough/2
-                denom = 4 * max(0,dot(n,v)) * max(0,dot(n,l))
-                specTerm = DFG / denom
+                D=k/π*[dot(n,h)²*(k-1)+1]²                          k=rough²
+                F=F0+(1-F0)(1-dot(l,h))⁵                            F0=ks
+                G=Gs(n,v,k)*Gs(n,l,k) Gs=nv/[nv(1-k)+k]             k=rough²/2
+                specTerm = DFG / 4*nl*nv
             终极结果
                 直接光 diff = diffTerm * light.color * dot(n,l) * kd
                 直接光 spec = specTerm * light.color * dot(n,l)
