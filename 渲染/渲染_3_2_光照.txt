@@ -68,7 +68,7 @@
             终极结果
                 直接光 diff = diffTerm * light.color * dot(n,l) * kd
                 直接光 spec = specTerm * light.color * dot(n,l)
-                间接光 diff = indirect.diffuse * kd * albedo
+                间接光 diff = indirect.diffuse * kd
                 间接光 spec = indirect.specular * F
 光照探头
     LightProbe
