@@ -25,19 +25,6 @@
                     1.计算环境反射贴图HDRCubeMap,可以设置多个,生成到ReflectionProbe中存储
                     2.根据观察方向和法线计算反射方向,根据反射方向采样CudeMap
                     3.根据采样结果和反射方程计算反射颜色,预计算需要表面粗糙度来计算DG,F项运行时计算
-            输入参数
-                Albedo贴图
-                    一定没有光照和阴影的颜色信息,金属HSB亮度范围是72.9-100,非金属HSB亮度范围是19.6–95.2
-                    对于非金属,Albedo表示表面颜色,对于金属,Albedo表示基础反射率,非金属不应该包含光影信息(没有亮度渐变)
-                    Albedo有真实的参考值
-                Metallic贴图
-                    一定是接近黑白图的,一个金属材质的金属度一定是接近1的,非金属一定是接近0的,加了金属度背光面会发黑
-                Smoothness贴图
-                    光滑度贴图,比较直观,用1-光滑度得出粗糙度,可以任意设置,主要表现划痕、磨损等细节
-                Normal贴图
-                    一定是偏蓝色的,存储了切线空间的法线信息
-                AO贴图
-                    烘焙的AO贴图存储了静态物体的表面环境光的遮挡情况
         具体实现
             光照分解
                 直接光 Diffuse Specular
@@ -55,20 +42,19 @@
                     indirect.specular = envirmap * ao
             反射比例
                 ks=lerp(vec3(0.04),albedo.rgb,metallic)
-                kd=lerp(vec(0.96),0,metallic)
+                kd=lerp(vec(0.96),(1-albedo.rgb),metallic)
             漫反射BRDF
                 diffTerm = albedo/π
                 diffTerm = albedo/π * (1+(Fd-1)(1-dot(n,l))⁵*(1+(Fd-1)(1-dot(n,v))⁵)) Fd=0.5+2m(n,l)²
             镜面反射BRDF
-                D=rough²/π*[dot(n,h)²*(rough²-1)+1]²
-                F=F0+(1-F0)(1-dot(n,v))⁵ F0=ks
-                G=Gs(n,v,k)*Gs(n,l,k) Gs=dot(n,v)/[dot(n,v)(1-k)+k] 直接光k=(rough+1)²/8 间接光k=rough²/2
-                denom = 4 * max(0,dot(n,v)) * max(0,dot(n,l))
-                specTerm = DFG / denom
+                D=k/π*[dot(n,h)²*(k-1)+1]²                          k=rough²
+                F=F0+(1-F0)(1-dot(l,h))⁵                            F0=ks
+                G=Gs(n,v,k)*Gs(n,l,k) Gs=nv/[nv(1-k)+k]             k=(rough+1)²/8
+                specTerm = DFG / 4*nl*nv
             终极结果
                 直接光 diff = diffTerm * light.color * dot(n,l) * kd
                 直接光 spec = specTerm * light.color * dot(n,l)
-                间接光 diff = indirect.diffuse * kd * albedo
+                间接光 diff = indirect.diffuse * kd
                 间接光 spec = indirect.specular * F
 光照探头
     LightProbe
