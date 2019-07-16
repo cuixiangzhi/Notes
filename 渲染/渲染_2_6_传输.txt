@@ -161,3 +161,5 @@ context与object的关系
         glDrawElements(GL_TRIANGLES,count,GL_UNSIGNED_INT,0); 绘制整个mesh
         glDrawElementsBaseVertex(); 绘制部分mesh
         glDrawElementsInstanced(GL_TRIANGLES,count,GL_UNSIGNED_INT,0,instanceCount) 绘制多次同一个mesh
+批处理
+    
