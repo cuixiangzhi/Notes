@@ -1,31 +1,16 @@
-矩阵
-    乘法
-        矩阵A左乘矩阵B = AB
-        矩阵A右乘矩阵B = BA
-        A*B必须满足A矩阵列数==B矩阵行数,因为矩阵乘法运算为 运算结果第M行第N列=A矩阵第M行每个元素*B矩阵第N列每个元素对应相乘然后相加
-        mul(A,B) 如果A是向量,那么认为A是行向量  如果B是向量,那么认为B是列向量
-        第i行第j列等于左矩阵第i行向量点乘右矩阵第j列向量
-    变换
-        矩阵左乘原矩阵是对原矩阵进行行变换,即对列向量执行行变换(修改列向量每一行的数据)
-        原矩阵右乘矩阵是对原矩阵进行列变换,即对行向量执行列变换(修改行向量每一列的数据)
-    矩阵形式
-        单位矩阵 
-            n阶方阵对角线全1,其他元素全0
-        逆矩阵
-            AB相乘结果为单位矩阵,则AB互为逆矩阵
-            Matrix4x4.inverse表示逆矩阵
-            localToWorld和worldToLocal互为逆矩阵
-        转置矩阵
-            A矩阵行列互换,主要用于在计算矩阵乘法时切换左乘右乘
-        正交矩阵
-            逆矩阵互为转置矩阵
-        坐标系变换矩阵
-            在目标坐标系下定义的三个正交基向量构成的矩阵*在这个坐标系下定义的向量
+矩阵基础
+    单位矩阵 
+        n阶方阵对角线全1,其他元素全0
+    逆矩阵
+        AB相乘结果为单位矩阵,则AB互为逆矩阵
+    转置矩阵
+        A矩阵行列互换,主要用于在计算矩阵乘法时切换左乘右乘
+    正交矩阵
+        逆矩阵互为转置矩阵
+    坐标系变换矩阵
+        在目标坐标系下定义的三个正交基向量构成的矩阵*在这个坐标系下定义的向量
     变换顺序
-        缩放-旋转-平移
-        localToWorld = T矩阵*R矩阵*S矩阵*列向量
-        worldToLocal = S逆矩阵*R逆矩阵*T逆矩阵*localToWorld
-        从左往右计算,对右矩阵执行行变换
+        缩放->旋转->平移 T矩阵*R矩阵*S矩阵*列向量
     向量叉乘
         AxB = (AyBz-AzBy,AzBx-AxBz,AxBy-AyBx)
     齐次坐标
@@ -35,9 +20,6 @@
     法线变换
         由于缩放变换可能不是等比缩放,因此MV矩阵变换之后法线可能不正确
         因此法线的MVP变换矩阵是 MV的逆转置矩阵把法线变换到视图空间,然后用从视图空间变换到CVV
-        float3x3 vnormal = mul(UNITY_MATRIX_IT_MV,v.normal)
-        float2x2 pnormal = mul(UNITY_MATRIX_P,vnormal)
-        transpose函数用于计算转置矩阵
     基变换
         相当于计算向量在目标坐标系各个轴上的投影长度,每个轴的结果都是点乘计算
         已知A坐标系下B坐标系的各个轴的表示,把B的坐标变换到A下,只需要B的各个轴组成行矩阵*列向量
@@ -77,7 +59,33 @@
     视口坐标系
         视口是窗口的一个区域,是真正的显示当前摄像机渲染结果的区域
         xy标记起始点,wh标记宽高 xywh均是0-1的数值,是窗口大小的比例
-变换
+旋转变换
+    欧拉角
+        旋转都是从(0,0,0)开始按ZXY顺序旋转,跟当前状态没有任何关系
+    轴角表达式
+        旋转轴(vx,vy,vz) 旋转角度为0,不支持平滑插值
+    四元数
+        复数 
+            z = a + bi a是实部,b是虚部,i是虚数单位,乘法是普通的乘法
+        四元数
+            q = w + i * v 把一个虚部换成三个正交虚部(i,j,k)
+            q = v*sin(0/2) + cos(0/2) v是旋转轴,0是旋转角度
+        欧拉角->四元数
+            欧拉角首先拆分为3个坐标轴为基础的四元数,然后进行乘法化简,得出最终的四元数
+            xyz = xyz * 0.5 * 2π/360 = xyz * 0.0087266462599716
+            qx = cos(y)cos(x)sin(z) + sin(y)sin(x)cos(z)
+            qy = cos(y)sin(x)cos(z) - sin(y)cos(x)sin(z)
+            qz = sin(y)cos(x)cos(z) + cos(y)sin(x)sin(z)
+            qw = cos(y)cos(x)cos(z) - sin(y)sin(x)sin(z)
+        向量旋转(四元数*向量)
+            Vector3 uv, uuv;
+            Vector3 qvec(x, y, z);
+            uv = qvec.crossProduct(v);
+            uuv = qvec.crossProduct(uv);
+            uv *= (2.0f * w);
+            uuv *= 2.0f;
+            return v + uv + uuv;
+矩阵变换
     模型变换
         平移变换              
            |1 0 0 tx|   |1 0 0 -tx|  
@@ -90,10 +98,7 @@
            |0 0 s 0|   |0   0   1/s  0|
            |0 0 0 1|   |0   0   0    1|    
         旋转变换
-            2D旋转 
-                未旋转时,长度为r,与x轴夹角为d1,绕原点旋转角度d2
-                (x,y) = rcosd1,rsind1  (x',y') = rcos(d1+d2),rsin(d1+d2)
-                简化后 x'=rcosd1*cosd2-rsind1*sind2=xcosd2-ysind2  y'=rsind1cosd2+rcosd1sind2=ycosd2+xsind2
+            2D旋转
                 旋转矩阵
                     |cos0 -sin0 0||x|
                     |sin0  cos0 0||y|
@@ -119,34 +124,8 @@
                     使用欧拉角旋转时矩阵的计算顺序影响最终结果
                 任意轴旋转
                     首先对旋转轴构建一个正交矩阵,把点变换到世界坐标系
-            欧拉角
-                旋转都是从(0,0,0)开始按ZXY顺序旋转,跟当前状态没有任何关系
-            四元数
-                轴角表达式
-                    旋转轴(vx,vy,vz) 旋转角度为0
-                四元数格式
-                    quaternion = (vx*sin(0/2),vy*sin(0/2),vz*sin(0/2),cos(0/2))
-                向量旋转(四元数*向量)
-                    OGRE实现
-                        Vector3 uv, uuv;
-                        Vector3 qvec(x, y, z);
-                        uv = qvec.crossProduct(v);
-                        uuv = qvec.crossProduct(uv);
-                        uv *= (2.0f * w);
-                        uuv *= 2.0f;
-                        return v + uv + uuv;
-                欧拉角->四元数
-                    xyz = xyz * 0.5 * 2π/360 = xyz * 0.0087266462599716
-                    qx = cos(y)cos(x)sin(z) + sin(y)sin(x)cos(z)
-                    qy = cos(y)sin(x)cos(z) - sin(y)cos(x)sin(z)
-                    qz = sin(y)cos(x)cos(z) + cos(y)sin(x)sin(z)
-                    qw = cos(y)cos(x)cos(z) - sin(y)sin(x)sin(z)
     视图变换    
-        视图坐标系是右手坐标系,因此Z轴方向需要使用摄像机朝向的反方向
-        视图->世界矩阵如下,世界->视图求其逆矩阵
-        |vxx vxy -vxz|
-        |vyx vyy -vyz|
-        |vzx yvz -vzz|
+        视图坐标系是右手坐标系,因此Z轴方向需要使用摄像机朝向的反方向,利用坐标系正交基变换
     投影变换
         投影变换把坐标变换到了裁剪坐标系(CVV)(-1,1) DX(0,1)
         透视投影 fov(视角) aspect(屏幕宽高比) n(近裁面到原点距离) f(远裁面到原点距离)
@@ -185,18 +164,11 @@
                 投影变换得到的齐次坐标除以w得出NDC坐标,w为0会发生除0异常,因此近裁面限制大于0,UNITY最小为0.01
                 dx,metal等平台是(0,1) opengl/opengles是(-1,1)
             深度精度
-                z-fighting问题
                 因为z值变换不是线性的,Zndc=a+b/Zcamera,反比例函数Zcamera从Near到Far,Zndc从0到1
                 默认情况下近裁剪面Z值分布更加密集,精度更高,Z-fighting现象更弱,开启Reverse-Z之后远裁剪面更加密集,精度更高
                 glPolygonOffset(factor,units)可以解决z-fighting闪烁问题
-                    算法Offset=DZ*factor+r*units
                     (-1,-1)表示距离摄像机更近,用来渲染前景 
                     (1,1)表示距离摄像机更远,用来渲染背景
-                开启深度测试
-                    glEnable(GL_DEPTH_TEST);
-                    glDepthMask(value);
-                    glDepthFunc(GL_LESS|GL_GREATER|GL_LEQUAL);
-                    glDisable(GL_DEPTH_TEST);
         正交投影 left right bottom top near far
             投影矩阵
                 |1/(size*aspect) 0      0       0          ||x|
@@ -208,9 +180,8 @@
                 因为w分量为1,不需要透视除法
     视口变换
         NDC->屏幕
-        宽度从[-1,1]变换到[x,w] 
-        高度从[-1,1]变换到[y,h]
-        深度值从[-1,1]变换到(n,f) nf在opengl里通过设置glDepthRange(n,f)来设定,一般是(0,1)
+        宽度从[-1,1]变换到[x,w] 高度从[-1,1]变换到[y,h] 深度值从[-1,1]变换到(n,f) 
+        nf在opengl里通过设置glDepthRange(n,f)来设定,一般是(0,1)
         变换矩阵(w,h是屏幕宽高)
             0.5w  0     0        0.5w
             0     0.5h  0        0.5h
