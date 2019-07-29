@@ -1,9 +1,10 @@
 基础知识
     appID:      应用的唯一标识id
-    appKey:     应用的账号,和秘钥成对出现,appID和appKey可以一致(针对不需要设置账号权限的服务)
+    appKey:     应用的账号和秘钥成对出现
+                appID和appKey可以一致(针对不需要设置账号权限的服务)
     appSecret:  应用的公钥密码
-    使用appID、appKey、appSecret进行初始化后,会生成一个acces_token,用于后续的API调用
-    token:      应用敏感数据获取时用于验证  
+    token:      应用敏感数据获取时用于验证
+                使用appID、appKey、appSecret进行初始化后,会生成一个acces_token,用于后续的API调用
     jdk         基础运行环境、基础类库 
     sdk         应用开发类库、工具包 
                 android_support_v?.jar库有三个版本
@@ -11,13 +12,17 @@
                 v7(最低支持android2.1,和appcompat-v7一起使用 api7)
                 v13(最低支持android3.2 api13)
     ndk         安卓C/C++编译类库、工具包,可用于编写直接调用JNI的C库
+    llvm        编译器框架,NDK和XCODE采用LLVM作为默认的编译器
+                前端语言->BITCODE->Optimizer->CodeGenerator
+                类似C#,先编译为中间语言,然后通过虚拟机执行或者生成机器码
     project     一个项目,可独立存在,也可以包含在workspace内
     target      项目的一个编译目标,继承project的编译配置
     scheme      编译任务,指定编译哪几个目标
-    .xcarchive  中间文件
+    .xcarchive  中间文件(包含了.app和dSYM符号表文件)
                 xcodebuild archive -scheme * -configuration * -archivepath *.xcarchive
-    .ipa        最终文件
+    .ipa        安装包
                 xcodebuild -exportArchive -archivePath *.xcarchive -configuration D|R -exportPath *.ipa -exportOptionsPlist
+    .app        执行程序
 安卓SDK
     .so:
         c/c++动态库,使用NDK编译,包括armeavbi-v7a x64 x86三种架构,具体见系统_编译.txt NDK部分

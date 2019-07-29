@@ -109,8 +109,14 @@ C/C++
 		#define 
 			宏定义 ##宏拼接 ##用于拼接变量 #宏替换 #代表后面的是个字符串
 		typedef 
-			类型组合定义		 
-		lua里number统一为double类型,转为int会丢失精度并且会被限制在int范围内
+			类型组合定义
+		sizeof
+			编译期有效,不能在运行时判断数据长度
+		new&delete
+			new object()  调用operator new函数分配内存,然后调用object的构造函数
+			delete ptr    调用ptr所指向的对象的析构函数,然后调用operator delete函数释放内存
+			operator new  内存分配函数void* operator new(size_t size)
+			placement new 在指定内存块上构造对象 new (buffer) object()
 	类型转换 
 		basic-type 隐式转换	
 		static_cast 基本类型之间相互转换,可替代隐式转换

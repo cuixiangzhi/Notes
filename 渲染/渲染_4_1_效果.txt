@@ -42,7 +42,7 @@
                 3.clipNormal = mul(P,viewNormal.xy);
                 4.clipPos.xy += clipNormal.xy * outline;
             第二次正常渲染,Cull Back,正常计算颜色即可
-        边缘检测(亮度)
+        边缘检测(亮度,纹理边缘也会被计算出来)
             利用Sobel算子计算水平和垂直方向的偏导数,然后计算梯度长度,根据指定阈值得出边缘
                 水平|-1 0 1| 垂直|-1 -2 -1|
                     |-2 0 2|     | 0  0  0|
