@@ -42,7 +42,14 @@
                 SoftParticles   开启之后粒子会计算深度差dz来柔化边缘(当粒子距离物体特别近的时候穿插不会出现硬边),计算需要深度图
                 Resolution      通过ScreenAPI设置渲染目标分辨率或者自定义RT作为渲染目标或者使用Camera的动态分辨率选项
             阴影
+                Shadows          软阴影会多一步模糊操作,可以减弱锯齿
+                ShadowDistance   距离摄像机的深度值低于该值时使用实时阴影,同时该值会影响划分阴影层级的范围
+                ShadowNearOffset 直接使用8个顶点计算时可能会导致更外面的物体没有产生阴影(比如高大的建筑物在视椎体外面)
+                ShadowCascades   把观察体划分为N个等级,每个等级根据8个顶点和平行光方向计算正交摄像机的AABB,提高近处物体的阴影深度的精度
             其它
+                VSyncCount       关闭后Unity会全速跑Update,否则会根据同步方式sleep一段时间在执行Update,高帧率可以减少消耗
+        4.GraphicsTier
+            
 内存方面的优化
     shaderlab
         shader_feature

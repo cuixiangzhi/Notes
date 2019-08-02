@@ -182,3 +182,18 @@
 		本地通信
 				mmap shm filemap
 		网络通信
+基本命令
+		超级用户:系统管理员,拥有所有权限,UID默认为0
+		系统用户:创建时用-r来指定,一般用来维持某个服务的运行,不会用来登录,有一定权限,UID范围一般是1-499或999
+		普通用户:默认新建账号都是普通用户,只能执行/bin /usr/bin /usr/local/bin home目录下的命令
+		添加系统用户组
+			linux groupadd gname -r -g gid
+			macos dscl . -create /Groups/gname
+		添加系统用户
+			linux useradd uname -r -u uid -g gid -d homedir
+			linux passwd uname
+			macos dscl . -create /Users/uname UniqueID uid
+			macos dscl . -passwd /Users/uname password
+			macos dscl . -delete /Users/uname
+			macos dscl . -append /Groups/gname GroupMembership uname
+			

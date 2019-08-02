@@ -25,6 +25,9 @@ ShadowMap
                     float depth_texture = DecodeFloatRGBA(depth_texture_color);
                     float depth_current = o.depth.x / o.depth.y
                     if(depth_texture < depth_current) 阴影
+    CascadeShadowMap
+        原理:如果使用相同的正交投影矩阵计算物体在平行光下的投影坐标,近处的物体会由于深度精度问题而产生很多锯齿
+        优化:把摄像机的视椎体分成N个部分,每个部分分别根据梯形8个顶点得出平行光正交摄像机下的AABB包围盒作为平行光的正交摄像机范围
     ScreenSpaceShadowMap
         ZBuffer
             zbuffer=(az+b)/(z|-z)
