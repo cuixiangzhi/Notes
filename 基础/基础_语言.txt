@@ -54,6 +54,21 @@ January February March April May June July August Spetember October November Dec
 			 C# char代表一个字符或者一个中文符号,长度不固定 
 			 lua和C++一样 字符集分为ASCII和Unicode  UTF-8和GBK是一种UNICODE编号的编码方式
 			UTF-8不定字节编码以字节数开头,0xxxxxxx 表示一个字节  110xxxxx表示2个字节,后续字节以10开头  最多会有6个字节
+	函数栈帧
+		cdecl    参数从右至左入栈,调用参数之后生成add esp指令清理函数参数栈
+		stdcall  参数从右至左入栈,被调用函数最终生成ret ?指令清理函数参数栈
+		函数栈帧指针
+			ebp指向栈底,esp指向栈顶,栈指针从高地址向低地址移动
+		函数调用和返回指令
+			push param
+			call func
+			add esp ?     cdecl变参调用约定会生成该指令
+			push ebp      保存调用函数栈底,也就是保存调用函数的入口
+			move ebp esp  修改当前栈底指针,指向被调函数栈底(等同于调用函数栈顶)
+			func code
+			move esp ebp  esp恢复为调用函数栈顶
+			pop ebp       ebp恢复为调用函数栈底
+			ret ?         stdcall调用约定会指定清理参数字节数
 	多线程
 		RingBuffer无锁环形缓冲区,适用于命令队列
 		atomic标记,原子类型,加减操作是原子操作,不可再分 例如atomic<int>
