@@ -2,31 +2,24 @@
 	图形 线框图 真实感图形 图像 图形方程 几何属性 非几何属性
 	渲染指令调用顺序
 		应用程序->操作系统->驱动程序->显卡
-	渲染顺序
-		不透明物体从前往后渲染,利用EarlyZ技术减少OverDraw
-		半透明物体从后向前渲染,半透明物体不写入深度,执行AlphaBlend操作,EZ在这里也可以用
 	多线程渲染
 		逻辑线程和渲染线程分离,使用RingCommandBuffer产生和消耗渲染命令
 		逻辑线程更新帧N,渲染线程渲染帧N-1,逻辑帧N结束后等待渲染帧结束再开始下一帧计算
-	渲染管线
-		ForwardShading前向渲染
-			DepthTexture->OpaqueObjects->OpaqueImageEffects->SkyBox->Transparent->ImageEffects
-		DeferredShading延迟渲染
-			G-Buffer->Lighting->OpaqueImageEffects->SkyBox->Transparent->ImageEffects
 	渲染状态
 		基本状态 Cull AlphaTest Offset Ztest ZWrite Blend ColorMask
 		状态分组 queue->lightmap->distance->shader->material->pass->objects
 		状态切换 根据当前分组的数据检查需要切换哪些状态
+	渲染循环
+		首先根据摄像机视椎体范围进行裁剪,得到可见结点列表
+		然后遍历可见列表,针对每个可见结点
+			然后遍历当前结点的材质列表,针对每个材质
+				创建一个渲染对象,记录matIndex subShaderIndex renderQueue layerData batchIndex lightmapIndex shader material distance nodeData
+	渲染顺序
+		不透明物体从前往后渲染,利用EarlyZ技术减少OverDraw
+		半透明物体从后向前渲染,半透明物体不写入深度,执行AlphaBlend操作,EZ在这里也可以用
 	渲染流水线
 		顶点着色器(MVP变换)->曲面细分着色器->几何着色器->图元装配->CVV裁剪->透视除法->视口变换->光栅化->Early-Z优化
 		片段着色器->归属测试->裁剪测试->Alpha测试->深度测试->模板测试->颜色混合
-	Batch&CPU&GPU
-		batch是指相同的渲染状态(shader、texture、transform等)
-		batch的尺寸是指包含的三角形个数
-		batch的提交数量(每秒)只和CPU有关系,和batch的尺寸以及GPU都没有关系
-		batch的提交消耗主要在驱动API调用,batch数量和CPU消耗时间成线性关系
-		渲染性能瓶颈
-			batch数量(CPU端) shader计算(GPU端)
 硬件
 	显卡分类
 		独立显卡 集成显卡 核心显卡

@@ -49,7 +49,11 @@
             其它
                 VSyncCount       关闭后Unity会全速跑Update,否则会根据同步方式sleep一段时间在执行Update,高帧率可以减少消耗
         4.GraphicsTier
-            
+            阴影
+                CascadedShadows  级联阴影,根据摄像机观察范围划分N个等级分别使用不同的深度图,提高近处物体的精度
+            HDR
+                UseHDR&HDRMode   HDR模式总开关,HDR模式摄像机渲染帧缓冲的格式,FP16是64位,R11G11B10是32位不带A通道
+                                 开启后会额外创建一个缓冲区存储HDR计算结果
 内存方面的优化
     shaderlab
         shader_feature
