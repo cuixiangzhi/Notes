@@ -36,10 +36,11 @@
 	显示器刷新
 		https://blog.csdn.net/a740169405/article/details/70548443
 	GPU架构
-		ALU
-		输入寄存器
-		常量寄存器
-		纹理寄存器
+		ALU 输入寄存器 常量寄存器 纹理寄存器
+		thread  : 执行shader的基本单元,每个thread都有自己独占的寄存器
+		wrap    : 执行相同shader的一组thread,wrap会记录该组thread执行到了那条指令,wrap有固定的thread数量
+		register: 寄存器的数量是固定的,GPU按照wrap执行的shader所需寄存器数量来分配,shader占用寄存器越多,wrap就越少
+		swap    : gpu的一个核心执行一个wrap,核心数越多同时执行的wrap数量越多,wrap遇到阻塞操作时会被换出
 	驱动程序
 		驱动程序不同平台有不同的规范以及扩展
 		硬件加速部分渲染指令由硬件执行,例如光栅、矩阵变换、着色、采样、光照计算等等
