@@ -8,8 +8,6 @@
         CPU速度很快,超出了目标帧率,例如限帧30帧,上一帧耗时15ms,那么当前帧WaitForTargetFPS=33-15=18ms
     Gfx.WaitForPresent
         CPU等待GPU渲染完成或者VSync信号到来,GPU负载很高
-    if分支
-        GPU会执行所有的分支
 高中低配选项控制
     项目资源规范
         界面
@@ -54,6 +52,9 @@
             HDR
                 UseHDR&HDRMode   HDR模式总开关,HDR模式摄像机渲染帧缓冲的格式,FP16是64位,R11G11B10是32位不带A通道
                                  开启后会额外创建一个缓冲区存储HDR计算结果
+        5.PostProcess
+            后期
+            Bloom
 内存方面的优化
     shaderlab
         shader_feature

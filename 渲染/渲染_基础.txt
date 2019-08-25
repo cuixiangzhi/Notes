@@ -11,9 +11,12 @@
 		状态切换 根据当前分组的数据检查需要切换哪些状态
 	渲染循环
 		首先根据摄像机视椎体范围进行裁剪,得到可见结点列表
-		然后遍历可见列表,针对每个可见结点
-			然后遍历当前结点的材质列表,针对每个材质
-				创建一个渲染对象,记录matIndex subShaderIndex renderQueue layerData batchIndex lightmapIndex shader material distance nodeData
+		然后遍历可见列表,针对每个可见结点的每个子材质
+			创建渲染对象,记录渲染所需的lightmapIndex batchIndex matIndex subShaderIndex renderQueue layerData shader material distance nodeData
+		接着创建渲染循环对象,遍历渲染对象列表
+			找出shaderIndex引用的SubShader
+			找出object引用的RealTimeLight
+			找出所有可用的Pass,创建RenderPass对象
 	渲染顺序
 		不透明物体从前往后渲染,利用EarlyZ技术减少OverDraw
 		半透明物体从后向前渲染,半透明物体不写入深度,执行AlphaBlend操作,EZ在这里也可以用
@@ -36,8 +39,9 @@
 	显示器刷新
 		https://blog.csdn.net/a740169405/article/details/70548443
 	GPU架构
-		ALU 输入寄存器 常量寄存器 纹理寄存器
-		thread  : 执行shader的基本单元,每个thread都有自己独占的寄存器
+		gpc     : GPU包含多个GPC单元,GPC包含多个SM单元,每个GPC都具备完整的渲染流水线执行能力
+		sm      : SM是执行着色器程序的单元,包含加载存储单元、特殊数学计算单元、寄存器、L1缓存、纹理读取单元、纹理缓存等等
+		thread  : 执行shader的基本单元,每个thread都有自己独占的寄存器,多个thread打包为wrap由sm调度执行
 		wrap    : 执行相同shader的一组thread,wrap会记录该组thread执行到了那条指令,wrap有固定的thread数量
 		register: 寄存器的数量是固定的,GPU按照wrap执行的shader所需寄存器数量来分配,shader占用寄存器越多,wrap就越少
 		swap    : gpu的一个核心执行一个wrap,核心数越多同时执行的wrap数量越多,wrap遇到阻塞操作时会被换出
