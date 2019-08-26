@@ -1,0 +1,50 @@
+Camera.Cull
+    根据摄像机视椎体范围进行裁剪,得到可见列表
+RenderManager.SetCurrentCamera
+    设置当前摄像机
+Camera.UpdateDepthTextures
+    检查是否开启了深度图模式,不开启则跳过该步骤
+    检查软粒子是否开启,SOFTPARTICLES_ON宏会影响深度计算
+    检查摄像机视口范围是否有效,无效则跳过该步骤
+    Camera.RenderDepthTexture
+        RT创建
+            深度图和深度法线图是两个不同的RenderTexture
+            深度图是16位深度+单通道,深度法线图是16位深度+四通道
+            每帧都会通过RTBuffer申请和释放TempBuffer
+        RT渲染
+            RT.SetActive()  && GL.Clear()
+            Camera.SetupRender             
+                设置CameraPos、CameraToWorld、WorldToCamera、DeltaTime、ZbufferParams、ProjectParams、ColorSpace等等
+            Camera.RenderSceneShaderReplacement 
+                遍历可见结点,遍历子材质
+                    创建RenderObjectData,加入RenderObjects数组,
+                对RenderObjects按照一定规则排序,layer->distance
+                遍历RenderObjects数组,针对每个对象和当前shader的每个pass
+                    设置Shader数据,主要是变换矩阵
+                    调用Renderer组件的Render函数,主要是对DrawElements的封装
+            ShaderLab.SetTexture(key,value) 
+                把渲染结果设置到全局shader变量
+Camera.SetupRender
+    如果开了后期,会创建两张临时RT,HDR、线性空间、抗锯齿等会影响RT的格式
+    设置渲染目标,RT.SetActive内如果指定的RT为空,则使用ID为0的TextureID,也就是默认的系统缓冲区
+    设置CameraPos、CameraToWorld、WorldToCamera、DeltaTime、ZbufferParams、ProjectParams、ColorSpace等等
+Camera.DoRender
+    遍历可见列表,针对可见结点的所有子材质创建渲染对象,根据queueIndex加入到对应的不透明和半透明数组内
+        material       当前子材质球
+        matIndex       当前子材质球的数组下标
+        shader         当前子材质球所使用的着色器
+        layerData      渲染队列order和layer打包在一起
+        queueIndex     渲染队列,如果材质上没有自定义则获取shader的默认值
+        subShaderIndex 默认为-1
+        lightmapIndex  当前MESH所使用的lightmapIndex
+        batchIndex     当前MESH所在的BatchMesh的InstanceID,静态合批的MESH有自己单独的triangles,共享BatchMesh的顶点数据
+        distanceSort   根据摄像机和物体的AABB中心点的距离,正交摄像机算的是Z值,透视摄像机算的是到摄像机距离
+        distanceView   Z值距离
+        nodeData
+    遍历渲染对象列表,针对渲染对象所使用的Shader的每个Pass,创建RenderPass并加入Pass数组内
+        roIndex        当前Pass所引用的RenderObject的Index
+    对Pass数组按照RenderObject的属性进行排序
+        layer->queueIndex->distance半透明从后往前->lightMapIndex->staticBatchIndex->matIndex-shader->material->distance从前往后->roIndex
+    渲染天空盒,根据是否为线性空间开启或者关闭FRAMEBUFFER_SRGB
+        
+    前向渲染半透明对象

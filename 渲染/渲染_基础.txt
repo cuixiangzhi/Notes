@@ -9,14 +9,6 @@
 		基本状态 Cull AlphaTest Offset Ztest ZWrite Blend ColorMask
 		状态分组 queue->lightmap->distance->shader->material->pass->objects
 		状态切换 根据当前分组的数据检查需要切换哪些状态
-	渲染循环
-		首先根据摄像机视椎体范围进行裁剪,得到可见结点列表
-		然后遍历可见列表,针对每个可见结点的每个子材质
-			创建渲染对象,记录渲染所需的lightmapIndex batchIndex matIndex subShaderIndex renderQueue layerData shader material distance nodeData
-		接着创建渲染循环对象,遍历渲染对象列表
-			找出shaderIndex引用的SubShader
-			找出object引用的RealTimeLight
-			找出所有可用的Pass,创建RenderPass对象
 	渲染顺序
 		不透明物体从前往后渲染,利用EarlyZ技术减少OverDraw
 		半透明物体从后向前渲染,半透明物体不写入深度,执行AlphaBlend操作,EZ在这里也可以用

@@ -113,6 +113,10 @@ context与object的关系
         渲染到纹理
             创建纹理&绑定纹理&分配纹理内存
             关联绑定点   glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,&tboID)
+        SRGB模式
+            glEnable(GL_FRAMEBUFFER_SRGB)
+            开启之后GL会认为shader写入的颜色值是线性空间的,先转换到gamma空间在写入
+            开启之后GL会先把framebuffer中的颜色转到线性空间和源颜色进行计算
 着色器
     变量类型
         int float bool vec*float向量 bvec*bool向量 ivec*int向量 mat*矩阵 sampler*D纹理
