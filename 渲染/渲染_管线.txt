@@ -1,7 +1,7 @@
 Camera.Cull
     根据摄像机视椎体范围进行裁剪,得到可见列表
 RenderManager.SetCurrentCamera
-    设置当前摄像机
+    设置当前摄像机,记录上一帧位置,计算镜头移动速度向量
 Camera.UpdateDepthTextures
     检查是否开启了深度图模式,不开启则跳过该步骤
     检查软粒子是否开启,SOFTPARTICLES_ON宏会影响深度计算
@@ -20,7 +20,7 @@ Camera.UpdateDepthTextures
                     创建RenderObjectData,加入RenderObjects数组,
                 对RenderObjects按照一定规则排序,layer->distance
                 遍历RenderObjects数组,针对每个对象和当前shader的每个pass
-                    设置Shader数据,主要是变换矩阵
+                    设置Shader数据,主要是变换矩阵以及Shader内包含的RenderState
                     调用Renderer组件的Render函数,主要是对DrawElements的封装
             ShaderLab.SetTexture(key,value) 
                 把渲染结果设置到全局shader变量
@@ -46,5 +46,5 @@ Camera.DoRender
     对Pass数组按照RenderObject的属性进行排序
         layer->queueIndex->distance半透明从后往前->lightMapIndex->staticBatchIndex->matIndex-shader->material->distance从前往后->roIndex
     渲染天空盒,根据是否为线性空间开启或者关闭FRAMEBUFFER_SRGB
-        
+
     前向渲染半透明对象

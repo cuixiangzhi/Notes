@@ -33,18 +33,12 @@
                         具体公式计算公式参考杂项球谐公式图片(根据采样点的0,φ计算该点对应的球谐函数Yi) l,m转换为连续序列i=l(l+1)+m
                     球谐函数应用
                         预计算得出球谐基函数系数Ci,运行时可以重建原光照近似积分结果,光照探针记录了所在位置的球谐基函数系数
+                分解求和
+
                 IBL漫反射
-                    1.用环境贴图HDRCubeMap作为环境光源计算Li,针对半球采样加和计算Lo,生成LightMap
-                        积分简化为黎曼和形式
-                            Lo ≈ fd*(2π/N1)*(π/2/N2)∑Licos0sin0 = (kd*c*π)/(N1*N2)*∑(0-N1)∑(0-N2)Licos0sin0
-                        计算注意事项
-                            在切线空间下球坐标(0,φ)转换为笛卡尔坐标pt=(x,y,z)
-                            切线空间转世界空间pw=T*pt.x+B*pt.y+N*pt.z
-                    2.运行时采样LightMap或者根据球谐函数计算漫反射光照
+                    1.用环境贴图HDRCubeMap和其它Bake类型的光源作为环境光源Li,光线追踪生成LightMap和LightProbe
+                    2.运行时采样LightMap或者根据LightProbe记录的球谐系数计算漫反射光照
                 IBL镜面反射
-                    1.计算环境反射贴图HDRCubeMap,可以设置多个,生成到ReflectionProbe中存储
-                    2.根据观察方向和法线计算反射方向,根据反射方向采样CudeMap
-                    3.根据采样结果和反射方程计算反射颜色,预计算需要表面粗糙度来计算DG,F项运行时计算
         具体实现
             光照分解
                 直接光 Diffuse Specular
@@ -68,8 +62,8 @@
                 diffTerm = albedo/π * (1+(Fd-1)(1-dot(n,l))⁵*(1+(Fd-1)(1-dot(n,v))⁵)) Fd=0.5+2m(n,l)²
             镜面反射BRDF
                 D=k/π*[dot(n,h)²*(k-1)+1]²                          k=rough²
-                F=F0+(1-F0)(1-dot(l,h))⁵                            F0=ks
-                G=Gs(n,v,k)*Gs(n,l,k) Gs=nv/[nv(1-k)+k]             k=(rough+1)²/8
+                F=F0+(1-F0)(1-dot(h,v))⁵=lerp((1-dot(h,v))⁵,1,F0)   F0=ks F0值指定了基础反射系数,nh越接近垂直,反射系数越大
+                G=Gs(n,v,k)*Gs(n,l,k) Gs=nv/lerp(nv,1,k)            k=(rough+1)²/8(直接光) k=rough²/2(间接光) 粗糙度越大,k值越大,G值越小
                 specTerm = DFG / 4*nl*nv
             终极结果
                 直接光 diff = diffTerm * light.color * dot(n,l) * kd
