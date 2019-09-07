@@ -14,16 +14,21 @@ Camera.UpdateDepthTextures
         RT渲染
             RT.SetActive()  && GL.Clear()
             Camera.SetupRender             
-                设置CameraPos、CameraToWorld、WorldToCamera、DeltaTime、ZbufferParams、ProjectParams、ColorSpace等等
+                设置全局变量CameraPos、CameraToWorld、WorldToCamera、DeltaTime、ZbufferParams、ProjectParams、ColorSpace等等
             Camera.RenderSceneShaderReplacement 
                 遍历可见结点,遍历子材质
-                    创建RenderObjectData,加入RenderObjects数组,
-                对RenderObjects按照一定规则排序,layer->distance
+                    创建RenderObjectData,加入RenderObjects数组,5.x之前会选择RenderType一致的Subshader来渲染,5.x之后使用ShadowCaster这个Pass来渲染
+                对RenderObjects按照一定规则排序
+                    layer->subshaderIndex->distance
                 遍历RenderObjects数组,针对每个对象和当前shader的每个pass
                     设置Shader数据,主要是变换矩阵以及Shader内包含的RenderState
-                    调用Renderer组件的Render函数,主要是对DrawElements的封装
+                    调用Renderer组件的Render函数,先获取到有效的VBO,然后设置全局变量,最后调用DrawElements
             ShaderLab.SetTexture(key,value) 
                 把渲染结果设置到全局shader变量
+        RT升级
+            5.x之前DepthTexture和DepthNormalTexture使用Replace方式用InternalShader来渲染,没有批处理
+            5.x之后DepthTexture会使用LightMode为ShadowCaster的Pass来渲染
+            5.x之后DepthNormalTexture貌似仍然使用Replace方式渲染
 Camera.SetupRender
     如果开了后期,会创建两张临时RT,HDR、线性空间、抗锯齿等会影响RT的格式
     设置渲染目标,RT.SetActive内如果指定的RT为空,则使用ID为0的TextureID,也就是默认的系统缓冲区
