@@ -12,18 +12,30 @@
         运行时会把相同材质的Mesh合并为一个大Mesh,顶点数限制300,消耗CPU资源
     StaticBatching
         场景打包时会把使用相同材质的mesh合并为一个大Mesh,顶点数限制64K,索引数限制64K(GLES.48K,MACOS.32K),消耗内存资源,降低CPU消耗
+    GPUInstance
+        每个实例引用相同的Mesh数据,Shader内通过UniformBlock来获取每个实例的不同数据
+        数据结构定义(定义一个Uniform块)
+            UNITY_INSTANCE_BUFFER_START(UniformName)
+                UNITY_DEFINE_INSTANCED_PROP(propType,propName)
+            UNITY_INSTANCE_BUFFER_END(UniformName)
+        访问实例数据
+            UNITY_ACCESS_INSTANCED_PROP(UniformName,propName)
 高中低配选项控制
     项目资源规范
         界面
-            字体一个
-            公共图集 2048*2048*(3~4)
-            功能图集 1024*512|512*512*(不限制)
-            特殊功能 2048*1024|1024*1024*(3~5)
-            特殊背景 
+            字体规范
+                公共字体 TTF字体(1个)
+            图集规范
+                公共图集 2048*2048*(3~4个,1个物品图集,1个通用背景图集,1个通用小图图集)
+                功能图集 1024*512|512*512*(不限制)
+                特殊功能 2048*1024|1024*1024*(3~5)
+                特殊背景 
+                特殊图标
         角色
         场景
         特效
         音频
+        视频
     机型分类规则
 
     可调节选项
