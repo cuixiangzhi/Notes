@@ -13,13 +13,7 @@
     StaticBatching
         场景打包时会把使用相同材质的mesh合并为一个大Mesh,顶点数限制64K,索引数限制64K(GLES.48K,MACOS.32K),消耗内存资源,降低CPU消耗
     GPUInstance
-        每个实例引用相同的Mesh数据,Shader内通过UniformBlock来获取每个实例的不同数据
-        数据结构定义(定义一个Uniform块)
-            UNITY_INSTANCE_BUFFER_START(UniformName)
-                UNITY_DEFINE_INSTANCED_PROP(propType,propName)
-            UNITY_INSTANCE_BUFFER_END(UniformName)
-        访问实例数据
-            UNITY_ACCESS_INSTANCED_PROP(UniformName,propName)
+        每个实例引用相同的Mesh数据,Shader内通过UniformBlock来获取每个实例的不同数据,Instance数组大小有长度限制,默认500个(vulkan250个)
 高中低配选项控制
     项目资源规范
         界面
