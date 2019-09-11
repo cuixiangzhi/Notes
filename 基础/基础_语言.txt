@@ -112,12 +112,13 @@ C/C++
 		引用	
 			变量换了个名字,没有内存分配,它和它引用的变量用的是一份内存
 			引用必须在声明时初始化
-		const  
-			C++字面字符串 文件内的常量不可以const_cast 函数内的可以
-			C#变量必须属于类,函数内变量不能加const和static
+		const
 			顶层const：指针本身是个常量
 			底层const：指针所指的对象是个常量
-		static	
+			const函数: 不可以修改类成员变量
+			const参数: 不可以参数内容,const参数可以接收任意参数,非const只能接收非const类型参数
+			const返回: 不可以修改返回值的内容
+		static
 			静态全局常量(文件内有效)
 		extern 
 			外部变量
@@ -140,11 +141,18 @@ C/C++
 		reinterpret_cast 用于将二进制位解释为另一种类型
 		operator T() 类型转换运算符,前面添加explicit后禁止隐式转换
 	函数
-		引用&值参数传递 ...传递参数时只能传递基本类型
-		数组作为参数无法拷贝,所以传递过来之后会退化为指针
-		注意不要返回栈变量的指针,因为已经销毁了
-		函数指针  指针指向一个函数,可以直接P()调用
-		定义一个函数,返回函数指针 int (*f())()
+		参数传递
+			引用&值参数传递 
+			...传递参数时只能传递基本类型
+			数组作为参数无法拷贝,所以传递过来之后会退化为指针
+			注意不要返回栈变量的指针,因为已经销毁了
+		左值参数传递
+			直接在调用函数时构造一个对象传递,会发生两次构造
+		右值参数传递
+			传递构造出来的对象,避免二次构造
+		函数指针  
+			指针指向一个函数,可以直接P()调用
+			定义一个函数,返回函数指针 int (*f())()
 	类&继承
 		private public protected friend class 
 		virtual vptr 重载 覆盖 vtable virtual=0 
@@ -161,47 +169,61 @@ C/C++
 			拷贝构造函数&赋值运算符重载 避免指针所指内存被共享
 		内存布局
 			类对象
-				虚表指针
-				虚基类指针(虚继承才会有,存储存在二义性的基类地址)
+				虚表指针(每个基类部分都有一个)
+				虚基类指针(虚继承才会有,每个虚基类都有一个,存储基类地址偏移)
 				基类成员
 				子类成员
-				基类成员(虚继承时存在二义性的基类成员在最后面)
+				基类成员(多继承,虚继承时重复基类成员在最后面)
 			虚函数表(多继承时有多个)
 				基类虚函数(会被子类虚相同函数覆盖)
-				子类虚函数
+				子类虚函数(只存在于第一个基类虚表)
 	模板&泛型
-		template where限定 
-		模板 template<class T> 函数定义
-		模板特例 template<> return function<int>(){}
-		lambda [捕捉列表](参数列表){函数体} =值捕捉 &引用
-		bind 参数重新排列  bind(func,placeorders::_1,_2,var);
-		function<void(int,int)>
-	库&dll&依赖 
-		DLL库 
+		模板定义	
+			template<class T> return_type function_name(arg_type) {}
+		模板特化
+			template<> return_type function_name(special_arg_type) {}
+		函数类型
+			function<return_type (arg_type)>
+			自定义函数类型模板
+			template<type_name T>
+			class function<return_type (arg_type)> {}
+			参数重新排列
+			bind(func,placeorders::_1,_2,var);
+		lambda  
+			[捕捉列表](参数列表){函数体} =值捕捉 &引用
+	库&dll&依赖
+		DLL库
 			__declspec(dllexport) __stdcall __cdecl
 			头文件 dlfcn.h unix可用 mac/windows需要别的API,编译时-ldl -rdynamic
 			void* dlptr = dlopen("dlname",RTLD_NOW) 
 			void* funcptr = dlsym(dlptr,"funcname")
 			int ret = dlclose(dlptr)
-		IO库 iostream 控制台读写 cin>> cout<<
-			 fstream 文件读写 成员函数 f("",ios::in|ios::out|ios:binary) 
-									   f.close() 
-									   eof()文件结尾
-									   tellg() tellp() 用于获取当前文件读取或者写入的位置
-									   seekg(offset,ios::cur) seekp() 用于移动读写指针到指定位置 ios::beg ios::cur ios::end
-									   read(buffer,size) write(buffer,size) 字节数组读写
-					C文件读写 open和write属于系统调用,低级IO无内存缓冲,不同操作系统不一样
-							  fopen "path","wrab+"
-							  fclose fp
-							  fread buffer,size,count,fp
-							  fseek fp off,seek_cur
-							  ftell fp
-			 字符串读写 strstream char*读写 istr(char*) 废弃的API,推荐使用string读写,因为char的不保证最后一个字符是'\0'
-						sstream string读写 istr(string) clear() str()
-			 IO流不能拷贝和赋值
+		IO库
+			IO流不能拷贝和赋值
+			控制台读写
+				iostream
+				cin>> cout<<
+			文件读写
+			 	fstream 
+		 		C++文件读写 
+		 			f("",ios::in|ios::out|ios:binary) f.close() eof()文件结尾
+				   	tellg() tellp() 用于获取当前文件读取或者写入的位置
+				   	seekg(offset,ios::cur) seekp() 用于移动读写指针到指定位置 ios::beg ios::cur ios::end
+				   	read(buffer,size) write(buffer,size) 字节数组读写
+				C文件读写 
+					open和write属于系统调用,低级IO无内存缓冲,不同操作系统不一样
+				  	fopen "path","wrab+"
+				  	fclose fp
+				  	fread buffer,size,count,fp
+				  	fseek fp off,seek_cur
+				  	ftell fp
+			字符串读写
+				sstream 
+				istringstream istr(string) istr.clear() istr.c_str() istr >> "string value"
 		顺序容器 vector 插入元素push_back insert 删除元素erase clear 
 				 list   插入元素push_back push_front insert 访问 front back 删除erase pop_front pop_back
 				 stack  push pop top empty size
+		关联容器 map multimap  pair<>类型make_pair   添加元素insert 删除元素erase 
 		迭代器 ::iterator iter = ww.begin() ww.end() cbegin cend rbegin rend
 		算法库  algorithm numeric
 				查找 find  find_if
@@ -210,22 +232,20 @@ C/C++
 				替换 replace replace_if
 				排序 sort
 				去重 unique
-		关联容器 map multimap  pair<>类型make_pair   添加元素insert 删除元素erase 
-		右值引用,&&引用一个即将被销毁的对象,可用于move构造和赋值
 	常用基础函数 
 		assert assert(ptr)
 		ctype  isupper islower isdigit isalpha toupper tolower
 		limit  最值宏定义
 		math   常用数学函数
 		signal 进程信号处理,signal函数用于注册信号处理函数,常见信号有
-				SIGILL 非法指令  SIGINT 输入CTRL+D SIGABRT 终止 SIGCHLD 子进程异常停止 SIGFPE 除0异常 SIGKILL 杀死进程 SIGSEGV 非法内存访问 SIGSYS 非法系统调用
+				SIGILL 非法指令 SIGINT 输入CTRL+D SIGABRT 终止 SIGCHLD 子进程异常停止 SIGFPE 除0异常 SIGKILL 杀死进程 SIGSEGV 非法内存访问 SIGSYS 非法系统调用
 		stddef NULL定义
 		stdlib 内存分配 malloc free 数值与字符串转换 atoi itoa 随机数 srand(seed) rand 系统操作 system exit abort 环境变量 getenv putenv
 		stdarg 不定长参数处理  __VA_ARGS__ va_list ap; va_start(ap,format); char buffer[512]; len = vsprintf(buffer,format,ap); va_end(ap);
 		string strcat(dst,src) strcpy(dst,src) strlen(src) strcmp(src,dst) c_str
-		ctime time_t time(NULL)系统时间秒 clock_t clock()运行时间毫秒 tm localtime(time_t t)具体日期
+		ctime time_t time(NULL)秒级系统时间 clock_t clock()毫秒级运行时间 tm localtime(time_t t)具体日期 
+		chrono steady_clock::now精度为100ns high_resolution_clock::now()
 		基础宏定义 __LINE__ __FUNCTION__ __FILE__
-
 	EFFECTIVE C++ 
 		1.尽量使用const而不是#define, 宏定义没有类型检查
 		2.构造、析构、赋值
