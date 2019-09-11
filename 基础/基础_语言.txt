@@ -307,7 +307,9 @@ C#
       	StructLayout(LayoutKind.Sequential),RequiredByNativeCode
 		[MethodImpl(MethodImplOptions.InternalCall), WrapperlessIcall] 标记该方法在C++内实现		  
 		C++使用mono运行C# DLL,需要mono提供的库和头文件,注意c# dll需要使用 mono命令来生成, msc *.cs -t:library
-
+	ref&out
+		参数传递默认为值传递(值类型复制一份,引用类型复制引用)
+		引用传递传递地址,ref&out不会进行装箱操作
 python 
 	   函数定义
 			def name(params):
