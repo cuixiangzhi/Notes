@@ -19,7 +19,7 @@ Camera.UpdateDepthTextures
                 遍历可见结点,遍历子材质
                     创建RenderObjectData,加入RenderObjects数组
                 对RenderObjects按照一定规则排序
-                    layer->subshaderIndex->distance
+                    layer->order->subshaderIndex->distance
                 遍历RenderObjects数组,针对每个对象和当前shader的ShadowCasterPass(深度法线图使用的是内置的Shader,Replace渲染)
                     设置Shader数据,主要是变换矩阵以及Shader内包含的RenderState
                     调用Renderer组件的Render函数,先获取到有效的VBO,然后设置Camera全局变量,最后调用DrawElements
