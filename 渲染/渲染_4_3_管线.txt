@@ -1,5 +1,5 @@
 Camera.Cull
-    根据摄像机视椎体范围进行裁剪,得到可见列表
+    根据摄像机的cullingMask和viewBounds进行裁剪,得到可见列表
 RenderManager.SetCurrentCamera
     设置当前摄像机,记录上一帧位置,计算镜头移动速度向量
 Camera.UpdateDepthTextures
@@ -12,17 +12,17 @@ Camera.UpdateDepthTextures
             深度图是16位深度+单通道,深度法线图是16位深度+四通道
             每帧都会通过RTBuffer申请和释放TempBuffer
         RT渲染
-            RT.SetActive()  && GL.Clear()
-            Camera.SetupRender             
+            RT.SetActive()  && GL.Clear(color+depth+stencil)
+            Camera.SetupRender
                 设置全局变量CameraPos、CameraToWorld、WorldToCamera、DeltaTime、ZbufferParams、ProjectParams、ColorSpace等等
             Camera.RenderSceneShaderReplacement 
                 遍历可见结点,遍历子材质
-                    创建RenderObjectData,加入RenderObjects数组,5.x之前会选择RenderType一致的Subshader来渲染,5.x之后使用ShadowCaster这个Pass来渲染
+                    创建RenderObjectData,加入RenderObjects数组
                 对RenderObjects按照一定规则排序
                     layer->subshaderIndex->distance
-                遍历RenderObjects数组,针对每个对象和当前shader的每个pass
+                遍历RenderObjects数组,针对每个对象和当前shader的ShadowCasterPass(深度法线图使用的是内置的Shader,Replace渲染)
                     设置Shader数据,主要是变换矩阵以及Shader内包含的RenderState
-                    调用Renderer组件的Render函数,先获取到有效的VBO,然后设置全局变量,最后调用DrawElements
+                    调用Renderer组件的Render函数,先获取到有效的VBO,然后设置Camera全局变量,最后调用DrawElements
             ShaderLab.SetTexture(key,value) 
                 把渲染结果设置到全局shader变量
         RT升级
