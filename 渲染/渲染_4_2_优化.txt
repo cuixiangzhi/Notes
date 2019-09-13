@@ -11,9 +11,12 @@
     DynamicBatching
         运行时会把相同材质的Mesh合并为一个大Mesh,顶点数限制300,消耗CPU资源
     StaticBatching
-        场景打包时会把使用相同材质的mesh合并为一个大Mesh,顶点数限制64K,索引数限制64K(GLES.48K,MACOS.32K),消耗内存资源,降低CPU消耗
+        场景打包时会把使用相同材质的mesh合并为一个大Mesh
+        顶点数限制64K,索引数限制64K(GLES.48K,MACOS.32K),消耗内存资源,降低CPU消耗
+        Unity默认会把使用不同材质的MESH也合并在一起,可以自定义合批工具,会减少一定的批次
     GPUInstance
-        每个实例引用相同的Mesh数据,Shader内通过UniformBlock来获取每个实例的不同数据,Instance数组大小有长度限制,默认500个(vulkan250个)
+        每个实例引用相同的Mesh数据,Shader内通过StructArray来获取每个实例的不同数据
+        数据数组有长度限制,默认500个(vulkan250个),不支持Texture结构数组
 高中低配选项控制
     项目资源规范
         界面
