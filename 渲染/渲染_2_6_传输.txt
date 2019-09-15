@@ -121,7 +121,7 @@ context与object的关系
         分配UBO句柄 glGenBuffers(1,&uboID)
         绑定UBO对象 glBindBuffer(GL_UNIFORM_BUFFER,uboID)
         传输UBO数据 glBufferData(GL_UNIFORM_BUFFER,sizeof(data),data,GL_STATIC_DRAW)
-        指定UBO偏移 glBindBufferBase(GL_UNIFORM_BUFFER,uniform_index,uniform_location) 指定shader内的uniform变量在UBO内的位置
+        指定UBO偏移 glBindBufferBase(GL_UNIFORM_BUFFER,bindingPoint,uboID)
 着色器
     变量类型
         int float bool vec*float向量 bvec*bool向量 ivec*int向量 mat*矩阵 sampler*D纹理
@@ -133,8 +133,8 @@ context与object的关系
             设置变量数据 glVertexAttrib*
         uniform 
             图元属性,顶点和像素shader都可用,只读
-            获取变量位置 glGetUniformLocation(programID,name); 
-            设置变量属性 glUniform* glUniform1i(loc,texIndex)
+            获取变量位置 glGetUniformLocation(programID,name); glGetUniformBlockIndex(programID,name)
+            设置变量属性 glUniform* glUniform1i(loc,texIndex); glUniformBlockBinding(programID,blockIndex,bindingPoint)
         varying 
             顶点和像素shader之间传递数据的变量,顶点shader可写输出,像素shader只读输入
         lowp&highp&mediump 

@@ -9,7 +9,7 @@
     Gfx.WaitForPresent
         CPU等待GPU渲染完成或者VSync信号到来,GPU负载很高
     DynamicBatching
-        运行时会把相同材质的Mesh合并为一个大Mesh,顶点数限制300,消耗CPU资源
+        运行时会把相同材质的Mesh合并为一个大Mesh,顶点数据限制900,消耗CPU资源
     StaticBatching
         场景打包时会把使用相同材质的mesh合并为一个大Mesh
         顶点数限制64K,索引数限制64K(GLES.48K,MACOS.32K),消耗内存资源,降低CPU消耗
