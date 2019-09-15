@@ -175,12 +175,12 @@ context与object的关系
         UNITY_VERTEX_INPUT_INSTANCE_ID int instanceID : SV_InstanceID
         UNITY_SETUP_INSTANCE_ID(v) v.instanceID = gl_InstanceID
         UNITY_TRANSFER_INSTANCE_ID(v,o) o.instanceID = v.instanceID
-    数据结构定义(定义一个Uniform块)
-        UNITY_INSTANCE_BUFFER_START(UniformName) struct UniformName {
+    数据结构定义(定义一个struct数组)
+        UNITY_INSTANCE_BUFFER_START(StructName) struct Data {
             UNITY_DEFINE_INSTANCED_PROP(propType,propName) propType propName;
-        UNITY_INSTANCE_BUFFER_END(UniformName) } UniformName##Array[MAX_SIZE];
+        UNITY_INSTANCE_BUFFER_END(UniformName) } DataArray[MAX_SIZE];
         平台差异
-            其它平台只需要定义struct数组即可
             D3D11需要在struct外面包一层cbuffer name {};
+            其它平台只需要定义struct数组即可
     访问实例数据(根据InstanceID访问数组内某个结构的字段)
-        UNITY_ACCESS_INSTANCED_PROP(UniformName,propName) UniformName##Array[gl_InstanceID].propName;
+        UNITY_ACCESS_INSTANCED_PROP(UniformName,propName) DataArray[gl_InstanceID].propName;
