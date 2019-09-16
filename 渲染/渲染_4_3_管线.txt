@@ -1,3 +1,9 @@
+PlayerRender
+    BeginFrame
+    RenderAllCameras
+        Camera.Render
+    EndFrame
+    WaitForPresent
 Camera.Cull
     根据摄像机的cullingMask和viewBounds进行裁剪,得到可见列表
 RenderManager.SetCurrentCamera
@@ -30,26 +36,52 @@ Camera.UpdateDepthTextures
             5.x之后DepthTexture会使用LightMode为ShadowCaster的Pass来渲染
             5.x之后DepthNormalTexture貌似仍然使用Replace方式渲染
 Camera.SetupRender
-    如果开了后期,会创建两张临时RT,HDR、线性空间、抗锯齿等会影响RT的格式
-    设置渲染目标,RT.SetActive内如果指定的RT为空,则使用ID为0的TextureID,也就是默认的系统缓冲区
+    设置渲染目标
+        后期目标RT设置,HDR、ColorSpace、AntiAliasing等会影响RT的格式(FP16|R11G11B10 SRGB)
+        渲染目标RT合并,渲染到RT或者清屏渲染不需要处理之前的渲染结果,修改当前RT(指向第一张后期RT或者当前摄像机的RT)
+        渲染目标设置,glBindFramebuffer->glFramebufferTexture2D||glFramebufferRenderbuffer
+        渲染视口设置,glViewport
     设置CameraPos、CameraToWorld、WorldToCamera、DeltaTime、ZbufferParams、ProjectParams、ColorSpace等等
 Camera.DoRender
-    遍历可见列表,针对可见结点的所有子材质创建渲染对象,根据queueIndex加入到对应的不透明和半透明数组内
+    RenderLoop.PrepareFrame
+        RenderContext全局环境变量设置,包括各种矩阵、对象数组、排序方式等等
+    RenderLoop.TraverseNode
+        针对可见结点的所有子材质创建渲染对象,根据queueIndex加入到对应的不透明和半透明数组内
         material       当前子材质球
-        matIndex       当前子材质球的数组下标
+        matIndex       当前子材质球的数组下标,一般为0
         shader         当前子材质球所使用的着色器
         layerData      渲染队列order和layer打包在一起
         queueIndex     渲染队列,如果材质上没有自定义则获取shader的默认值
-        subShaderIndex 默认为-1
         lightmapIndex  当前MESH所使用的lightmapIndex
         batchIndex     当前MESH所在的BatchMesh的InstanceID,静态合批的MESH有自己单独的triangles,共享BatchMesh的顶点数据
         distanceSort   根据摄像机和物体的AABB中心点的距离,正交摄像机算的是Z值,透视摄像机算的是到摄像机距离
         distanceView   Z值距离
         nodeData
-    遍历渲染对象列表,针对渲染对象所使用的Shader的每个Pass,创建RenderPass并加入Pass数组内
-        roIndex        当前Pass所引用的RenderObject的Index
-    对Pass数组按照RenderObject的属性进行排序
-        layer->queueIndex->distance半透明从后往前->lightMapIndex->staticBatchIndex->matIndex-shader->material->distance从前往后->roIndex
-    渲染天空盒,根据是否为线性空间开启或者关闭FRAMEBUFFER_SRGB
-
-    前向渲染半透明对象
+    RenderLoop.RenderOpaque
+        ForwardRenderLoop.TraverseObject
+            查找每个Object的Light信息
+            把接收阴影并且位于ShadowDistance之内的物体加入Receiver数组内
+        ForwardRenderLoop.TraversePass
+            创建RenderPassData并加入Pass数组内
+        ForwardRenderLoop.SortPass
+            Unity4.7版本排序规则
+            layer->order->queue->firstpass->lightmapIndex->staticBatchIndex->matIndex->shader->material->passIndex->distance->objectIndex
+            Unity2018.4排序规则,优先按照distance来排序可以利用Early-Z优化
+            layer->order->queue->firstpass->distanceBucket->staticBatchIndex->lightmapIndex->shader->material->passIndex->objectIndex
+        ForwardRenderLoop.PerformRendering
+            先渲染ShadowMap
+            ForwardRenderLoop.RenderShadowMap
+                FindCasters->SortCasters->RenderCasters->ApplyPass->ApplyProperties->BatchRender.AddOrFlush
+            再渲染Object
+            ForwardRenderLoop.RenderPasses
+                ApplyMaterialProperties->ApplyPassProperties->BatchRender.AddOrFlush
+    RenderLoop.RenderSkybox
+    RenderLoop.RenderImageFilter
+    RenderLoop.RenderTransparent
+BatchRender.Flush
+    静态批处理
+    StaticBatch.BeginStaticBatch->StaticBatch->EndStaticBatch->BindBuffer->DrawElements
+    FrameStats.Batches++ BatchedCalls+N
+    动态批处理
+    DynamicBatch.BeginDynamicBatch->DynamicBatch->EndDynamicBatch->BindBuffer->DrawElements
+    FrameStats.Batches++ BatchedCalls+N
