@@ -49,11 +49,11 @@ January February March April May June July August Spetember October November Dec
 			定点数
 				Sx.y(x为整数位数,y为小数位数),定点数会精确存储小数的每一位,误差在1/2^y以内
 		string char uchar 
-			 字符数组和字符 
-			 char*最后是一个\0字符  
-			 C# char代表一个字符或者一个中文符号,长度不固定 
-			 lua和C++一样 字符集分为ASCII和Unicode  UTF-8和GBK是一种UNICODE编号的编码方式
-			UTF-8不定字节编码以字节数开头,0xxxxxxx 表示一个字节  110xxxxx表示2个字节,后续字节以10开头  最多会有6个字节
+			 	字符数组和字符 
+			 	char*最后是一个\0字符  
+			 	C# char代表一个字符或者一个中文符号,长度不固定 
+			 	lua和C++一样 字符集分为ASCII和Unicode  UTF-8和GBK是一种UNICODE编号的编码方式
+				UTF-8不定字节编码以字节数开头,0xxxxxxx 表示一个字节  110xxxxx表示2个字节,后续字节以10开头  最多会有6个字节
 	函数栈帧
 		cdecl    参数从右至左入栈,调用参数之后生成add esp指令清理函数参数栈
 		stdcall  参数从右至左入栈,被调用函数最终生成ret ?指令清理函数参数栈
