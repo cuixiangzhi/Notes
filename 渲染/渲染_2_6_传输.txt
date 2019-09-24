@@ -97,22 +97,24 @@ context与object的关系
     TBO
         创建纹理 glGenTexture(1,&texID);
         指定纹理 glActiveTexture(GL_TEXTURE0)
-        绑定纹理 glBindTexture(GL_TEXTURE_2D,texID)
+        绑定纹理 glBindTexture(GL_TEXTURE_2D|GL_TEXTURE_2D_MULTISAMPLE,texID)
         纹理过滤 glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINER);
         纹理数据 glTexImage2D(GL_TEXTURE_2D,mipmapLevel,GL_RGBA,宽,高,0,0,GL_RGBA,GL_UNSIGNED_BYTE,PTR);
+        多重采样 glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE,sampleCount,GL_RGB,width,height,GL_TRUE);
         删除纹理 glDeleteTextures(1,&texID);
                  glGenerateMipmap(GL_TEXTURE_2D); GL_<FILTER>_MIPMAP_<SELECTOR> filter标记miplevel内如何采样 selector标记如何选择miplevel
+        MSAA拷贝 glBlitFrameBuffer(src,dst,GL_COLOR_BUFFER_BIT,GL_NEAREST)
     FBO
         创建缓冲区对象 glGenFrameBuffers(1,&fboID)
         绑定缓冲区对象 glBindFrameBuffer(GL_FRAMEBUFFER,fboID)
         离屏渲染
             创建渲染目标 glGenRenderBuffer(1,&rboID)
             绑定渲染目标 glBindRenderBuffer(GL_RENDERBUFFER,rboID)
-            分配显存空间 glRenderBufferStorage
+            分配显存空间 glRenderBufferStorage glRenderBufferStorageMultisample
             关联绑定点   glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_RENDERBUFFER,&rboID)
         渲染到纹理
             创建纹理&绑定纹理&分配纹理内存
-            关联绑定点   glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,&tboID)
+            关联绑定点   glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D|GL_TEXTURE_2D_MULTISAMPLE,&tboID)
         SRGB模式
             glEnable(GL_FRAMEBUFFER_SRGB)
             开启之后GL会认为shader写入的颜色值是线性空间的,先转换到gamma空间在写入
