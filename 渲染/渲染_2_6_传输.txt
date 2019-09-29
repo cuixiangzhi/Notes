@@ -119,6 +119,9 @@ context与object的关系
             glEnable(GL_FRAMEBUFFER_SRGB)
             开启之后GL会认为shader写入的颜色值是线性空间的,先转换到gamma空间在写入
             开启之后GL会先把framebuffer中的颜色转到线性空间和源颜色进行计算
+        渲染模式
+            glDrawBuffer 指定在当前Framebuffer的哪个颜色缓冲区进行绘制,不影响深度、模板缓冲区 GL_NONE表示不写入颜色
+            glReadBuffer 指定在当前Framebuffer的哪个颜色缓冲区进行读取
     UBO
         分配UBO句柄 glGenBuffers(1,&uboID)
         绑定UBO对象 glBindBuffer(GL_UNIFORM_BUFFER,uboID)
@@ -141,6 +144,11 @@ context与object的关系
             顶点和像素shader之间传递数据的变量,顶点shader可写输出,像素shader只读输入
         lowp&highp&mediump 
             变量精度限制
+    内置变量
+        gl_Layer        几何着色器内指定输出数据位于立方体纹理的哪个面(Framebuffer绑定立方体纹理时才有效)
+        gl_InstanceID   所有着色器内指定当前实例化渲染的是第几个实例
+        gl_FragDepth    主动写入,当前像素深度值
+        gl_FragColor    主动写入,当前像素颜色值
     创建过程
         创建shader对象 shaderID = glCreateShader(GL_VERTEX_SHADER); 
         读取源代码     glShaderSource(shaderID,&shaderSource,NULL);
@@ -169,7 +177,7 @@ context与object的关系
         移除shader对象   glDetachShader(programID,shaderID)
         删除shader对象   glDeleteShader(shaderID)
     绘制命令
-      git push  glDrawElements(GL_TRIANGLES,count,GL_UNSIGNED_INT,0); 绘制整个mesh
+        glDrawElements(GL_TRIANGLES,count,GL_UNSIGNED_INT,0); 绘制整个mesh
         glDrawElementsBaseVertex(); 绘制部分mesh
         glDrawElementsInstanced(GL_TRIANGLES,count,GL_UNSIGNED_INT,0,instanceCount) 绘制多次同一个mesh
 批处理

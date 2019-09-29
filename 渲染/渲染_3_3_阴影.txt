@@ -2,6 +2,7 @@ ShadowAcne
     阴影图分辨率不够,导致与光源方向角度很小时产生条纹状的自阴影现象
     shadow bias
         计算光源空间深度图时统一向光源方向移动一点距离,减弱自阴影现象
+        bias = max(factor * (1 - dot(normal,light)),constant) 微调factor和constant
     normal bias
         计算光源空间深度图时统一把模型沿法线方向稍微缩小,减弱角色阴影偏移脚底(悬空)的现象
 ShadowMap
@@ -24,11 +25,22 @@ ShadowMap
                 像素shader比较深度
                     fixed4 depth_texture_color = tex2Dproj(_LightDepthTexture,o.proj);
                     float depth_texture = DecodeFloatRGBA(depth_texture_color);
-                    float depth_current = o.depth.x / o.depth.y
+                    float depth_current = o.depth.x / o.depth.y - shadowBias
                     if(depth_texture < depth_current) 阴影
     CascadeShadowMap
         原理:如果使用相同的正交投影矩阵计算物体在平行光下的投影坐标,近处的物体会由于深度精度问题而产生很多锯齿
         优化:把摄像机的视椎体分成N个部分,每个部分分别根据梯形8个顶点得出平行光正交摄像机下的AABB包围盒作为平行光的正交摄像机范围
+        计算:
+            计算灯光摄像机的视椎体参数
+                视锥SIZE取决于VIEW.AABB在LightSpace下的XY大小,视锥远近平面位置取决于SCENE.AABB在LightSpace下的Z值范围
+                var sceneBound = CalculSceneBoundsInLightSpace()
+                var viewBound = CalculViewBoundsInLightSpace()
+                camera.localPosition = Vector3(viewBound.center.x,viewBound.center.y,0)
+                camera.orthographicSize = math.max(viewBound.size.x * 0.5f,viewBound.size.y * 0.5f)
+                camera.nearPlane = sceneBound.zmin
+                camera.farPlane = sceneBound.zmax
+            计算CSM级别划分和视锥参数
+
     ScreenSpaceShadowMap
         ZBuffer
             zbuffer=(az+b)/(z|-z)
