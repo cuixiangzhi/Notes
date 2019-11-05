@@ -84,6 +84,8 @@
 	        cos(a-b)=cosa*cosb+sina*sinb
 	        sin(a+b)=sina*cosb+cosa*sinb
 	        sin(a-b)=sina*cosb-cosa*sinb
+        正弦定理
+            a:b:c=sina:sinb:sinc
     轨迹方程
       	平面  	Ax+By+Cz+D=0 向量(A,B,C)是平面的法向量(利用偏导数和向量叉乘求得)
       	直线  	两平面交点 起点+方向
