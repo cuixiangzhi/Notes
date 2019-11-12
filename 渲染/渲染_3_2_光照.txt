@@ -65,6 +65,25 @@
                 直接光 spec = specTerm * light.color * dot(n,l)
                 间接光 diff = indirect.diffuse * kd
                 间接光 spec = indirect.specular * F
+            顶点计算
+                1.计算裁剪坐标
+                2.计算纹理坐标(可以有多套UV,uv1一般被光照贴图占用)
+                3.计算世界坐标
+                4.计算世界转切线空间的变换矩阵(先把顶点法线和切线变换到世界空间,然后构造TBN矩阵)
+                5.计算环境光或者lightmapUV坐标(LIGHTMAP_ON开启会生成lightmapUV,否则根据SHOULD_SAMPLE_SH宏计算探针存储的球谐环境光)
+                6.计算顶点雾效
+                7.计算阴影坐标(shadowmaskUV坐标或者shadowmapUV坐标)
+                8.计算视线向量
+            像素计算
+                1.计算法线向量(首先从法线贴图内取出切线空间的法线,然后用TBN矩阵计算世界空间法线)
+                2.计算视线向量和世界坐标
+                3.计算Albedo颜色(主要是从D贴图内读取数据)
+                4.计算PBR信息(主要是从M贴图内读取粗糙度、金属度、AO等)
+                5.计算specColor和diffColor,specColor是反射率ks,diffColor是kd*albedo,其中ks是lerp(0.04,albedo,metallic),kd是lerp(0.96,0,metallic)
+                6.计算直接光衰减和直接光颜色(shadowmask或者shadowmap)
+                7.计算间接光衰减和间接光颜色(漫反射来自lightmap或者lightprobe,ao来自贴图,高光来自reflectprobe)
+                8.BRDF公式计算
+                9.自发光、雾效、自定义光源等等额外计算
 光照探头
     LightProbe
         给动态物体提供间接漫射光,避免实时补光的方式来提高角色的亮度

@@ -11,6 +11,12 @@
     屏幕深度->世界坐标
         1.利用UV坐标和深度图重建世界坐标(首先从01映射到-11,然后利用摄像机投影逆矩阵变换再利用世界2摄像机的逆矩阵得出结果)
         2.根据相似三角形和插值得出目标点的射线向量再乘以深度值,再算上摄像机位置可得出世界坐标
+    高斯模糊
+        原理:利用高斯分布公式对周围像素点做加权平均 G(x,y)=(1/2πσ²)exp(-(x²+y²)/2σ²),方差σ可以取1
+        顶点shader
+            计算高斯核UV坐标,在顶点内计算之后三角面的其它像素UV插值生成
+        像素shader
+            根据高斯核采样像素点加权平均,得出最终结果
 场景渲染
     材质
         默认统一使用PBR标准材质
@@ -29,43 +35,13 @@
 角色渲染
     材质
         身体
+        武器
         头发
         眼睛
-        武器
+        眉毛
         脸部
-    描边
-        边缘发光
-            利用视线和法线的点乘计算边缘,模型越边缘的地方点乘越接近0,用1减去点乘结果作为边缘光的强度
-            对边缘光的强度做一个菲涅尔处理,再乘上边缘光颜色,作为自发光叠加到原始颜色上
-                1.rimValue = 1-saturate(dot(N,V));
-                2.rimValue = pow(rimValue,rimPow);
-                3.emission = rimColor * rimValue;
-        法线外扩
-            第一次渲染背面,Cull Front & ZWrite Off,在裁剪空间对XY沿着法线方向增大一圈
-                1.clipPos = mul(MVP,v.vertex); 
-                2.viewNormal = mul(IT_MV,v.normal);
-                3.clipNormal = mul(P,viewNormal.xy);
-                4.clipPos.xy += clipNormal.xy * outline;
-            第二次正常渲染,Cull Back,正常计算颜色即可
-        边缘检测(深度或亮度)
-            利用Sobel(水平和垂直方向)或者Roberts(斜对角)计算方向偏导数Gx,Gy作为梯度向量,然后计算其长度并根据指定阈值得出边缘
-                水平|-1 0 1| 垂直|-1 -2 -1|  |-1 0| |0 -1|
-                    |-2 0 2|     | 0  0  0|  |0  1| |1  0|
-                    |-1 0 1|     | 1  2  1|  
-            顶点shader
-                计算sobel算子所需要的9个uv坐标
-            像素shader
-                计算出亮度偏导值Gx、Gy和梯度向量的长度或者计算出两个像素的深度差
-                和指定阈值比较得出边缘程度
 后期特效
-    SSAO
-    雨雪天气
-        屏幕水滴
-            原理:UV动画,首先把屏幕划分成MxN个格子,每个格子绘制一个水滴
-            顶点shader
-                计算水滴UV坐标,相当于repeat类型的纹理坐标计算
-                    uv = frac(uv * fixed2(MxN,N))
-    体积雾效
+    体积雾
         简单雾:利用NDC坐标和雾效的范围在雾颜色和目标颜色之间做线性插值,只处理了物体表面的雾效果
         体积雾:添加一个屏幕后处理,根据深度图和viewRay重建世界坐标然后计算雾效,可以模拟体积雾效果
         世界坐标重建
@@ -78,6 +54,8 @@
                 worldPos = _CameraWorldPos + viewRay * linear01Depth
                 根据雾效范围在源颜色和雾颜色之间插值,可以利用深度差更进一步添加软粒子效果
                 可以模拟烟雾弹效果
+    体积光
+
     景深效果
         原理:利用深度差确定模糊范围,也就是模糊的焦距
         实现:简单的一个后期处理,根据模糊距离进行高斯模糊操作即可
@@ -108,14 +86,6 @@
             提取计算 亮度阈值 col *= clamp(luminance(c) - _LuminanceThreshold,0,1)
             模糊计算 加权平均,高斯模糊
             叠加计算 直接相加 tex2D(SRC) + tex2D(TMP0)
-    高斯模糊
-        原理:利用高斯分布公式对周围像素点做加权平均 G(x,y)=(1/2πσ²)exp(-(x²+y²)/2σ²),方差σ可以取1
-        需要4张RT,SRC->TMP0,TMO0->TMP1->TMP0水平和垂直模糊,TMP0->DST得出最终结果
-        顶点shader
-            由于对称性可以只计算出中心点和横向左半部分的像素UV
-            高斯模糊可以分成两部分做叠加,也就是先做水平方向模糊,在对模糊后的图像做垂直方向模糊
-        像素shader
-            根据高斯核采样像素点加权平均,得出最终结果
     后期校色
         原理:RGB颜色模型与HSV颜色模型转换,YUV亮度计算,对比度插值
         顶点shader:
@@ -133,6 +103,7 @@
                 finalColor = lerp(contrastColor,finalColor,_Contrast)
             ToneMap
                 原理:ACES公式 saturate([x*(a*x+b)]/[x*(c*x+d)+e]) a=2.51 b=0.03 c=2.43 d=0.59 e=0.14
+特殊表现
     屏幕波纹
         原理:UV动画,屏幕每个像素的UV坐标以中心点为圆心,向圆外偏移,根据距离中心点的距离和偏移的时间计算偏移程度
         顶点shader: 
@@ -151,3 +122,28 @@
                 波动的比例 factor = factor * offsetFactor
             最后计算扩散后的UV坐标 uv = uv + dv * factor
     屏幕扭曲
+        原理:
+    物体描边
+        边缘发光
+            利用视线和法线的点乘计算边缘,模型越边缘的地方点乘越接近0,用1减去点乘结果作为边缘光的强度
+            对边缘光的强度做一个菲涅尔处理,再乘上边缘光颜色,作为自发光叠加到原始颜色上
+                1.rimValue = 1-saturate(dot(N,V));
+                2.rimValue = pow(rimValue,rimPow);
+                3.emission = rimColor * rimValue;
+        法线外扩
+            第一次渲染背面,Cull Front & ZWrite Off,在裁剪空间对XY沿着法线方向增大一圈
+                1.clipPos = mul(MVP,v.vertex); 
+                2.viewNormal = mul(IT_MV,v.normal);
+                3.clipNormal = mul(P,viewNormal.xy);
+                4.clipPos.xy += clipNormal.xy * outline;
+            第二次正常渲染,Cull Back,正常计算颜色即可
+        边缘检测(深度或亮度)
+            利用Sobel(水平和垂直方向)或者Roberts(斜对角)计算方向偏导数Gx,Gy作为梯度向量,然后计算其长度并根据指定阈值得出边缘
+                水平|-1 0 1| 垂直|-1 -2 -1|  |-1 0| |0 -1|
+                    |-2 0 2|     | 0  0  0|  |0  1| |1  0|
+                    |-1 0 1|     | 1  2  1|  
+            顶点shader
+                计算sobel算子所需要的9个uv坐标
+            像素shader
+                计算出亮度偏导值Gx、Gy和梯度向量的长度或者计算出两个像素的深度差
+                和指定阈值比较得出边缘程度
