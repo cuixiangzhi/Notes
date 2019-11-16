@@ -16,11 +16,16 @@
                 反射方程
                     Lo(p,wo) = ∫(fd+fs)Li(p,wi)dot(n,wi)dwi
                     fr(l,v)分为diffuse和specular两部分,采用不同的公式
+                IBL漫反射
+                    1.HDRCubemap的采样和位置有关,根据HDRCumemap预计算漫反射,目标点在cubemap中的方向如何计算?
+                    2.静态物体的漫反射光一般计算并存储到Lightmap中,动态物体一般在场景中布置大量探针使用球谐系数存储环境光
+                IBL镜面反射
+
                 球谐光照
                     球谐函数
                         球面函数可以分解为无限个球谐基函数*球谐系数之和
                     球谐系数积分
-                        Ci=1/NP*∑Li*Yi Ci是球谐基系数的积分值(所有方向入射光Li与球谐基底点乘系数之和)
+                        Ci=1/NP*∑Li*Yi Ci是球谐基系数的积分值(所有方向入射光Li与球谐基底点乘之和)
                     球谐光照重建
                         L'=∑Ci*Yi L'是采样点的入射光函数,Yi是球谐基底函数,Ci是投影系数之和
                     球谐基函数公式
@@ -28,12 +33,7 @@
                         具体公式计算公式参考杂项球谐公式图片(根据采样点的0,φ计算该点对应的球谐函数Yi) l,m转换为连续序列i=l(l+1)+m
                     球谐函数应用
                         预计算得出球谐基函数系数Ci,运行时可以近似重建原光照,光照探针记录了所在位置的球谐基函数系数
-                分解求和
-
-                IBL漫反射
-                    1.用环境贴图HDRCubeMap和其它Bake类型的光源作为环境光源Li,光线追踪生成LightMap和LightProbe
-                    2.运行时采样LightMap或者根据LightProbe记录的球谐系数计算漫反射光照
-                IBL镜面反射
+                        计算时首先根据模型位置找出附近的探针,探针之间根据位置做权重加和,根据像素点的法线方向计算球谐光照
         具体实现
             光照分解
                 直接光 Diffuse Specular
@@ -80,8 +80,8 @@
                 3.计算Albedo颜色(主要是从D贴图内读取数据)
                 4.计算PBR信息(主要是从M贴图内读取粗糙度、金属度、AO等)
                 5.计算specColor和diffColor,specColor是反射率ks,diffColor是kd*albedo,其中ks是lerp(0.04,albedo,metallic),kd是lerp(0.96,0,metallic)
-                6.计算直接光衰减和直接光颜色(shadowmask或者shadowmap)
-                7.计算间接光衰减和间接光颜色(漫反射来自lightmap或者lightprobe,ao来自贴图,高光来自reflectprobe)
+                6.计算直接光颜色(shadowmask或者shadowmap控制直接光衰减)
+                7.计算间接光颜色(漫反射来自lightmap或者lightprobe,高光来自reflectprobe,ao控制间接光衰减)
                 8.BRDF公式计算
                 9.自发光、雾效、自定义光源等等额外计算
 光照探头
