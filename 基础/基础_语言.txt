@@ -3,7 +3,7 @@ January February March April May June July August Spetember October November Dec
 基础知识
 	数值存储
 		计算机只有加法运算器,计算机存储补码,运算器补码运算
-		正数补码与原码一致 负数补码符号位不变,其余位取反加1 -2^(n-1)没有反码,补码与原码一致
+		正数补码与原码一致 负数补码符号位不变,其余位取反加1
 		N位有符号整数范围是1000..0->0111..1
 	SSE指令
 		支持SSE的CPU有8个128位寄存器,每个可以存储4个浮点类型数据
@@ -52,7 +52,7 @@ January February March April May June July August Spetember October November Dec
 			 	字符数组和字符 
 			 	char*最后是一个\0字符  
 			 	C# char代表一个字符或者一个中文符号,长度不固定 
-			 	lua和C++一样 字符集分为ASCII和Unicode  UTF-8和GBK是一种UNICODE编号的编码方式
+			 	lua和C++一样 字符集分为ASCII、GBK、Unicode等等  UTF-8是一种UNICODE编号的编码方式 GBK是GBK字符集编号的编码方式
 				UTF-8不定字节编码以字节数开头,0xxxxxxx 表示一个字节  110xxxxx表示2个字节,后续字节以10开头  最多会有6个字节
 	函数栈帧
 		cdecl    参数从右至左入栈,调用参数之后生成add esp指令清理函数参数栈
@@ -60,15 +60,22 @@ January February March April May June July August Spetember October November Dec
 		函数栈帧指针
 			ebp指向栈底,esp指向栈顶,栈指针从高地址向低地址移动
 		函数调用和返回指令
-			push param
-			call func
-			add esp ?     cdecl变参调用约定会生成该指令
-			push ebp      保存调用函数栈底,也就是保存调用函数的入口
-			move ebp esp  修改当前栈底指针,指向被调函数栈底(等同于调用函数栈顶)
-			func code
-			move esp ebp  esp恢复为调用函数栈顶
-			pop ebp       ebp恢复为调用函数栈底
-			ret ?         stdcall调用约定会指定清理参数字节数
+			函数调用开始
+				push param
+				call func     call指令会保存返回地址(下一条指令地址),ret会返回到该地址继续执行
+				调用约定
+				add esp ?     cdecl调用约定会生成该指令
+			函数代码开始
+				保护现场
+				push ebp      ebp指向调用函数栈底(调用函数的栈帧起始点)
+				move ebp esp  esp指向当前函数栈底(被调函数的栈帧起始点)
+				执行逻辑
+				func code     临时变量、操作指令等等
+				恢复现场
+				move esp ebp  esp恢复为调用函数栈顶(esp指向调用函数栈帧的栈顶)
+				pop ebp       ebp恢复为调用函数栈底(ebp指向调用函数栈帧的栈底)
+				调用约定
+				ret ?         stdcall调用约定会生成该指令
 	多线程
 		RingBuffer无锁环形缓冲区,适用于命令队列
 		atomic标记,原子类型,加减操作是原子操作,不可再分 例如atomic<int>
@@ -123,7 +130,7 @@ C/C++
 		extern 
 			外部变量
 		#define 
-			宏定义 ##宏拼接 ##用于拼接变量 #宏替换 #代表后面的是个字符串
+			宏定义 ##宏拼接 ##用于拼接变量 #宏替换
 		typedef 
 			类型组合定义
 		sizeof
@@ -143,9 +150,6 @@ C/C++
 	函数
 		参数传递
 			引用&值参数传递 
-			...传递参数时只能传递基本类型
-			数组作为参数无法拷贝,所以传递过来之后会退化为指针
-			注意不要返回栈变量的指针,因为已经销毁了
 		左值参数传递
 			直接在调用函数时构造一个对象传递,会发生两次构造
 		右值参数传递
