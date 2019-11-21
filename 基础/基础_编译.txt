@@ -22,10 +22,10 @@ VI编辑器
 		:set number 显示行号
 NDK编译
 	Android.mk
-		指定编译路径,
+		指定编译路径
 		LOCAL_PATH := $(call my-dir)
 
-		#编译当前模块
+		#设置模块名字
 		include $(CLEAR_VARS)
 		LOCAL_MODULE := module_name
 
@@ -40,7 +40,7 @@ NDK编译
 
 		#添加包含目录
 	  	$(call import-add-path, $(LOCAL_PATH)/)
-
+ 
 	  	#设置依赖库(whole表示全链接,没有只链接使用到的函数)
 	  	LOCAL_WHOLE_STATIC_LIBRARIES +=
 

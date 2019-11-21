@@ -43,12 +43,12 @@
             灯光颜色
                 精准光源只会在一个方向对辐照度有贡献,其他方向都是0,灯光颜色和强度用来表示入射辐射率Li
                 直接光
-                    实时计算,由于强度、距离、阴影、环境遮挡的影响会发生衰减
-                    directlight.color *= shadow*atten*ao
+                    实时计算,由于距离、遮挡的影响会发生衰减
+                    directlight.color *= atten
                 间接光
                     静态物体通过LightMap直接读取,动态物体通过SH函数计算
-                    indirect.diffuse = (sh|lightmap) * ao
-                    indirect.specular = envirmap * ao
+                    indirect.diffuse = (lightmap|lightprobe) * ao
+                    indirect.specular = reflectprobe * ao
             反射比例
                 ks=lerp(vec3(0.04),albedo.rgb,metallic)
                 kd=lerp(vec(0.96),(1-albedo.rgb),metallic)

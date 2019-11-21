@@ -1,7 +1,7 @@
 ShadowAcne
     阴影图分辨率不够,导致与光源方向角度很小时产生条纹状的自阴影现象
     shadow bias
-        计算光源空间深度图时统一向光源方向移动一点距离,减弱自阴影现象
+        计算光源空间深度图时统一向光源朝向移动一点距离,减弱光源空间下倾斜物体的自阴影现象
         bias = max(factor * (1 - dot(normal,light)),constant) 微调factor和constant
     normal bias
         计算光源空间深度图时统一把模型沿法线方向稍微缩小,减弱角色阴影偏移脚底(悬空)的现象

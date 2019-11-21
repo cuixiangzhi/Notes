@@ -55,7 +55,7 @@
                         spans               从配置里读取宽高然后分配好的XZ平面的体素二维数组,大小为sizeof(rcSpan*) * w * h
                 标记输入三角形区域ID
                         m_triareas          输入的三角面的区域类型,初始化为RC_NULL_AREA(不可行走)
-                        nomal               每个三角面的法线,单位化之后Y值正好等于三角面倾斜角的cos值
+                        normal              每个三角面的法线,单位化之后Y值正好等于三角面倾斜角的cos值
                         倾斜角小于最大行走倾斜角度时标记为可行走区域 RC_WALKABLE_AREA(可行走)
 
                 光栅体素化所有三角面,对应于 ********************RecastRasterlization.cpp********************

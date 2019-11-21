@@ -173,13 +173,13 @@ C/C++
 			拷贝构造函数&赋值运算符重载 避免指针所指内存被共享
 		内存布局
 			类对象
-				虚表指针(每个基类部分都有一个)
+				虚表指针(每个基类部分都有一个,构造的时候会经过多次初始化,直到子类对象)
 				虚基类指针(虚继承才会有,每个虚基类都有一个,存储基类地址偏移)
 				基类成员
 				子类成员
 				基类成员(多继承,虚继承时重复基类成员在最后面)
 			虚函数表(多继承时有多个)
-				基类虚函数(会被子类虚相同函数覆盖)
+				基类虚函数(会被子类相同的虚函数覆盖)
 				子类虚函数(只存在于第一个基类虚表)
 	模板&泛型
 		模板定义	
@@ -188,9 +188,9 @@ C/C++
 			template<> return_type function_name(special_arg_type) {}
 		函数类型
 			function<return_type (arg_type)>
-			自定义函数类型模板
+			自定义函数类型模板(声明一个重载了()运算符的模板类)
 			template<type_name T>
-			class function<return_type (arg_type)> {}
+			class function<return_type (arg_type)> { return_type operator()(arg_type) }
 			参数重新排列
 			bind(func,placeorders::_1,_2,var);
 		lambda  
@@ -203,7 +203,6 @@ C/C++
 			void* funcptr = dlsym(dlptr,"funcname")
 			int ret = dlclose(dlptr)
 		IO库
-			IO流不能拷贝和赋值
 			控制台读写
 				iostream
 				cin>> cout<<
@@ -219,7 +218,7 @@ C/C++
 				  	fopen "path","wrab+"
 				  	fclose fp
 				  	fread buffer,size,count,fp
-				  	fseek fp off,seek_cur
+				  	fseek fp,offset,seek_cur
 				  	ftell fp
 			字符串读写
 				sstream 
@@ -254,7 +253,7 @@ C/C++
 		1.尽量使用const而不是#define, 宏定义没有类型检查
 		2.构造、析构、赋值
 		  编译期会默认生成 无参构造函数(没有构造函数时),拷贝构造函数、拷贝赋值运算符,不想要就声明为private,但不实现
-		  如果基类或者派生类会有虚函数,那么基类析构函数必须是虚函数,有虚函数就会有虚表和虚表指针,虚表为静态,类共享,虚表指针为对象私有,初始化之后不会改变
+		  如果基类或者派生类有虚函数,那么基类析构函数必须是虚函数,有虚函数就会有虚表和虚表指针,虚表为静态,类共享,虚表指针为对象私有,初始化之后不会改变
 		  析构函数要确保不能出现错误,否则会导致内存泄漏
 		  构造和析构过程中不能调用虚函数,因为这个时候基类或者子类部分已被销毁或者尚未初始化
 		  赋值运算符返回对象引用,注意自我赋值判断,注意复制指针内存
@@ -273,14 +272,13 @@ C/C++
 		  降低文件依赖关系
 		6.类的继承关系,体系结构
 		  设计模式,接口继承与实现继承
-		7.自增自减区别、
+		7.自增自减区别
 		8.抛出异常使用函数内静态变量,利用引用捕捉,防止对象拷贝同时防止异常对象是临时对象
 		9.参数传递不能传递子类对象给基类对象,因为子类部分会被切掉,所以参数用引用比较合适
 	C++对象内存布局
-		单继承  基类虚表+子类虚表,只有一个虚表,基类在前,子类在后,子类重写的在基类的对应位置
-		多继承  会有N-1个虚表,第一个基类与子类合一,子类虚函数在第一个虚表内,
+		单继承  
+		多继承  会有N-1个虚表,第一个基类与子类合一,子类虚函数在第一个虚表内
 		菱形继承 这个时候要利用虚继承,这样每个子类有一个指向虚基类的指针,只有一份基类对象,该对象是由派生类初始化的(创建的哪个子类,哪个子类虚继承了父类)
-		malloc是分配一块新的内存  realloc是在原内存后加长,可能会变化地址
 	C++跳转
 		goto:函数内跳转
 		setjmp longjmp 非局部跳转
@@ -371,16 +369,11 @@ python
 	   			  		field.text
 
 lua
-	后缀表达式:  建立符号栈,
-	             遍历中缀表达式
-				   1.数字,直接输出
-				   2.运算符 (入栈  )弹出符号栈元素,遇到)停止,)弹出但不输出  其他符号,弹栈直到遇到(或者遇到优先级低的符号停止
-				   3.遍历完成,输出符号栈所有符号
 	常量定义 luaconf.h       平台相关 搜索路径 堆栈大小 
 	基础函数定义lua.h        以lua_为前缀,版本、REGISTERINDEX、GLOBALSINDEX、T* lua_Alloc lua_CFunction lua_is* lua_to* lua_push* lua_get* lua_set*
 	辅助函数定义luaxlib.h    以luaL_为前缀
 	基础库注册定义lualib.h   lua_open基础库相关函数定义,实现在各个库对应的.c内
-	库实现       
+	库实现
 		 以lua_open为前缀,具体实现分散在不同的.cc文件内  
 		 lauxlib.c  辅助库实现 luaL_loadfile luaL_loadbuffer luaL_reg/luaL_register luaL_check* luaL_opt* luaL_ref/unref luaL_newstate
 		 lbaselib.c base库实现 g/setfenv g/setmetatable x/pcall tonumber/string rawg/set pack/unpack dofile/loadstring
@@ -448,8 +441,7 @@ lua
             JIT是把字节码编译成机器码,放到可执行内存中执行,需要申请带可执行权限的内存空间
         工具
             jit/*.lua 可以用来控制JIT的编译过程
-            开启/关闭JIT模式 jit.on/jit.off
-            
+            开启/关闭JIT模式 jit.on/jit.off 
         问题1
             ARM限制跳转指令只能跳转前后32MB的空间,如果连续的64MB空间内被其他代码占用,LUAJIT就分配不出可执行内存
             能否进行JIT只能不断重复尝试编译,导致性能急速下降,如何预分配这些内存空间?

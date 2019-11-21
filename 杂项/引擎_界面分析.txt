@@ -144,7 +144,7 @@ NGUI源码分析
                             其次UpdateGeometry,重建其顶点数组或者修改顶点变换矩阵,widget的mChanged标记UI是否发生了显示属性上的变化
                                 有变化则标记其drawcall为dirty
                     根据Rebuild标记判断是否需要重建整个panel
-                        OnEnable、移除DrawCall头尾的UI、在drawcall的深度范围内插入一个不同材质贴图的UI都会导致整个个panel重建
+                        OnEnable、移除DrawCall头尾的UI、在drawcall的深度范围内插入一个不同材质贴图的UI都会导致整个panel重建
                         重建时先移除所有的UIDrawcall,在对widget排序,遍历widget重建drawcall,相邻的widget材质贴图shader一致的合并使用同一个drawcall
                     不做重建时,刷新所有dirty的drawcall
                         FillDrawCall-->WriteToBuffers->UpdateGeometry->MeshSet->ClearVerts
