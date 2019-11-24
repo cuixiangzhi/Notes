@@ -17,10 +17,9 @@
                     Lo(p,wo) = ∫(fd*brdf+fs*brdf)Li(p,wi)dot(n,wi)dwi
                     fr(l,v)分为diffuse和specular两部分,采用不同的公式
                 IBL漫反射
-                    1.HDRCubemap的采样和位置有关,根据HDRCumemap预计算漫反射,目标点在cubemap中的方向如何计算?
-                    2.静态物体的漫反射光一般计算并存储到Lightmap中,动态物体一般在场景中布置大量探针使用球谐系数存储环境光
+                    1.静态物体间接漫反射光计算并存储到Lightmap中,动态物体一般在场景中布置大量探针使用球谐系数存储环境光
                 IBL镜面反射
-
+                    1.静态物体间接镜面反射光计算并存储到方向图中,动态物体一般在场景中布置反射探针使用cubemap存储,boxprojection
                 球谐光照
                     球谐函数
                         球面函数可以分解为无限个球谐基函数*球谐系数之和
