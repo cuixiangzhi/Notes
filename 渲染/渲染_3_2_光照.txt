@@ -20,6 +20,18 @@
                     1.静态物体间接漫反射光计算并存储到Lightmap中,动态物体一般在场景中布置大量探针使用球谐系数存储环境光
                 IBL镜面反射
                     1.静态物体间接镜面反射光计算并存储到方向图中,动态物体一般在场景中布置反射探针使用cubemap存储,boxprojection
+                    2.预过滤环境贴图
+                        拍摄反射探针六个方向的环境生成HDRCubemap
+                        mip级别转粗糙度(roughness=mipmap/totalmips)
+                        低差异序列和重要性采样生成采样方向(根据N=V和roughness计算H,根据H和R计算L,把NdotL作为权重采样HDRCubemap,越接近法线的权重越高)
+                        预过滤环境贴图是把观察向量(反向)作为反射向量,采样HDRCubemap得出反射方向的亮度近似值
+                    3.BRDF积分LUT图
+                        横轴表示nl点乘结果,数值在[0,1]之间,纵轴表示粗糙度,数值在[0,1]之间
+                        BRDF积分的F被分成了F0*a+b的形式,a和b分别做积分存储到LUT的R和G通道
+                    4.反射探针计算
+                        prefilterColor = texCube(prefilterMap,V,roughness * MAX_LOD)
+                        brdf = tex2D(brdfLUT,(NdotV,roughness)).xy
+                        specular = prefilterColor * (F * brdf.x + brdf.y)
                 球谐光照
                     球谐函数
                         球面函数可以分解为无限个球谐基函数*球谐系数之和
