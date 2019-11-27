@@ -37,6 +37,20 @@
 		wrap    : 执行相同shader的一组thread,wrap会记录该组thread执行到了那条指令,wrap有固定的thread数量
 		register: 寄存器的数量是固定的,GPU按照wrap执行的shader所需寄存器数量来分配,shader占用寄存器越多,wrap就越少
 		swap    : gpu的一个核心执行一个wrap,核心数越多同时执行的wrap数量越多,wrap遇到阻塞操作时会被换出
+	TBDR架构
+		TBR
+			由于GPU的缓存很小,而FrameBuffer一般都很大(手机分辨率高),直接访问FrameBuffer缓存命中率低,效率低
+			把FrameBuffer分成很多小块,每一块渲染完了在把它搬回大的Framebuffer
+			FragmentProcessor->TiledFrameBuffer->FrameBuffer
+		FrameData
+			DrawCall传给GPU之后并不是立即执行,因为会导致TiledFrameBuffer频繁刷新,而是先执行vertex,等一定时机在执行光栅和pixel
+			GeometryProcesser->FrameData->FragmentProcessor->TiledFrameBuffer->FrameBuffer
+		Early-Z
+			ios有一个isr硬件专门针对FrameData内的数据做过滤,把一些不透明物体的drawcall过滤掉
+			android没有这个东西,所以需要应用层按照距离从近到远排序,执行ez优化
+		FrameBuffer
+			不使用的时候主动执行discard忽略其中的内容,否则在unbind时会触发刷新操作
+			后处理会导致频繁的framebuffer数据拷贝操作
 	驱动程序
 		驱动程序不同平台有不同的规范以及扩展
 		硬件加速部分渲染指令由硬件执行,例如光栅、矩阵变换、着色、采样、光照计算等等

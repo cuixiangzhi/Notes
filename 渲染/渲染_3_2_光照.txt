@@ -97,11 +97,12 @@
                 9.自发光、雾效、自定义光源等等额外计算
 光照探头
     LightProbe
-        给动态物体提供间接漫射光,避免实时补光的方式来提高角色的亮度
-        添加间接光的采样点(LightProbe),记录场景的间接光信息
-        采样点把整个空间分割为一个个四面体,物体在一个四面体内根据权重获取不同采样点的影响程度
-        采样点尽量布置在光照变化较大的地方(进入阴影的地方)
-        LightmapSettings.lightProbes.bakedProbes可以获取烘焙后的信息
+        数据存储
+            LightmapSettings.lightProbes.bakedProbes
+        自动摆放
+            探针应该摆放在发生亮度变化的位置,可以沿着寻路图大量设置LightProbe,然后过滤掉变化不大的
+        实时补光
+            不要用补光的方式来提高角色亮度,可以在LightProbe中添加环境光来提高动态物体亮度
     ReflectionProbe
         给所有物体提供间接反射光,动态的间接高光
 光照模式
