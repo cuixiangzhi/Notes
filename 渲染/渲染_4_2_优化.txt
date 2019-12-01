@@ -90,8 +90,8 @@
             光照贴图质量(样本是不是指光源发射光线的数量?)
                 Bounces            光线反射次数
                 EnvironmentSamples 控制环境光样本数量
-                DirectSamples      控制直接光样本数量
-                IndirectSamples    控制间接光样本数量(室外推荐值为100)
+                DirectSamples      控制直接光样本数量(在光源方向上采样的光线数量)
+                IndirectSamples    控制间接光样本数量(在半球方向上采样的光线数量,室外推荐值为100)
                 IndirectIntensity  控制间接光整体强度
                 AmbientOcclusion   控制间接光的AO效果
                 AlbedoBoost        控制间接光反射比例,默认值1是物理精确的
