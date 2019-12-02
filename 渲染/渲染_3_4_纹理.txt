@@ -40,6 +40,8 @@ CubeMap
         3.根据v+t*d=边界计算射线与AABB交点,根据交点和CUBE中心点计算uvw 
 RenderTexture
     渲染纹理,包含一个ColorBuffer和一个DepthBuffer,DepthBuffer包含16位depth和8位stencil
+ProcedureTexture
+    程序纹理,使用数学公式定义的纹理,不占内存但是需要大量计算
 LightMap
     光照贴图,存储了针对静态物体的间接光照信息,利用光线追踪算法使用HDRCudeMap作为光源生成
 纹理采样

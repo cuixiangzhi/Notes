@@ -79,6 +79,9 @@
 			 		根据ELF格式查找函数代码段,对.dynamic内的重要函数进行加密
 				  	函数查找过程: name->hash->nbuckets->bucket->.dynamic->Elf32_Sym->st_name->.dynstr->chain
 				  	解密过程也是需要找到so地址,获取权限,解密内存 
+				符号表
+					.symtab .a和.so文件的所有符号的定义和引用
+					.dynsym .so文件导入导出符号的定义
 			MACH-O格式
 		文件权限
 			文件拥有者-拥有者同组用户-管理员 rwx-rwx-rwx
