@@ -11,16 +11,29 @@
         Kajiya-Kay
             将头发视为一个直径很小长度很长的圆柱,宏观上头发某一点的光照是微观圆柱上一圈点的光照的总和
             漫反射
-                积分公式为 diffuse = kd * ∫dot(l,n0)d0 = kd*sin(tl夹角)
+                积分公式为 diffuse=kd*Li*∫dot(l,n0)d0 = kd*Li*sin<T,L>
                 积分计算:
                     已知切线向量T,入射向量L,投影向量L'=normalize(L-dot(T,L)*T),边界向量B=cross(T,L')
                     积分向量n0=Bcos(0)+L'sin(0) kd是一个常量,因此该积分是一个定积分
+                    美术需要沿着发丝生长的方向展开UV,使得U方向正好是切线方向
                 优化版本
-                    diffuse = lerp(0.25,1,nl) 考虑了毛发的自阴影,也就是AO效果
+                    diffuse = lerp(0.25,1,dot(n,l)) 考虑了毛发的自阴影,也就是AO效果
             高光反射
-                积分公式
-                优化版本
-                    观察经验 两层高光 切线扰动
+                计算原理
+                    光照击中头发后,反射方向是沿着切线在圆柱上以镜面反射角度射出的,反射光线均位于切线为轴线一定角度的圆锥体上
+                    已知视线向量为V,视线在反射光线的圆锥体上的投影为V',V与T夹角为0,V'与T夹角为0',高光计算结果为ks*pow(cos(0'-0),s)
+                    化简之后为ks*(dot(T,L)*dot(T,V)+,sin<T,L>sin<T,E>,s)
+                两层高光
+                    由于头发的透明产生了多次反射和折射,因此高光反射有两条反射线(只考虑一次折射),两条高光反射一个有颜色,一个没有颜色,相互错开
+                    沿着法线方向去偏移切线,Ts=T+shift*N,需要一张切线扰动图计算shift=constShift+tex2D(_ShiftTexture,uv)-0.5
+            渲染排序
+                毛发一般是边缘半透明而内部是不透明的,因此不能简单的使用AlphaTest来渲染,这样会导致边缘锯齿很严重
+                1.先绘制头发不透明部分并且只写深度,开启Z-Write,Z-Test为Less,开启背面剔除Cull Back,开启Alpha-Test(或者把不透明部分拆出来)
+                2.再绘制头发不透明部分并且只写颜色,关闭Z-Write,Z-Test改为Equal,开启背面剔除Cull Back,开启Alpha-Test(或者把不透明部分拆出来),这一步拆出来是为了EZ
+                3.再绘制头发背面透明部分,关闭Z-Write,Z-Test改为Less,开启正面剔除Cull Front,开启AlphaBlend
+                4.最后绘制头发正面透明部分,关闭Z-Write,Z-Test改为Less,开启背面剔除Cull Back,开启AlphaBlend
+        Marschner-Model
+            
     物理模型
         公式原理以及输入参数
             http://artisaverb.info/PBT.html 资源库
