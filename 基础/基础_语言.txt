@@ -169,8 +169,8 @@ C/C++
 		多态性
 			编译时多态性,模板,重载
 			运行时多态性,虚函数重写
-		其它
-			拷贝构造函数&赋值运算符重载 避免指针所指内存被共享
+		类初始化
+		  	虚表指针->初始化列表->构造函数体
 		内存布局
 			类对象
 				虚表指针(每个基类部分都有一个,构造的时候会经过多次初始化,直到子类对象)
@@ -181,6 +181,9 @@ C/C++
 			虚函数表(多继承时有多个)
 				基类虚函数(会被子类相同的虚函数覆盖)
 				子类虚函数(只存在于第一个基类虚表)
+		对象创建
+			拷贝构造函数&赋值运算符重载 避免指针所指内存被共享
+			把析构函数设置为私有,可以禁止在栈上创建对象
 	模板&泛型
 		模板定义	
 			template<class T> return_type function_name(arg_type) {}
@@ -411,16 +414,21 @@ lua
 	变量定义位置
 		全局表	      	LuaState.l_gt
 		注册表 	      	LuaState.l_G.l_registry
+		环境表          LuaState.env
 		基础类型元表    LuaState.l_G.mt
 		基础元函数名字 	LuaState.l_G.tmnames
 		字符串哈希表    LuaState.l_G.strt
 		GC对象          LuaState.gclist
+		函数Env         Closure.env
 		函数LocVar 		Proto.localvars
-		函数UpVar       LClosure.upvals
+		函数UpVar       LClosure.upvals LuaState.openupval
 						注意点
 							如果upval不在直接外层函数内,那么这个upval也会成为直接外层函数的upval
 							upval一定在外层函数的localvars或者upvals中
 							外层函数的local是通过openupval间接引用的
+		package.loaded  LuaState.l_G.l_registry._LOADED require会先到该表查找对应模块是否已加载,加载出来之后有返回值则为返回值,否则为true
+		package.loaders LuaState.env
+		module          push_module->mod_init->setenv
 	变量引用关系
 		LUA_TSTRING    	没有对其它对象的引用
 		LUA_TTABLE 		keys values array metatable
