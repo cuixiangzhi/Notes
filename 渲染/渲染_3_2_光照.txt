@@ -23,17 +23,20 @@
                     光照击中头发后,反射方向是沿着切线在圆柱上以镜面反射角度射出的,反射光线均位于切线为轴线一定角度的圆锥体上
                     已知视线向量为V,视线在反射光线的圆锥体上的投影为V',V与T夹角为0,V'与T夹角为0',高光计算结果为ks*pow(cos(0'-0),s)
                     化简之后为ks*(dot(T,L)*dot(T,V)+,sin<T,L>sin<T,E>,s)
-                两层高光
+                两层高光-Marschner-Model
                     由于头发的透明产生了多次反射和折射,因此高光反射有两条反射线(只考虑一次折射),两条高光反射一个有颜色,一个没有颜色,相互错开
                     沿着法线方向去偏移切线,Ts=T+shift*N,需要一张切线扰动图计算shift=constShift+tex2D(_ShiftTexture,uv)-0.5
             渲染排序
                 毛发一般是边缘半透明而内部是不透明的,因此不能简单的使用AlphaTest来渲染,这样会导致边缘锯齿很严重
-                1.先绘制头发不透明部分并且只写深度,开启Z-Write,Z-Test为Less,开启背面剔除Cull Back,开启Alpha-Test(或者把不透明部分拆出来)
-                2.再绘制头发不透明部分并且只写颜色,关闭Z-Write,Z-Test改为Equal,开启背面剔除Cull Back,开启Alpha-Test(或者把不透明部分拆出来),这一步拆出来是为了EZ
-                3.再绘制头发背面透明部分,关闭Z-Write,Z-Test改为Less,开启正面剔除Cull Front,开启AlphaBlend
-                4.最后绘制头发正面透明部分,关闭Z-Write,Z-Test改为Less,开启背面剔除Cull Back,开启AlphaBlend
-        Marschner-Model
-            
+                1.渲染不透明部分,写入深度
+                    ZWrite On ZTest Less Cull Off ColorMask RGB AlphaTest 1
+                2.渲染不透明部分,写入颜色
+                    Zwrite Off ZTest Equal Cull Off
+                3.渲染背面透明部分
+                    ZWrite Off ZTest Less Cull Front Blend SrcAlpha OneMinusSrcAlpha
+                4.渲染正面透明部分
+                    ZWrite Off ZTest Less Cull Back Blend  SrcAlpha OneMinusSrcAlpha
+
     物理模型
         公式原理以及输入参数
             http://artisaverb.info/PBT.html 资源库
