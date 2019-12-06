@@ -21,7 +21,7 @@
     材质
         默认统一使用PBR标准材质
     光照
-        背光面 修正LightMap计算,加入法线计算 indirect.diffuse*dot(normal_texture,normal_vertex)
+        背光面 修正LightMap计算,加入法线扰动变亮 indirect.diffuse*dot(normal_texture,normal_vertex)*_intensity
         主光源 一个Mixed模式平行光,模拟太阳光的方向和强度,运行时可调整颜色和方向
         辅光源 任意多个Bake模式平行光,与主光形成冷暖对比,运行时不可调整
         点光源 任意多个Bake模式点光源,一般放在灯笼、草丛或者树木附近,运行时不可调整
