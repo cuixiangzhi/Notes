@@ -54,6 +54,9 @@ January February March April May June July August Spetember October November Dec
 			 	C# char代表一个字符或者一个中文符号,长度不固定 
 			 	lua和C++一样 字符集分为ASCII、GBK、Unicode等等  UTF-8是一种UNICODE编号的编码方式 GBK是GBK字符集编号的编码方式
 				UTF-8不定字节编码以字节数开头,0xxxxxxx 表示一个字节  110xxxxx表示2个字节,后续字节以10开头  最多会有6个字节
+		auto decltype typeid
+			auto可以根据变量初始值的类型自动为此变量选择合适的类型,可以简化代码,不适合指针之类的语法记忆
+			decltype用来查询表达式的返回值类型,不会计算表达式
 	函数栈帧
 		函数调用约定
 			cdecl    参数从右至左入栈,调用参数之后生成add esp指令清理函数参数栈
