@@ -55,8 +55,15 @@ January February March April May June July August Spetember October November Dec
 			 	lua和C++一样 字符集分为ASCII、GBK、Unicode等等  UTF-8是一种UNICODE编号的编码方式 GBK是GBK字符集编号的编码方式
 				UTF-8不定字节编码以字节数开头,0xxxxxxx 表示一个字节  110xxxxx表示2个字节,后续字节以10开头  最多会有6个字节
 	函数栈帧
-		cdecl    参数从右至左入栈,调用参数之后生成add esp指令清理函数参数栈
-		stdcall  参数从右至左入栈,被调用函数最终生成ret ?指令清理函数参数栈
+		函数调用约定
+			cdecl    参数从右至左入栈,调用参数之后生成add esp指令清理函数参数栈
+			stdcall  参数从右至左入栈,被调用函数最终生成ret ?指令清理函数参数栈
+			fastcall 参数从右至左入栈,被调用函数最终生成ret ?指令清理函数参数栈,不大于4个字节的参数存入寄存器ECX EDX
+			thiscall this指针存储在ECX寄存器内
+		函数名字编译
+			_stdcall  C语言编译后为_funcname@nnumber C++编译后为?funcname@YG******@Z
+			_cdecl    C语言编译后为_funcname         C++编译后为?funcname@YA******@Z
+			_fastcall C语言编译后为@funcname@nnumber C++编译后为?funcname@YI******@Z
 		函数栈帧指针
 			ebp指向栈底,esp指向栈顶,栈指针从高地址向低地址移动
 		函数调用和返回指令
