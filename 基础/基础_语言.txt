@@ -555,9 +555,10 @@ OC
 		}
 		@end
 	类函数:
-		-(void)name:(bool)param;  
+		-(void)name:(bool)param1 paramt:(int)param2;  
 		-是成员函数,+是静态函数
 		:前面是函数名字和返回值
+		[object func:param1 paramt:param2]
 	类对象:
 		创建
 			cls* ptr = [[cls alloc] init];

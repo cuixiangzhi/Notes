@@ -54,7 +54,9 @@
             shader实现多个不同LOD的subshader,LOD越低效果越差但是性能越好,例如PBS有高中低三个版本
             shader.globalMaximumLODLevel设置当前渲染质量,低于该值的shader的pass才会被使用
             shader.maximumLodLevel设置特定shader的渲染质量
-        3.QualityLevel
+        3.AnimationLOD
+            根据计算出的LOD级别调整动画计算的最大骨骼数、动画的更新频率
+        4.QualityLevel
             运行时通过修改Unity的渲染配置,来提高质量或者降低消耗,通过QualitySettings.SetQualityLevel调节
             渲染
                 PixelLightCount Important模式一定是逐像素的,Important个数小于指定个数会选取Auto模式的作为逐像素光源
@@ -72,7 +74,7 @@
                 BlendWeights     蒙皮顶点最多受几根骨骼影响,减少该值可以降低蒙皮计算量,提升CPU性能
                 VSyncCount       关闭后Unity会全速跑Update,否则会根据同步方式sleep一段时间在执行Update,高帧率可以减少消耗
                 LODBias          不同LOD级别之间切换的偏移比例,设置为1在LOD边界立即切换,数值越大高模保留距离越大
-        4.GraphicsTier
+        5.GraphicsTier
             阴影
                 CascadedShadows  级联阴影,根据摄像机观察范围划分N个等级分别使用不同的深度图,提高近处物体的精度
             HDR
@@ -80,9 +82,9 @@
                                  开启后会额外创建一个缓冲区存储HDR计算结果
             反射
                 BoxProjection    视线向量的起点不在Cubemap中心,因此需要经过计算转换为正确的采样向量
-        5.PostProcess
+        6.PostProcess
             Bloom
-        6.LightmapSettings
+        7.LightmapSettings
             光照贴图大小
                 LightmapResolution 每米几个像素,数值越大质量越高内存也越大
                 LightmapPadding    图元之间的像素间隔,避免不同图元由于采样算法导致混合了不同物体的光照颜色(光照溢出)

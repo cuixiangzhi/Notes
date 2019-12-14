@@ -159,7 +159,7 @@
         ForwardBase: 
             #pragma multi_compile_fwdbase
             计算自发光、环境光、主平行光、SH光、光照贴图、阴影
-            Unity中设置为NotImporant的光会被按照逐顶点或者SH处理
+            Unity中设置为NotImportant的光会被按照逐顶点或者SH处理
             逐顶点光照计算 Shade4PointLights(...) unity_4LightPosXYZColorAtten
             球谐光照计算 
         ForwardAdd:  
