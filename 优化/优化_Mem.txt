@@ -34,3 +34,49 @@ component_memory
     Animator
         FBX导入时Rig不要生成Avatar(除非需要动作混合)
     Rigidbody
+fmod_memory
+    dsp_buffer
+        FMOD播放声音会先写入到一个BUFFER内,BUFFER填充满了才会播放,太大会导致声音延迟,太小CPU消耗上升
+    speaker_mode
+        FMOD使用双声道内存会占用两份,最好选用MONO模式
+code_memory
+    泛型乱用,导致代码编译速度慢、代码占用
+bundle_memory
+    typetree
+        为了做不同版本的类型兼容,开启之后会写入变量类型的信息
+    lz4
+        分块解压,lzma是整体压缩
+    size&count
+        每个包多大,什么资源打一个
+        文件头也会占用内存,官方推荐一个AB包1M
+resources
+    DO NOT USE IT!
+texture_memory
+    upload_buffer
+        从内存中往显存上传的时候,会先放到一个缓冲区内,缓冲区满了才会上传
+    read/write
+        开启之后内存中会保留一份
+    mipmap
+内存池
+    Native内存池
+        按照类型(MemoryLabel)划分内存池
+        释放之后会及时返还给操作系统
+        内存占用
+            Scene Audio Code AssetBundle Texture
+    VM内存池
+        释放的内存在一定条件下会返回给操作系统(连续6次没有被访问到)
+        不分代不压缩
+        内存碎片化
+            频繁分配回收小内存,然后申请大内存会导致内存不断上升
+            先申请大块内存,然后对小内存做缓存池处理
+        GC机制考量
+            回收能力
+            暂停时长
+            碎片化
+            额外消耗
+            可扩展性
+            可移植性
+        内存占用
+            闭包和匿名函数,最终都是一个class
+            协程内的所有变量都会一直存在,以class的成员变量存在
+            配置表占内存极大,要分模块甚至分行,并且要支持卸载
