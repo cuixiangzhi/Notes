@@ -100,6 +100,7 @@ context与object的关系
         绑定纹理 glBindTexture(GL_TEXTURE_2D|GL_TEXTURE_2D_MULTISAMPLE,texID)
         纹理过滤 glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINER);
         纹理数据 glTexImage2D(GL_TEXTURE_2D,mipmapLevel,GL_RGBA,宽,高,0,0,GL_RGBA,GL_UNSIGNED_BYTE,PTR);
+        纹理数组 glTexImage3D(GL_TEXTURE_2D_ARRAY,mipmaps,internalFormat,宽,高,depth,0,inputFormat,dataType,data)
         多重采样 glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE,sampleCount,GL_RGB,width,height,GL_TRUE);
         删除纹理 glDeleteTextures(1,&texID);
                  glGenerateMipmap(GL_TEXTURE_2D); GL_<FILTER>_MIPMAP_<SELECTOR> filter标记miplevel内如何采样 selector标记如何选择miplevel
