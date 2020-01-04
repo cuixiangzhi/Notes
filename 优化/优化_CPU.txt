@@ -1,0 +1,31 @@
+编码带来的GCAlloc
+    Update LateUpdate中的复杂逻辑
+    序列化 反序列化操作
+    String ToString 字符串拼接
+    Debug.Log Warning
+    闭包 匿名函数 协程
+    ParticleSystem的Start Stop Pause Clear Simulate调用时withChildren=true会通过GetComponents获取组件,有GCAlloc
+    GetComponents mesh.vertices Input.Touches返回一个新分配的数组
+    Camera.main 底层使用的是FindObjectWithTag("MainCamera")
+    Physics.RaycastAll改成RaycastNonAlloc
+    不可见物体优化
+        分离逻辑位置和显示位置,降低Set次数
+    数组访问
+        List是链表,内存是不连续的
+        Array是数组,内存是连续的
+        ECS和JobSystem可以提高缓存命中率
+    Lua调用开销
+        LUA调用C#接口的开销,主要是函数调用次数,连续.操作
+        LUA调用LUA的开销,元表访问次数太多,尤其是针对数据表的访问
+引擎特性
+    StaticBatching
+        内存换CPU,减少DC
+        StaticBatchingUtility.Combine
+    DynamicBatching
+    GPUSkinning
+    GPUInstancing
+    AnimationInstancing 
+        大量小兵、篮球足球类游戏的观众
+        KeyFrameAnimation预先把每一帧的顶点位置存储到纹理内,在vertex阶段采样
+        使用GPUInstance渲染,把每个实例的属性通过结构体数组传到shader
+    MeshCollider 凸包需要开启MESH的读写选项
