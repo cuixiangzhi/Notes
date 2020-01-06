@@ -23,7 +23,7 @@
     .ipa        安装包
                 xcodebuild -exportArchive -archivePath *.xcarchive -configuration D|R -exportPath *.ipa -exportOptionsPlist
     .app        执行程序
-    开发证书
+    iOS证书与描述文件
                 证书包含公钥和私钥,用来对app进行加密和解密
                 描述文件包含了AppID、BundleID、证书、设备的关联信息
                 自动签名只需要设置好TeamID和BundleID,会自动筛选对应的证书和描述文件信息,这种必须使用开发证书
