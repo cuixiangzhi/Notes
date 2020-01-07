@@ -5,6 +5,29 @@ ShadowAcne
         bias = max(factor * (1 - dot(normal,light)),constant) 微调factor和constant
     normal bias
         计算光源空间深度图时统一把模型沿法线方向稍微缩小,减弱角色阴影偏移脚底(悬空)的现象
+PlanarShadow
+    原理:地面是一个高度一致的平面,通过计算投影矩阵把投影物体的顶点变换到平面上渲染阴影
+    计算:
+        假设地面法向量为n,顶点为v,光源方向为l,投影点为p=v-[dot(n,v)-d]/[n*l]*l,其中dot(n,v)-d等于v到平面的距离
+        1.先渲染地面
+            正常渲染并且开启Stencil,避免阴影渲染到非地面上
+        2.渲染物体阴影
+            CullBack
+            Zwrite Off
+            ColorMask RGB
+            Blend SrcAlpha OneMinusSrcAlpha
+            Stencil { Ref 0, ReadMask 255, WriteMask 255, Comp Equal, Pass Invert, Fail Keep, ZFail Keep }
+            顶点shader
+                根据投影矩阵计算得出顶点位置
+                float3 v = (_Object2World * v.vertex).xyz
+                float3 p = (v - [dot(_ShadowPlane.xyz,v)-_ShadowPlane.w] / [dot(_ShadowPlane.xyz,_ShadowDir.xyz)] * _ShadowDir.xyz)
+                o.worldPos = worldPos.xyz
+                o.projPos = p;
+                o.clipPos = unity_MatrixVP * float4(p,1.0);
+            像素shader
+                根据距离物体原点的距离来做阴影渐变
+                o.color.xyz = fixed3(0,0,0);
+                o.color.w = pow(1-clamp(sqrt(dot(proj2WorldD,proj2WorldD)*_ShadowInvLen)-_ShadowFade.x,0,1),_ShadowFade.y) * _ShadowFade.z
 ShadowMap
     LightSpaceShadowMap
         1.以实时灯光位置作为视点,渲染一张深度纹理
@@ -40,7 +63,7 @@ ShadowMap
                 camera.nearPlane = sceneBound.zmin
                 camera.farPlane = sceneBound.zmax
             计算CSM级别划分和视锥参数
-
+                用户自定义把摄像机远近平面构成的可视范围划分成N份
     ScreenSpaceShadowMap
         ZBuffer
             zbuffer=(az+b)/(z|-z)

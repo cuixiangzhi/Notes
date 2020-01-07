@@ -1,35 +1,42 @@
-shaderlab
-    shader_feature
-        定义的变体没有使用到不会被编译
-        使用#pragma shader_feature 来定义
-        使用[Toggle(feature) ..]在材质上显示该选项
-    multi_compile
-        定义的变体都会编译
-        使用Shader.EnableKeywords和Material.EnableKeywords开启全局或单个材质的宏定义
-        keyword最多256个,超过这个值会报错
-    variants
-        宏定义太多导致shader变体很多,不仅增加了build时间,运行时由于变体太多增加加载时间并增加内存占用
-    判断是否被使用:
-        shader如果单独打包,此时shader不会编译生成任何变体
-        shader和材质打包,shader会根据材质的keyword信息编译生成对应的变体
-        实现IPreprocessShaders接口打包时剔除变体
-    强制生成变体:
-        1.把shader放在always include shaders
-        2.把shader放在resources内
-        3.增加多余的材质,定义对应的变体keyword
-        4.5.0以后版本提供的shader_variant_collection,针对每个shader指定要使用哪些keyword,把collection放在preload或者和shader打包在一起
-r/w_memory
-    read/write enabled
-        开启该选项的纹理、网格会在内存中存在两份(显存+内存)
-    dynamic_batching
-        开启之后300顶点以下的网格会强制开启R/W
-mesh_memory
-    MeshCompression
-        使用压缩算法减少硬盘空间占用,默认关闭
-    OptimizeMeshData
-        打bundle时剔除shader没有使用到的顶点属性,可以减小包体
-    VertexCompression
-        降低顶点属性的精度,针对300顶点以上、未开启R/W的网格生效
+资源内存
+    shader_memory
+        shader_feature
+            定义的变体没有使用到不会被编译
+            使用#pragma shader_feature 来定义
+            使用[Toggle(feature) ..]在材质上显示该选项
+        multi_compile
+            定义的变体都会编译
+            使用Shader.EnableKeywords和Material.EnableKeywords开启全局或单个材质的宏定义
+            keyword最多256个,超过这个值会报错
+        variants
+            宏定义太多导致shader变体很多,不仅增加了build时间,运行时由于变体太多增加加载时间并增加内存占用
+        判断是否被使用:
+            shader如果单独打包,此时shader不会编译生成任何变体
+            shader和材质打包,shader会根据材质的keyword信息编译生成对应的变体
+            实现IPreprocessShaders接口打包时剔除变体
+        强制生成变体:
+            1.把shader放在always include shaders
+            2.把shader放在resources内
+            3.增加多余的材质,定义对应的变体keyword
+            4.5.0以后版本提供的shader_variant_collection,针对每个shader指定要使用哪些keyword,把collection和shader打包在一起
+    mesh_memory
+        MeshCompression
+            使用压缩算法减少硬盘空间占用,不影响运行时数据,默认关闭,开启会影响下面两种压缩
+        OptimizeMeshData
+            打bundle时剔除shader没有使用到的顶点属性,可以减小包体
+        VertexCompression
+            降低顶点属性的精度(float->half),针对300顶点以上、未开启R/W的网格生效
+        Read/Write Enabled
+            开启该选项的纹理、网格会在内存中存在两份(显存+内存)
+        DynamicBatching
+            开启之后300顶点以下的网格会强制开启R/W
+    texture_memory
+        upload_buffer
+            从内存中往显存上传的时候,会先放到一个缓冲区内,缓冲区满了才会上传
+        read/write
+            开启之后内存中会保留一份
+        mipmap
+代码内存
 component_memory
     Animator
         FBX导入时Rig不要生成Avatar(除非需要动作混合)
@@ -49,14 +56,6 @@ bundle_memory
     size&count
         每个包多大,什么资源打一个
         文件头也会占用内存,官方推荐一个AB包1M
-resources
-    DO NOT USE IT!
-texture_memory
-    upload_buffer
-        从内存中往显存上传的时候,会先放到一个缓冲区内,缓冲区满了才会上传
-    read/write
-        开启之后内存中会保留一份
-    mipmap
 内存池
     Native内存池
         按照类型(MemoryLabel)划分内存池

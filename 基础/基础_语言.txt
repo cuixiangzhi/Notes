@@ -492,6 +492,16 @@ ShaderForUnity
 					Lighting On/Off 是否计算光照			
 					Fog On/Off 是否计算雾效果
 					Blend One/One SrcAlpha/OneMinusSrcAlpha 颜色混合方式,src是指当前颜色,dst是指颜色缓冲区内的颜色
+					stencil
+					{
+						Ref 参考值,模板缓冲内的值和它作比较
+						ReadMask 读取掩码,过滤模板缓冲内的值
+						WriteMask 写入掩码,过滤写入到模板缓冲内的值
+						Comp Less/LEqual/Equal/NotEqual/GEqual/Greater/Always
+						Pass 模板测试通过执行什么操作 keep/zero/incrsat/incrwrap/decrsat/decrwrap
+						Fail 模板测试失败执行什么操作 keep
+						ZFail 模板测试通过,深度测试失败执行什么操作 keep
+					}
 				5.Pass
 				{
 					Name "PassName" 定义Pass名字
