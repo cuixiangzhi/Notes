@@ -30,12 +30,20 @@
             开启该选项的纹理、网格会在内存中存在两份(显存+内存)
         DynamicBatching
             开启之后300顶点以下的网格会强制开启R/W
+        SkinnedMesh
+            由于骨骼动画需要在CPU端每帧计算顶点位置,会强制开启R/W
+        ParticleMesh
+            粒子和骨骼动画类似,因为要做位置计算,会强制开启R/W
+        MeshCollider
+            添加了MeshCollider并且缩放带负数,会强制开启R/W
     texture_memory
         upload_buffer
             从内存中往显存上传的时候,会先放到一个缓冲区内,缓冲区满了才会上传
         read/write
             开启之后内存中会保留一份
         mipmap
+    animation_memory
+
 代码内存
 component_memory
     Animator

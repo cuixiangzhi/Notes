@@ -42,6 +42,9 @@
             BlendWeights     蒙皮顶点最多受几根骨骼影响,减少该值可以降低蒙皮计算量,提升CPU性能
             VSyncCount       关闭后Unity会全速跑Update,否则会根据同步方式sleep一段时间在执行Update,高帧率可以减少消耗
             LODBias          不同LOD级别之间切换的偏移比例,设置为1在LOD边界立即切换,数值越大高模保留距离越大
+        加载
+            AUPTimeSlice     渲染线程每帧上传数据的时间片,会消耗2倍该时间用于上传,默认值是2ms
+            AUPBufferSize    主线程传递数据给渲染线程的RingBuffer大小
     5.GraphicsTier
         阴影
             CascadedShadows  级联阴影,根据摄像机观察范围划分N个等级分别使用不同的深度图,提高近处物体的精度
