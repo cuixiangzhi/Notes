@@ -53,3 +53,6 @@
                              开启后会额外创建一个缓冲区存储HDR计算结果
         反射
             BoxProjection    视线向量的起点不在Cubemap中心,因此需要经过计算转换为正确的采样向量
+    6.AdaptivePerformance
+        时钟频率
+            c/gpuLevel       CPU和GPU的时钟频率,高频模式会增加发热量
