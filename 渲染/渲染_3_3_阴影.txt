@@ -1,10 +1,3 @@
-ShadowAcne
-    阴影图分辨率不够,导致与光源方向角度很小时产生条纹状的自阴影现象
-    shadow bias
-        计算光源空间深度图时统一向光源朝向移动一点距离,减弱光源空间下倾斜物体的自阴影现象
-        bias = max(factor * (1 - dot(normal,light)),constant) 微调factor和constant
-    normal bias
-        计算光源空间深度图时统一把模型沿法线方向稍微缩小,减弱角色阴影偏移脚底(悬空)的现象
 PlanarShadow
     原理:地面是一个高度一致的平面,通过计算投影矩阵把投影物体的顶点变换到平面上渲染阴影
     计算:
@@ -28,7 +21,30 @@ PlanarShadow
                 根据距离物体原点的距离来做阴影渐变
                 o.color.xyz = fixed3(0,0,0);
                 o.color.w = pow(1-clamp(sqrt(dot(proj2WorldD,proj2WorldD)*_ShadowInvLen)-_ShadowFade.x,0,1),_ShadowFade.y) * _ShadowFade.z
+Projector
+    1.用一个摄像机在指定方向渲染指定层级的物体生成_ProjectTexture
+        生成过程:
+            把FrameBuffer清空为透明颜色
+            顶点shader常规计算裁剪坐标
+            像素shader直接返回不透明颜色,最终的贴图alpha大于0表示阴影
+    2.被投影的物体渲染两次,第一次正常渲染,第二次使用指定材质球渲染
+        计算过程:
+            正片叠底混合 Blend DstColor Zero
+            顶点shader计算当前顶点的投影纹理齐次坐标
+                sproj = mul(_Projector,v.vertex);
+            像素shader采样然后插值计算alpha进行混合
+                shadow = tex2D(_ShadowTex,sproj.xy//sproj.w).a
 ShadowMap
+    Hard&SoftShadows
+        本影区属于硬阴影,常规SM只能模拟硬阴影
+        半影区属于软阴影,通过PCF等过滤操作实现假的软阴影
+    ShadowAcne
+        阴影图分辨率不够,导致与光源方向角度很小时产生条纹状的自阴影现象
+        shadow bias
+            计算光源空间深度图时统一向光源朝向移动一点距离,减弱光源空间下倾斜物体的自阴影现象
+            bias = max(factor * (1 - dot(normal,light)),constant) 微调factor和constant
+        normal bias
+            计算光源空间深度图时统一把模型沿法线方向稍微缩小,减弱角色阴影偏移脚底(悬空)的现象
     LightSpaceShadowMap
         1.以实时灯光位置作为视点,渲染一张深度纹理
             生成过程: 
@@ -86,16 +102,24 @@ ShadowMap
             生产结果是_ShadowMapTexture
         4.正常渲染物体
             像素shader使用屏幕坐标采样_ShadowMapTexture
-Projector
-    1.用一个摄像机在指定方向渲染指定层级的物体生成_ProjectTexture
-        生成过程:
-            把FrameBuffer清空为透明颜色
-            顶点shader常规计算裁剪坐标
-            像素shader直接返回不透明颜色,最终的贴图alpha大于0表示阴影
-    2.被投影的物体渲染两次,第一次正常渲染,第二次使用指定材质球渲染
-        计算过程:
-            正片叠底混合 Blend DstColor Zero
-            顶点shader计算当前顶点的投影纹理齐次坐标
-                sproj = mul(_Projector,v.vertex);
-            像素shader采样然后插值计算alpha进行混合
-                shadow = tex2D(_ShadowTex,sproj.xy//sproj.w).a
+    PerspectiveShadowMap
+        原理:通过改变灯光空间下的投影矩阵,使得靠近镜头的对象占用更大的投影区域
+    VarianceShadowMap
+        公式:表面可见比例p=s/[s+(t-M1)²] 其中s=M2-M1²表示方差,t表示receiver深度,M1表示caster样本深度均值,M2表示caster样本深度平方均值
+        原理:根据一定区域内的caster到光源距离的方差来衡量receiver阴影的强度,也就是计算遮挡物的距离大于当前像素到光源距离的比例有多少,以此模拟软阴影效果
+             靠近caster边缘的时候方差会变大,方差越大,深度差异越大
+        缺点:当两个caster相邻并且其中一个距离receiver更近时,方差会比较大,公式计算的p是一个最大值,并不是准确值
+        实现:生成两张SM,一张存储depth(样本深度的期望值),一张存储depth*depth(样本深度平方的期望值)
+    PCF
+        1.均值滤波
+            原理:使用方框滤波的采样点计算阴影强度
+            缺点:半影区的大小都是一样的,半影区锯齿感比较严重
+        2.泊松分布
+            原理:使用符合泊松分布的采样点计算阴影强度
+            缺点:半影区的大小都是一样的(使用随机样本可以减弱这种现象,但是会产生明显的噪点),锯齿感很弱,采样次数更多
+        3.自阴影和漏光
+            邻域平均会导致这种问题变得更糟,使用额外的bias偏移算法可以减轻这种现象
+    PCSS
+        公式:Wsample=Wlight*(dr-do)/dr dr表示当前像素到光源距离,do表示遮挡物到光源的平均距离
+        原理:滤波半径不唯一,遮挡物距离光源越远,半影区越小,采样宽度也就越小 
+        缺点:需要对比较大的区域进行采样计算遮挡物平均距离,半影区大小受SM分辨率影响,遮挡物存在多个重叠的时候会有问题
