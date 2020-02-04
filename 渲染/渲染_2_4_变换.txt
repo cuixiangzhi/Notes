@@ -172,7 +172,7 @@
                 dx,metal等平台是(0,1) opengl/opengles是(-1,1)
             深度精度
                 因为z值变换不是线性的,Zndc=a+b/Zcamera,反比例函数Zcamera从Near到Far,Zndc从0到1
-                默认情况下近裁剪面Z值分布更加密集,精度更高,Z-fighting现象更弱,开启Reverse-Z之后远裁剪面更加密集,精度更高
+                深度变化曲线是从1到-1,f到n,nf的距离越大,f处的精度越低
                 glPolygonOffset(factor,units)可以解决z-fighting闪烁问题
                     (-1,-1)表示距离摄像机更近,用来渲染前景 
                     (1,1)表示距离摄像机更远,用来渲染背景
