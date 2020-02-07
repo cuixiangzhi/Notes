@@ -1,3 +1,5 @@
+内存峰值
+    PSS 500~700M
 代码内存
     component_memory
         Animator
