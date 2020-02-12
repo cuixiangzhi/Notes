@@ -33,3 +33,12 @@ Texture2DArray
     适用于大量、多次采样的同种材质
     降低glBindTexture的调用次数,一次调用0.01ms,降低300次可以提升3ms
     降低DrawCall次数,通过MaterialPropertyBlock设置每个材质独有的属性,然后纹理使用2DArray来存储,类似于合图然后改UV
+引擎模块
+    渲染模块
+    动画模块
+    物理模块
+    粒子系统
+    加载模块
+    UI模块
+    GC调用
+逻辑代码
