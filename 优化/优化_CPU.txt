@@ -1,44 +1,23 @@
-编码带来的GCAlloc
-    Update LateUpdate中的复杂逻辑
-    序列化 反序列化操作
-    String ToString 字符串拼接
-    Debug.Log Warning
-    闭包 匿名函数 协程
-    ParticleSystem的Start Stop Pause Clear Simulate调用时withChildren=true会通过GetComponents获取组件,有GCAlloc
-    GetComponents mesh.vertices Input.Touches返回一个新分配的数组
-    Camera.main 底层使用的是FindObjectWithTag("MainCamera")
-    Physics.RaycastAll改成RaycastNonAlloc
-    不可见物体优化
-        分离逻辑位置和显示位置,降低Set次数
-    数组访问
-        List是链表,内存是不连续的
-        Array是数组,内存是连续的
-        ECS和JobSystem可以提高缓存命中率
-    Lua调用开销
-        LUA调用C#接口的开销,主要是函数调用次数,连续.操作
-        LUA调用LUA的开销,元表访问次数太多,尤其是针对数据表的访问
-引擎特性
-    StaticBatching
-        内存换CPU,减少DC
-        StaticBatchingUtility.Combine
-    DynamicBatching
-    GPUSkinning
-    GPUInstancing
-    AnimationInstancing 
-        大量小兵、篮球足球类游戏的观众
-        KeyFrameAnimation预先把每一帧的顶点位置存储到纹理内,在vertex阶段采样
-        使用GPUInstance渲染,把每个实例的属性通过结构体数组传到shader
-    MeshCollider 凸包需要开启MESH的读写选项
-Texture2DArray
-    适用于大量、多次采样的同种材质
-    降低glBindTexture的调用次数,一次调用0.01ms,降低300次可以提升3ms
-    降低DrawCall次数,通过MaterialPropertyBlock设置每个材质独有的属性,然后纹理使用2DArray来存储,类似于合图然后改UV
-引擎模块
-    渲染模块
-    动画模块
-    物理模块
-    粒子系统
-    加载模块
-    UI模块
-    GC调用
 逻辑代码
+    内存分配
+        日志写入
+            tostring、format、concat等等都会产生新的字符串
+        参数传递
+            委托、协程、匿名函数、闭包等等都会创建一个类对象
+        粒子系统
+            Start/Stop/Pause/Clear/Simulate调用时withChildren=true会通过GetComponents获取组件
+        组件获取
+            GetComponents mesh.vertices Input.Touches等会返回一个新分配的数组
+        函数调用
+            Physics.RaycastAll改成RaycastNonAlloc,前者会创建RaycastHit数组
+        数据协议
+            序列化和反序列化会分配大量内存,序列化最好能直接写入到BUFFER,反序列化添加消息池
+    访问效率
+        主摄像机
+            提前缓存,底层使用的是FindObjectWithTag("MainCamera")
+        数组访问
+            Array是连续内存,List是不连续的,List会发生cache miss
+        脚本交互
+            LUA调用C#接口的开销,主要是函数调用次数太多,连续.操作
+            LUA调用LUA的开销,主要是元表访问次数太多,尤其是针对数据表的访问
+渲染模块
