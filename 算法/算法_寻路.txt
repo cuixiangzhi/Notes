@@ -12,6 +12,8 @@
             y = Et³+Ft²+Gt+H  E=y4–3y3+3y2–y1 F=3y3–6y2+3y1 G=3y2–3y1 H=y1
             (x1,y1)是当前位置,(x2,y2)是根据起点和速度预测的1秒后的位置
             (x4,y4)是目标位置,(x3,y3)是根据终点和负速度预测的1秒前的位置
+移动模拟
+    
 寻路建模
     路点
         内存和计算都很小
@@ -22,89 +24,90 @@
         走路不平滑,需要做额外算法处理
         不适合3D地图,因为没有高度信息,没有角色的高度信息
     导航网格
+        适合3D开放地图
         实现复杂,有现成的库使用,但是想要做修改和定制,有点难度
         建立网格的过程比较耗时耗内存,运行时动态阻挡算法复杂
-        精度高,适合3D开放地图
 导航网格
-    生成导航网格 
+    生成导航网格
         概念
-            体素(Span) 三维空间的像素
-            高度场(HeightField) 根据cell(一般为0.2,0.2,0.2)大小在xyz三个方向切割,由体素构成的对象
+            Span                三维空间的像素
+            HeightField         根据cellSize在xyz三个方向切割,由体素构成的对象
+            CompactHeightfield  
+            Tile                根据tileSize对整个体素场景分割,由NxN体素构成的正方形,和相邻的四个Tile通过有效边连接
         实现
-            首先根据输入文件读取场景信息和生成配置信息
-                加载网格信息
-                    .gset类型文件是区域标记文件
-                        f
-                        filename
+            加载网格信息
+                .gset类型文件是区域标记文件
+                    f
+                    filename
 
-                        v nverts area hmin hmax
-                        %f %f %f
-                        s 配置信息 %f %f %f %f %f %f %f %f %f %f %f %f %f %d %f %f %f %f %f %f %f
-                        c 代表Off-Mesh信息
-                    .obj类型文件是MESH信息文件
-                        f代表三角面, %d %d %d
-                        v代表顶点 %f %f %f
-                初始化配置信息 
-                    rcConfig
-                        地形配置
-                        bmin&bmax           根据输入的网格MESH信息计算出的AABB边界
-                        w&h                 根据边界和单位大小计算出的xz平面的单位宽度和高度(也就是xz平面有多少个体素)
-                        cs&ch               用户输入的xz平面单位大小,y方向单位大小, 一般为0.2米 0.3米,越小越精确,体素越多,生成速度越慢
-                        角色配置
-                        walkSlope           坡度大小,角色能在多陡的斜坡上行走
-                        agentRadius         角色半径,已转化为单位长度
-                        agentHeight         角色高度,已转化为单位长度
-                        agentClimbHeight    角色能爬多高的建筑物或者每一步最多跨越多高的距离
-                        多边形配置
-                        maxVertPerPoly      凸多边形最大顶点数
-                        输入网格信息
-                        ntris&tris          三角形个数&三角形数组(三个点构成一个三角形,存储了顶点起始下标)
-                        nverts&verts        顶点个数&顶点数组(三个表示一个顶点)
-            然后创建rcHeightField,最终生成了一个rcSpan二维数组(障碍物集合),并记录了每个体素上边界是否可行走,smax,smin
-                创建高度场并初始化
-                    rcHeightField
-                        bmin&bmax           从配置里读取的AABB边界
-                        w&h                 从配置里读取的xz平面宽高
-                        cs&ch               从配置里读取的每个单位x、y、z方向的单位大小
-                        spans               从配置里读取宽高然后分配好的XZ平面的体素二维数组,大小为sizeof(rcSpan*) * w * h
-                标记输入三角形区域ID
-                        m_triareas          输入的三角面的区域类型,初始化为RC_NULL_AREA(不可行走)
-                        normal              每个三角面的法线,单位化之后Y值正好等于三角面倾斜角的cos值
-                        倾斜角小于最大行走倾斜角度时标记为可行走区域 RC_WALKABLE_AREA(可行走)
+                    v nverts area hmin hmax
+                    %f %f %f
+                    s 配置信息 %f %f %f %f %f %f %f %f %f %f %f %f %f %d %f %f %f %f %f %f %f
+                    c 代表Off-Mesh信息
+                .obj类型文件是MESH信息文件
+                    f代表三角面, %d %d %d
+                    v代表顶点 %f %f %f
+            初始化配置信息 
+                rcConfig
+                    地形配置
+                    bmin&bmax           根据输入的网格MESH信息计算出的AABB边界
+                    w&h                 根据边界和单位大小计算出的xz平面的单位宽度和高度(也就是xz平面有多少个体素)
+                    cs&ch               用户输入的xz平面单位大小,y方向单位大小, 一般为0.2米 0.3米,越小越精确,体素越多,生成速度越慢
+                    角色配置
+                    walkSlope           坡度大小,角色能在多陡的斜坡上行走
+                    agentRadius         角色半径,已转化为单位长度
+                    agentHeight         角色高度,已转化为单位长度
+                    agentClimbHeight    角色能爬多高的建筑物或者每一步最多跨越多高的距离
+                    多边形配置
+                    maxVertPerPoly      凸多边形最大顶点数
+                    输入网格信息
+                    ntris&tris          三角形个数&三角形数组(三个点构成一个三角形,存储了顶点起始下标)
+                    nverts&verts        顶点个数&顶点数组(三个表示一个顶点)
+            
+            创建体素高度场 ********************Recast.cpp********************
+                rcHeightField
+                    bmin&bmax           从配置里读取的AABB边界
+                    w&h                 从配置里读取的xz平面宽高
+                    cs&ch               从配置里读取的每个单位x、y、z方向的单位大小
+                    spans               从配置里读取宽高然后分配好的XZ平面的体素二维数组,大小为sizeof(rcSpan*) * w * h
+            标记可行走区域 ********************Recast.cpp********************
+                    m_triareas          输入的三角面的区域类型,初始化为RC_NULL_AREA(不可行走)
+                    normal              每个三角面的法线,单位化之后Y值正好等于三角面倾斜角的cos值
+                    倾斜角小于最大行走倾斜角度时标记为可行走区域 RC_WALKABLE_AREA(可行走)
 
-                光栅体素化所有三角面,对应于 ********************RecastRasterlization.cpp********************
-                        遍历每个三角面,计算其AABB包围盒tmin,tmax(也就是三个顶点的最小xyz,最大xyz)
-                        根据包围盒计算zmin=[(tmin[2]-bmin[2])*(1/cs)],zmax=[(tmax[2]-bmin[2])*(1/cs)]
-                        for z=zmin;z<=zmax;z+=1 cz=bmin[2]+z*cs
-                            切割多边形,每次输入是N个点,输出是上下两部分多边形,最多6边形切割为7个点
-                            逆时针遍历所有边,每次把交点(di>=0!=dj>=0,s=dj/(dj-di))和i点加入到输出内,交点两个输出都加入,di大于0加入输出1,否则加入输出2
-                        for x=xmin;x<=xmax;x+=1 
-                            切割多边形,与上述切割算法一致
-                            计算切割后多边形Y方向ymin,ymax,填充x,z处的y方向体素信息(ymin到ymax之间都是实心填充,只包含一部分也算实心)
-                            添加体素时计算yminymax相邻区域是否有体素,有就合并,没有则插入新的体素,每个体素包括ymin,ymax,area,next
-                        addSpan
-                            xz平面每个格子处,y方向从低到高组成一个链表
-                            添加结点时没有交叉则直接插入,否则合并当前结点和新增结点并移除当前结点,继续插入
-                            根据当前结点和合并后的结点最高点差值和合并参考值选择是否合并area标记
-
-                过滤可行走体素,对应于 ********************RecastFilter.cpp********************
-                        根据climbHeight计算Y方向相邻体素距离,如果上一个体素可行走并且当前体素不可行走,相邻体素smax距离小于climbHeight,则标记当前区域可行走
-                        for span in yspan do
-                            上一个span可行走且当前span不可行走
-                            两个span上边界距离小于climbHeight,标记当前span可行走
-                        end
-                        根据climbHeight计算XZ方向相邻体素距离,如果当前体素周围四个体素有大于或小于climbHeight,则标记为不可行走(悬崖边悬挂物体)
-                        for span in yspan do
-                            for spand in 四周 do
-                                第一个spand下边是空的,此时检查span和spand之间是否有agentHeight的间隙,有则标记span不可行走
-                                检查后续spand和span是否可以站人(agentHeight),并且下边界之差是否太大(climbHeight),太大说明是个悬崖,标记span不可行走
-                            end
-                        end
-                        根据climbHeight计算Y方向相邻体素之间的空隙,如果小于agentHeight,说明该体素不可行走
-                        for span in yspan do
-                            span->smax和span->next->smin的差是否大于agentHeight,否则标记span不可行走
-                        end
-            接下来要把障碍物空间转化为可行走空间,即生成Y方向相邻的两个Span下ymax上ymin构成的开放可行走Span
+            光栅体素化网格 ********************RecastRasterlization.cpp********************
+                遍历每个三角面,计算其AABB包围盒tmin,tmax(也就是三个顶点的最小xyz,最大xyz)
+                根据包围盒计算zmin=[(tmin[2]-bmin[2])*(1/cs)],zmax=[(tmax[2]-bmin[2])*(1/cs)]
+                for z=zmin;z<=zmax;z+=1 cz=bmin[2]+z*cs
+                    切割多边形,每次输入是N个点,输出是上下两部分多边形,最多6边形切割为7个点
+                    逆时针遍历所有边,每次把交点(di>=0!=dj>=0,s=dj/(dj-di))和i点加入到输出内,交点两个输出都加入,di大于0加入输出1,否则加入输出2
+                for x=xmin;x<=xmax;x+=1 
+                    切割多边形,与上述切割算法一致
+                    计算切割后多边形Y方向ymin,ymax,填充x,z处的y方向体素信息(ymin到ymax之间都是实心填充,只包含一部分也算实心)
+                    添加体素时计算yminymax相邻区域是否有体素,有就合并,没有则插入新的体素,每个体素包括ymin,ymax,area,next
+                addSpan
+                    xz平面每个格子处,y方向从低到高组成一个链表
+                    添加结点时没有交叉则直接插入,否则合并当前结点和新增结点并移除当前结点,继续插入
+                    根据当前结点和合并后的结点最高点差值和合并参考值选择是否合并area标记
+            过滤可行走体素 ********************RecastFilter.cpp********************
+                根据climbHeight计算Y方向相邻体素距离,如果上一个体素可行走并且当前体素不可行走,相邻体素smax距离小于climbHeight,则标记当前区域可行走
+                for span in yspan do
+                    上一个span可行走且当前span不可行走
+                    两个span上边界距离小于climbHeight,标记当前span可行走
+                end
+                根据climbHeight计算XZ方向相邻体素距离,如果当前体素周围四个体素有大于或小于climbHeight,则标记为不可行走(悬崖边悬挂物体)
+                for span in yspan do
+                    for spand in 四周 do
+                        第一个spand下边是空的,此时检查span和spand之间是否有agentHeight的间隙,有则标记span不可行走
+                        检查后续spand和span是否可以站人(agentHeight),并且下边界之差是否太大(climbHeight),太大说明是个悬崖,标记span不可行走
+                    end
+                end
+                根据climbHeight计算Y方向相邻体素之间的空隙,如果小于agentHeight,说明该体素不可行走
+                for span in yspan do
+                    span->smax和span->next->smin的差是否大于agentHeight,否则标记span不可行走
+                end
+            
+            创建压缩高度场 ********************Recast.cpp********************
                 创建CompactHeightfield,只记录上表面即行走面及其与上表面距离的高度场,并记录了与四周的连通性
                     rcCompactHeightfield
                         w&h bmin&bmax cs&ch agentHeight&agentClimbHeight bmax要加上角色高度
@@ -121,19 +124,19 @@
                     遍历spans,如果一个Span为不可行走或者相邻的Span有一个不可行走,则标记该Span到达边界的距离为0
                     检查与周围8个Span的最小距离,XZ轴向距离为2,斜对面距离为3
                     最终距离小于角色半径的全部标记为不可行走
-            可选步骤,标记每个span是什么类型的地面
-                区域标记 ********************RecastArea.cpp********************
-                    Volume是由顶点集合和area标记构成的
-                    会检测每个Span在哪个Volume区域内(这里检测的是y方向范围),并修改其区域ID
-            可行走空间生成结束,接下来是区域生成阶段
-                区域生成算法 ********************RecastRegion********************
-                    Watershed partitioning
-                        经典算法,有比较好的曲面细分效果,把compactHeightField划分成没有孔洞和重叠的区域,预计算的最好选择
-                    Monotone partioning
-                        速度很快,可以保证没有孔洞和重叠,但是会产生很多细长的poly,增加寻路消耗
-                    Layer partitoining
-                        相对快速,分割成不重叠的区域,对于孔洞的处理依赖于输入数据
-                        生成结果比第二种要好,但是不如第一种,适合平铺式的navmesh
+
+            可行走区域类型 ********************RecastArea.cpp********************
+                Volume是由顶点集合和area标记构成的
+                会检测每个Span在哪个Volume区域内(这里检测的是y方向范围),并修改其区域ID
+            
+            区域生成 ********************RecastRegion********************
+                Watershed partitioning
+                    经典算法,有比较好的曲面细分效果,把compactHeightField划分成没有孔洞和重叠的区域,预计算的最好选择
+                Monotone partioning
+                    速度很快,可以保证没有孔洞和重叠,但是会产生很多细长的poly,增加寻路消耗
+                Layer partitoining
+                    相对快速,分割成不重叠的区域,对于孔洞的处理依赖于输入数据
+                    生成结果比第二种要好,但是不如第一种,适合平铺式的navmesh
                 经典算法
                     分水岭算法(图像分割)
                         原理
@@ -175,7 +178,8 @@
                                 重叠区域,加入到当前span所属区域的floors内
                                 connections非空则表示轮廓已找到,不再处理,否则找出与reg相邻的区域信息
                                 某个region的span数量低于minRegionArea并且不是边界区域则删除该区域,边界tile
-                                合并太小的region,重新生成区域ID               
+                                合并太小的region,重新生成区域ID 
+                          
             轮廓生成 ********************RecastContour********************
                 轮廓是指由体素构成的Span的边界信息,边界分为内边界和外边界,外边界是区域边界
                 轮廓是由折线(XZ平面)构成的封闭的多边形
@@ -205,6 +209,7 @@
                     2.遍历每个孔洞,执行合并算法
                         找出最优的分割点(距离最小与其他洞不相交),把外围多边形分割为N个小多边形
                     合并没看到,写的不对 TODO
+            
             导航网格 ********************RecastMesh********************
                 1.轮廓的顶点数据是在voxel空间的,坐标点是整数格式,表示距离地面的体素距离,这一步要把它转换到向量空间,坐标转换为原始格式
                 2.每个轮廓都是不相关的,这里要把它们合并为一个MESH
@@ -251,6 +256,7 @@
                     第一次遍历,记录下每条边的起始点和所属多边形,邻接多边形默认等于自己,邻接边为空(顶点从小到大,环绕方向一致,肯定无共享边)
                     第二次遍历,顶点从大到小,环绕方向一致,此时边的方向是反的,会遇到共享边,记录在edge内
                     遍历每条边,检查正向和反向的两个多边形是否不相等,是则记录邻接多边形(哪条边,哪个多边形)p[vertsPerPoly+e.polyEdge[0]] = e.poly[1]
+            
             高度细节 ********************RecastMeshDetail**************
                 1.如果原始网格是投影到2D平面的,那么生成的MESH和原始MESH是重合在一起的
                 2.如果原始网格是3D网格,就需要生成高度信息
@@ -293,6 +299,7 @@
                         把verts从临时数组拷贝到dmesh.verts;把tris从临时数组拷贝到dmesh.tris
                         dmesh.meshes存储了每个多边形的顶点数和三角形个数
                 6.遍历多边形,检查area标记,修改area和flag类型,area可行走则标记为GROUND;公路草地等flag改为WALK,水的flag改为SWIM,门的flag改为DOOR|WALK
+            
             寻路图生成************************DetourNavMeshBuilder*****************************************
                 1.参数信息填充
                     dtNavMeshCreateParams
@@ -362,133 +369,109 @@
                                         平行线段检测Y值距离是否小于指定阈值
                                         链接的边有上限限制
                             OffMesh链接:手动添加的远程链接,可以是tile内部也可以是tile和tile之间
+
             包围盒树**************************DetourNavMeshBuilder*****************************************
                 1.首先对每一个多边形生成BVItem,即AABB信息(以体素为单位),然后开始创建BVNode
                 2.对多边形数组执行二分法排序,首先计算数组AABB哪个轴最长,对数组item执行快排算法(按照最长的轴数值从小到大)
                 3.分别对排序后的数组左右两部分执行二分法排序(左闭右开),结束条件:剩余两个元素,分别赋值node.bmin&bmax&i  
                 4.叶字结点i记录了是哪个多边形,非叶子结点记录了子结点数量和子结点最大的AABB
-        Tile区别
-            1.根据cellSize计算体素数量,每个tile的大小是通过体素个数定义的正方形
-            2.遍历每一个tile,执行buildTileMesh,然后移除目标位置上旧的tile，添加新的tile
-            3.buildTileMesh流程
-                根据tile找出足够把tile包围的mesh(通过borderSize计算),AABB相比Tile本身的AABB会被扩大
-                光栅化是根据AABB做碰撞检测找出的
-                其它流程和solo模式一致,只不过会传入borderSize做外部区域标记,buildMesh时边界外的会通过移除顶点给Remove掉
-        代码分类
-            体素:
+        代码
+            体素生成:
                 rcHeightField                   Recast.h
                 rcCreateHeightField             Recast.cpp
                 rcMarkWalkableTriangles         Recast.cpp
                 rcRasterizeTriangles            RecastRasterization.cpp
                 rcFilterLedgeSpans              RecastFilter.cpp
                 rcFilterWalkableLowHeightSpans  RecastFilter.cpp
-            区域:
+            区域生成:
                 rcCompactHeightField            Recast.h
                 rcBuildCompactHeightField       Recast.cpp
                 rcBuildDistanceField            RecastRegion.cpp
                 rcBuildRegions                  RecastRegion.cpp
-            轮廓:
+            轮廓生成:
                 rcContourSet                    Recast.h
                 rcBuildContours                 RecastContour.cpp
                 walkContour
                 simplifyContour
-            网格:
+            网格生成:
                 rcPolyMesh                      Recast.h
                 rcBuildPolyMesh                 RecastMesh.cpp
                 rcPolyMeshDetail                Recast.h
                 rcBuildPolyMeshDetail           RecastMeshDetail.cpp
     寻路相关算法
-        距离点最近的多边形内的点
-            首先根据多边形ID找出tile和poly,再根据poly偏移找出detailMesh
-            根据点到线段距离算法和pnpoly算法判断点到多边形每条边的距离以及点是否在多边形内部
-            在内部: 不需要处理,点已经在内部了
-            在外部: 遍历找出距离最近的边,把点坐标限制到边上(多边形内部)
-            遍历detailMesh的三角形,根据质心坐标算法求出高度(解方程简化) AP = u * AB + v * BC)
-            该功能可以拆分为两部分 获取不带高度的距离多边形最近的点和获取多边形内部某点的高度
-            OffMesh是两个点构成的poly,在poly内部也就是在线段上
-        距离点最近的多边形
-            根据中心点和搜索范围查找距离最近的最多128个多边形
-                首先:根据中心点和搜索范围得出一个AABB,然后根据AABB计算搜索范围内tile的个数(bminx|y-ox|y)/tw|th (bmaxx|y-ox|y)/tw|th
-                然后:遍历所有范围内的tile,遍历这个tile位置处所有layer的tile,在tile内部根据AABB和过滤器查找多边形
-                最后:遍历搜索AABB过滤出的所有多边形,计算距离点最近的多边形内的点
-                    如果点在多边形内(XZ平面),则计算高度距离d(在多边形下面则距离为0,在上面d等于点距离减去stepHeight)
-                    不在多边形内则距离d为两点直线距离
-                    找出距离值d最小的多边形和点
-            根据AABB在tile内部查找多边形
-                有包围盒二叉树:
-                    首先根据TILE的AABB和搜索AABB,计算有效的搜索AABB,bvQuantFactor是体素大小的倒数,因为AABB树是以体素格子为单位
-                    根据tile计算出polyIDBase(也就是tile_salt+tile_tile+0)
-                    搜索BV二叉树
-                        如果当前结点是叶子结点并且被搜索AABB覆盖,则检测该多边形是否通过filter测试,是则加入结果列表
-                        如果被AABB覆盖或者当前结点是叶子结点,那么node结点加1,否则跳过该子树(node.i存储了该子树有多少结点(以负数存储),node+node.i就是右子树)
-                无包围盒二叉树:
-                    首先根据tile计算出polyIDBase(也就是tile_salt+tile_tile+0)
-                    然后遍历tile内的所有多边形,针对每个多边形执行filter测试然后计算其AABB是否被搜索AABB覆盖,是则加入结果列表
-        启发式搜索算法A*
-            数据结构
-                open
-                    node指针构成的数组(以堆排序算法有序),node数据通过指针来引用,open表不存储数据
-                堆排序算法:
-                    向上调整:因为二叉有序堆父结点一定小于子结点(左右子结点大小无序),因此向上调整只需要判断i和(i-1)/2大小后父结点数据下调即可
-                    向下调整:检查左右子结点2i+1和2i+2,选择较小的交换
-                node:
-                    pos cost total 坐标点 当前消耗 总消耗
-                    pidx 父结点idx state结点状态 flags结点标志 id所属多边形ID
-                pool:
-                    nodes数组 next链表(存储每个哈希位置处的结点链表next) first(哈希表,存储一个bucket内的链表头结点)
-                    getNode:首先对polyID进行hash得出bucket,然后在bucket内查找对应的结点,如果没有那么就新增一个结点
-                query:
-                    startPoly endPoly startPos endPos 起始点和多边形
-                    filter过滤器通过area和flag来检测多边形是否合法
-                    bestNode bestNodeCost 搜索过程中的当前最优结点
-            1.建立OPEN表(有序队列),和CLOSE表,OPEN表插入初始结点
-            2.循环.
-                弹出OPEN表头结点,插入CLOSED表
-                当前结点是目标结点?结束循环
-                遍历当前结点的链接结点(首先根据当前结点的polyID找出poly和tile以及它的父结点)
-                    检查当前链接多边形是否是目标类型的多边形,不是则跳过
-                    从结点数组内找出对应的结点并计算链接边出口点坐标
-                        入口点坐标计算
-                            首先找出两个多边形的链接信息
-                            如果是OFFMESHLINK,那么链接边左右点相同
-                            否则检查链接是否是内部链接,是则返回边的左右两端点,否则返回外部链接计算的conarea范围的左右两个端点
-                            计算两个端点构成的边的中点作为入口点赋值给node.pos
-                    计算到目标点消耗
-                        如果当前多边形是目标多边形
-                            g=curNode.cost+distance(curNode.pos,neiboNode.pos)*filter.getCost(curPoly.area)+distance(neiboNode.pos,dstPos)*filter.getCost(neiboPoly.area);
-                            h=0 f=g+h
-                        如果不是目标多边形
-                            g=curNode.cost+distance(curNode.pos,neiboNode.pos)*filter.getCost(curPoly.area)
-                            因为没到目标多边形,所以朝向当前多边形链接边的中点移动,检测消耗
-                            h=distance(neiboNode.pos,dstPos)*H_SCALE
-                    如果当前邻接点已在OPEN表或者CLOSED表
-                        新计算消耗大于当前消耗
-                            跳过处理下一个链接点
-                    修改当前链接点的消耗和父结点
-                        在OPEN表内
-                            修改消耗并排序
-                        在CLOSED表内
-                            从closed表移除,插入open表
-                    根据h值修改当前最近结点,可以根据该结点检查是不是直接到达了目标点,否则是只走了一部分路径
-            3.根据查找出的路径点的父结点标记反向找出路径多边形列表
-            4.根据查找出的多边形列表和每个多边形的入口点查找路点
+        搜索最近落点
+            首先根据目标点和搜索范围得出一个AABB
+            然后根据AABB找出附近的Poly(先找出Tile,然后遍历Tile内的Poly检查是否和AABB相交)
+            遍历所有相交的Poly,使用pnpoly算法检查点是否在Poly内部
+            在内部:遍历Poly的DetailMesh,检查在哪个三角形内部,根据质心坐标计算出高度(具体计算见碰撞算法)
+            在外部:遍历每条边计算出最短距离,找出距离最近的边上的最近点
+        搜索最短路径
+            A*搜索最短多边形路径
+                数据结构
+                    open
+                        node指针构成的数组(以堆排序算法有序),node数据通过指针来引用,open表不存储数据
+                    堆排序算法:
+                        向上调整:因为二叉有序堆父结点一定小于子结点(左右子结点大小无序),因此向上调整只需要判断i和(i-1)/2大小后父结点数据下调即可
+                        向下调整:检查左右子结点2i+1和2i+2,选择较小的交换
+                    node:
+                        pos cost total 坐标点 当前消耗 总消耗
+                        pidx 父结点idx state结点状态 flags结点标志 id所属多边形ID
+                    pool:
+                        nodes数组 next链表(存储每个哈希位置处的结点链表next) first(哈希表,存储一个bucket内的链表头结点)
+                        getNode:首先对polyID进行hash得出bucket,然后在bucket内查找对应的结点,如果没有那么就新增一个结点
+                    query:
+                        startPoly endPoly startPos endPos 起始点和多边形
+                        filter过滤器通过area和flag来检测多边形是否合法
+                        bestNode bestNodeCost 搜索过程中的当前最优结点
+                1.建立OPEN表(有序队列),和CLOSE表,OPEN表插入初始结点
+                2.循环.
+                    弹出OPEN表头结点,插入CLOSED表
+                    当前结点是目标结点?结束循环
+                    遍历当前结点的链接结点(首先根据当前结点的polyID找出poly和tile以及它的父结点)
+                        检查当前链接多边形是否是目标类型的多边形,不是则跳过
+                        从结点数组内找出对应的结点并计算链接边出口点坐标
+                            入口点坐标计算
+                                首先找出两个多边形的链接信息
+                                如果是OFFMESHLINK,那么链接边左右点相同
+                                否则检查链接是否是内部链接,是则返回边的左右两端点,否则返回外部链接计算的conarea范围的左右两个端点
+                                计算两个端点构成的边的中点作为入口点赋值给node.pos
+                        计算到目标点消耗
+                            如果当前多边形是目标多边形
+                                g=curNode.cost+distance(curNode.pos,neiboNode.pos)*filter.getCost(curPoly.area)+distance(neiboNode.pos,dstPos)*filter.getCost(neiboPoly.area);
+                                h=0 f=g+h
+                            如果不是目标多边形
+                                g=curNode.cost+distance(curNode.pos,neiboNode.pos)*filter.getCost(curPoly.area)
+                                因为没到目标多边形,所以朝向当前多边形链接边的中点移动,检测消耗
+                                h=distance(neiboNode.pos,dstPos)*H_SCALE
+                        如果当前邻接点已在OPEN表或者CLOSED表
+                            新计算消耗大于当前消耗
+                                跳过处理下一个链接点
+                        修改当前链接点的消耗和父结点
+                            在OPEN表内
+                                修改消耗并排序
+                            在CLOSED表内
+                                从closed表移除,插入open表
+                        根据h值修改当前最近结点,可以根据该结点检查是不是直接到达了目标点,否则是只走了一部分路径
+                3.根据查找出的路径点的父结点标记反向找出路径多边形列表
+                4.根据查找出的多边形列表和每个多边形的入口点查找路点
                 1.把起始点加入结果数组
                 2.如果路径内多边形数量大于1,则遍历多边形数组,根据拐点法查找直线路径
                 3.把结束点加入结果数组
-        拐点法寻找最优路点路径
-            1.首先找到起始多边形和穿出边的两个端点,连线L、R
-            2.找出下一个穿出边左点,连线L',判断L'是否在L、R之间,如果在,则L更新为L',同理找出右点,连线R',判断R'是否在L、R之间,如果在,则R更新为R'
-            如果L'R'都在L左侧或者R右侧,则L或R为一个拐点,连接拐点需要判断当前拐点与新拐点之间的线段是否经过了两个不同的区域
-            3.继续找出下一个拐点,直到目标多边形
-        射线法判断目标点是否直接可达
+            拐点法搜索最优路点路径
+                1.首先找到起始多边形和穿出边的两个端点,连线L、R
+                2.找出下一个穿出边左点,连线L',判断L'是否在L、R之间,如果在,则L更新为L',同理找出右点,连线R',判断R'是否在L、R之间,如果在,则R更新为R'
+                如果L'R'都在L左侧或者R右侧,则L或R为一个拐点,连接拐点需要判断当前拐点与新拐点之间的线段是否经过了两个不同的区域
+                3.继续找出下一个拐点,直到目标多边形
+        是否直接可达
             1.遍历初始多边形每条边,判断与射线AB是否相交(判断AOP BOP是否同向,同向不相交)
             2.通过穿出边找出下一个多边形,继续上述判断,直到碰到不可穿出区域或者到达目标区域
             3.计算和多边形相交时会返回两条相交结果,如果是一个,那么这个多边形就是最终的多边形
             4.需要记录与各个多边形的相交点,因为如果按照这个路径移动,需要多边形的area信息来处理移动行为
-        多层NAVMESH寻路高度
+        多层寻路高度
             首先使用findPath找出起始点到目标点的多边形路径
             然后使用findStraightPath找出起始点到目标点的拐点路径(此时记录了每个拐点属于哪个多边形,边界点属于下一个多边形)
             然后在移动时通过getPolyHeight获取XZ单次移动之后在当前多边形上的高度
+            注意点:制作时确保多层之间有一定的距离,方便寻路时判断落点
         静态阻挡实现
             方法1,在生成NAVMESH的时候导出.gset,标记三角形网格的区域类型
                 area类型包括 POLYAREA_GROUND(地面) POLYAREA_GRASS(草地) POLYAREA_ROAD(公路) POLYAREA_WATER(水) POLYAREA_DOOR(门)
@@ -496,6 +479,3 @@
                 flag和area可以扩展,但是flag最多有16位(ushort类型)
                 在寻路时通过dtQueryFilter的includeFlag和excludeFlag来过滤掉不可行走的区域
             方法2,对生成的NAVMESH进行裁剪
-        障碍物躲避导航
-            根据移动方向和速度阈值计算前方两点是否与障碍物相交,是则给物体一个离开的力
-                
