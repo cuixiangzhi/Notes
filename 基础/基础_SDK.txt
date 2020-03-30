@@ -66,7 +66,7 @@
                 屏幕配置
                     <uses-screens android:resizeable=true />
                 应用配置
-                    <application android:label="@string/app_name" android:allowBackup=true默认为true,允许应用在未获取ROOT时使用abd备份和恢复数据 >
+                    <application android:label="@string/app_name" android:networkSecurityConfig="@xml/network_security_config" android:allowBackup=true默认为true,允许应用在未获取ROOT时使用abd备份和恢复数据 >
                         一个activity是一个单独的屏幕,使用setContentView来显示不同的控件
                         <activity android:name="com.xx.xx.Unity3dPlayer" 入口类名
                                   android:label="@string/app_name" >

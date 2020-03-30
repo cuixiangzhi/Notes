@@ -1,25 +1,26 @@
-Tomcat  静态+动态HTTP服务,动态是通过运行JAVA应用实现
-Apache	静态HTTP服务 负载均衡,反向代理
-CGI		通用网关接口CommonGatewayInterface
-		WEB服务器只能处理静态内容,动态内容需要调用WEB应用程序执行,而WEB程序的执行是由CGI进程来完成的
-		WEB服务器与CGI进程之间交互的协议就是CGI,CGI调用对应的WEB应用程序并返回执行结果
-Nginx   负载均衡,反向代理 http tcp fastcgi
+WEB服务器
+	Apache	处理静态请求,动态请求转发给CGI程序,支持负载均衡、反向代理
+	Tomcat  处理静态请求,动态请求转发给CGI程序或者JAVA程序
+	Nginx   负载均衡,反向代理 http tcp cgi
 		配置文件设置 #注释
 			全局配置:
-				指定所属用户和用户组:   user username groupname;
-				工作进程个数:			worker_processes 8;
-				进程PID存放目录:		pid  logs/nginx.pid;
-				日志文件: 				error_log logs/error.log level(debug|info|error|warn|notice);
+				指定所属用户和用户组 user username groupname;
+				工作进程个数	 	worker_processes 8;
+				进程PID存放目录	 	pid  logs/nginx.pid;
+				日志文件		   error_log logs/error.log level(debug|info|error|warn|notice);
 			事件配置:
 				event
 				{
-					接受连接互斥锁:		accept_mutex on; 默认打开
-					同时处理多个链接:	multi_accept on; 默认关闭
-					事件驱动模型:		use select|epoll|poll;
-					工作进程连接上限:   worker_connections 1024; 默认不超过ulimit -n即单个进程可以打开的描述符个数
+					接受连接互斥锁		accept_mutex on; 默认打开
+					同时处理多个链接	multi_accept on; 默认关闭
+					事件驱动模型		use select|epoll|poll;
+					工作进程连接上限	worker_connections 1024; 默认不超过ulimit -n即单个进程可以打开的描述符个数
 				}
 			服务配置:
 				http {} http负载均衡
+					server {}
+						listen 443 ssl; HTTPS服务器支持,需要配置ssl证书
+						return 301 https://url 重定向http到https
 				stream {} TCP/UDP负载均衡
 					upstream app {} 上游服务器,具体的应用服务器
 						hash $remote_addr consistent; 主要用于缓存服务,同一个客户端的请求转向同一个缓存服务,提高缓存命中率
@@ -32,9 +33,43 @@ Nginx   负载均衡,反向代理 http tcp fastcgi
 						proxy_read_timeout 1s;从上游服务器接收数据超时时间
 						proxy_send_timeout 1s;向上游服务器发送数据超时时间
 						location / { proxy_pass https://app.com }
-NodeJs  基于V8的JS框架,基于NODEJS的服务器框架pomelo
-cdn     内容分发网络,分区域部署服务器,选取距离最近的服务器获取内容
-HTTP    url?arg1=&arg2=
+HTTP协议	
+		请求报文
+			请求行 METHOD URI HTTP/VERSION
+				GET:请求参数附加到URL后面(url?arg1=val1&arg2=val2),没有请求体
+				POST:请求参数附加到请求体内,不能收藏为书签,也不会出现在历史记录
+				HEAD:与GET方法相同,但是响应报文只返回头部
+				HTTP版本:1.1支持range分块请求,connection用同一条TCP传递多次请求
+				HTTPS:运行在SSL之上,SSL用来做加密解密操作,更加安全,SSL证书收费
+					  服务器会先返回SSL证书,包含公钥以及颁发机构信息
+					  客户端会根据本地系统信任的证书做检查,没有给出提示
+					  客户端用公钥加密传递对称秘钥和加密算法类型
+				证书验证
+					using namespace System.Net;
+					ServicePointManager.ServerCertificateValidationCallback
+			请求头 请求参数信息,自定义信息在请求体内,请求头保护一些通用信息
+				user-agent:浏览器和系统信息
+				accept:客户端支持的内容类型
+				language:客户端支持的语言
+				encoding:客户端支持的编码
+				connection:返回响应报文之后连接是否断开
+				host:请求地址,也就是域名
+				cookie:响应报文返回的缓存信息,用来记录状态,HTTP是无状态协议
+				content-type:请求体信息,表示请求体是什么文件类型
+				content-length:请求体长度
+			空行
+			请求体 请求参数信息k1=v1&k2=v2
+				WWWForm是指某个特定的Content-Type:application/x-www-form-urlencoded
+		响应报文
+			状态行 HTTP/VERSION STATUS_CODE STATUS_DES
+				1XX: 2XX:请求成功 3XX:重定向 4XX:客户端错误 5XX:服务端错误
+				200:请求成功 400:语法错误 403:禁止访问 404:地址不存在 503:服务器不可用
+			响应头 响应结果信息,响应头包含一些通用信息
+				server:处理该请求的服务器软件信息,nginx、apache
+				set-cookie:设置缓存数据
+				content-type:返回内容类型
+			空行
+			响应体
 TCP/IP协议栈
 		应用层,自定义消息,序列化为字节数据,发给传输层,这一层是用户控制的,跟具体应用关系密切
 		传输层,TCP UDP

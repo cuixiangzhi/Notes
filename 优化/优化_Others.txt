@@ -3,3 +3,4 @@
 网络适配
     iOS需要支持IPV6,通过相应的接口把IPV4地址转换成IPV6地址
     弱网环境或者wifi和4g切换时确保游戏正常运行
+    https支持,使用System.Net.WebRequest进行https请求,并添加证书验证回调
