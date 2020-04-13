@@ -178,6 +178,17 @@
 			pthread_create(pthread_t &pid,NULL,void* loopfunc,this);
 			CreateThread(NULL,0,DWORD WINAPI loopfunc,this,DWORD &pid)
 			pthread_self()获取线程ID
+		线程退出
+			pthread_cancel();
+			pthread_exit(NULL);
+		线程状态
+			不同的操作系统有不同的线程模型,同时对于了不同的线程状态
+			通用状态
+				新建: 已经创建,等待start
+				就绪: 可以执行,等待cpu_timeslice
+				运行: 正在执行,执行code
+				阻塞: 等待事件,等待阻塞:lockobj.wait 同步阻塞:lock(obj) 其他阻塞:sleep或者join或者io
+				终止: 执行结束,等待主线程回收资源
 		线程同步
 			共享锁和互斥锁
 				pthread_mutex_init(&mid)
@@ -191,22 +202,11 @@
 			C#Lock&Monitor
 				lock(obj)
 					是一个语法糖,实际展开为Monitor.Enter try&finally Monitor.Exit
-					obj包含拥有该锁的线程和等待队列
 				Monitor
 					Wait	释放锁并把自己加入到等待队列
 					Pulse	释放一个等待队列的线程到就绪队列
 					Enter   获取锁对象,Enter之后可能会由于异常而被终止,try&finally没有执行,导致线程死锁
 					Exit    释放锁对象
-		线程退出
-			pthread_cancel();
-			pthread_exit(NULL);
-		线程状态
-			不同的操作系统有不同的线程模型,同时对于了不同的线程状态
-			通用状态
-				就绪: 等待执行
-				运行: 正在执行
-				阻塞: 等待事件
-				终止: 执行结束
 		线程资源
 			默认创建的线程处于joinable(可以通过设置pthread_attr来改变)状态,需要调用pthread_join(只有一个调用者)之后才会回收已退出的线程的资源
 			分离状态,调用pthread_detach后线程处于游离状态,由操作系统来回收资源

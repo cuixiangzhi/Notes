@@ -1,5 +1,7 @@
-Monday Tuesday Wednesday Thursday Friday Saturday SunDay
-January February March April May June July August Spetember October November December
+日期月份
+	Monday Tuesday Wednesday Thursday Friday Saturday SunDay
+	January February March April May June July August Spetember October November December
+
 基础知识
 	数值存储
 		计算机只有加法运算器,计算机存储补码,运算器补码运算
@@ -121,6 +123,7 @@ January February March April May June July August Spetember October November Dec
 		加载数据 _mm_load_si128
 		存储数据 _mm_store_si128
 		逻辑运算 __mm_adds_* _mm_or_* __mm_and_* __mm_subs_* __mm_cmp_*
+
 C/C++
 	关键字
 		指针	
@@ -228,7 +231,7 @@ C/C++
 				   	read(buffer,size) write(buffer,size) 字节数组读写
 				C文件读写 
 					open和write属于系统调用,低级IO无内存缓冲,不同操作系统不一样
-				  	fopen "path","wrab+"
+				  	fopen "path","wrab+" r:只读取ASCII可显示字符,遇到不可显示字符时读取结束
 				  	fclose fp
 				  	fread buffer,size,count,fp
 				  	fseek fp,offset,seek_cur
@@ -258,7 +261,7 @@ C/C++
 		stddef NULL定义
 		stdlib 内存分配 malloc free 数值与字符串转换 atoi itoa 随机数 srand(seed) rand 系统操作 system exit abort 环境变量 getenv putenv
 		stdarg 不定长参数处理  __VA_ARGS__ va_list ap; va_start(ap,format); char buffer[512]; len = vsprintf(buffer,format,ap); va_end(ap);
-		string strcat(dst,src) strcpy(dst,src) strlen(src) strcmp(src,dst) c_str
+		string strcat(dst,src) strcpy(dst,src) strstr(src,content) strlen(src) strcmp(src,dst) c_str
 		ctime time_t time(NULL)秒级系统时间 clock_t clock()毫秒级运行时间 tm localtime(time_t t)具体日期 
 		chrono steady_clock::now精度为100ns high_resolution_clock::now()
 		基础宏定义 __LINE__ __FUNCTION__ __FILE__
@@ -319,56 +322,57 @@ C#
 	ref&out
 		参数传递默认为值传递(值类型复制一份,引用类型复制引用)
 		引用传递传递地址,ref&out不会进行装箱操作
+
 python 
-	   函数定义
-			def name(params):
-	   判断是否是主动执行
-			__name__ == "__main__": 
-	   设置文件编码
-		   #coding:utf-8 
-		   import sys
-		   reload(sys)
-		   sys.setdefaultencoding("utf-8")
-	   当前脚本执行路径
-		   import os
-		   os.path.abspath(sys.path[0])
-	   参数
-		   sys.argv数组
-	   数组  append   
-	   循环  for var in 数组或者range(1,n):
-	   文件操作  file = open(path,"wb")  file.write() file.close() file.readline file.readlines file.seek(cur,off) file.tell
-	   目录操作 是否为目录 os.path.isdir() 
-				目录列表 os.listdir()
-				删除空目录 os.rmdir()
-				路径是否存在 os.path.exists()
-				分解为文件名和路径 os.path.split()
-				删除目录 shutil.rmtree()
-				         shutil copy()文件夹
-						 shutil copyfile 文件
-						 shutil move 移动
-						 shutil remove 删除文件
-	   堆栈   traceback.print_exc()
-	   输入  rawinput()
-	   字符串  string[0:-3]  
-	           string.split() 
-			  字符串拼接 string.join(array)  "%s" % varname  a + b
-			  替换replace
-	   字节   b前缀后跟ASCII字符
-	   		  b前缀后跟转义16进制 b'xFF'
-	   		  bytesarray(b'')
-	   编码   python字符串是对象,有两种,
-	   		  一个是str类型,可能是gbk或utf-8编码或者ascii编码 通过decode("gbk|ascii|utf-8")操作转换为unicode对象
-	   		  一个是unicode类型,通过encode("gbk|utf-8|ascii")转换为str对象
-	   		  判断对象类型 type(x) is unicode or type(x) is str
-	   
-	   库  excel库xlrd
-	              excel = xlrd.open_workbook(path)
-				  sheetnames = excel.sheet_names()
-				  sheet = excel.sheet_byname(name)
-				  cols = sheet.row_values(n)
-				  ctype = sheet.cell(row,col)
-				  value = sheet.cell_value(row,col);
-	   库  xml库xml.etree.ElementTree
+	函数定义
+		def name(params):
+	判断是否是主动执行
+		__name__ == "__main__": 
+	设置文件编码
+		#coding:utf-8 
+		import sys
+		reload(sys)
+		sys.setdefaultencoding("utf-8")
+	当前脚本执行路径
+		import os
+		os.path.abspath(sys.path[0])
+	参数
+		sys.argv数组
+	数组  append   
+	循环  for var in 数组或者range(1,n):
+	文件操作  file = open(path,"wb")  file.write() file.close() file.readline file.readlines file.seek(cur,off) file.tell
+	目录操作 是否为目录 os.path.isdir() 
+			目录列表 os.listdir()
+			删除空目录 os.rmdir()
+			路径是否存在 os.path.exists()
+			分解为文件名和路径 os.path.split()
+			删除目录 shutil.rmtree()
+						shutil copy()文件夹
+						shutil copyfile 文件
+						shutil move 移动
+						shutil remove 删除文件
+	堆栈   traceback.print_exc()
+	输入  rawinput()
+	字符串  string[0:-3]  
+			string.split() 
+			字符串拼接 string.join(array)  "%s" % varname  a + b
+			替换replace
+	字节   b前缀后跟ASCII字符
+			b前缀后跟转义16进制 b'xFF'
+			bytesarray(b'')
+	编码   python字符串是对象,有两种,
+			一个是str类型,可能是gbk或utf-8编码或者ascii编码 通过decode("gbk|ascii|utf-8")操作转换为unicode对象
+			一个是unicode类型,通过encode("gbk|utf-8|ascii")转换为str对象
+			判断对象类型 type(x) is unicode or type(x) is str
+	
+	库  excel库xlrd
+				excel = xlrd.open_workbook(path)
+				sheetnames = excel.sheet_names()
+				sheet = excel.sheet_byname(name)
+				cols = sheet.row_values(n)
+				ctype = sheet.cell(row,col)
+				value = sheet.cell_value(row,col);
+	库  xml库xml.etree.ElementTree
 	   			  root = ET.parse(".xml")
 	   			  for child in root:
 	   			  	for field in child:
@@ -448,7 +452,7 @@ lua
 						PROTO    source constants upvalnames varnames
 		LUA_TUSERDATA   envtable metatable
 		LUA_TTHREAD     luastate
-	it优化
+	jit优化
         原理
             JIT是把字节码编译成机器码,放到可执行内存中执行,需要申请带可执行权限的内存空间
         工具
@@ -463,89 +467,6 @@ lua
             调用C函数的代码无法JIT,可以使用FFI库调用C函数是可以JIT优化的
         问题4
             某些字节码无法JIT优化,有哪些?
-ShaderForUnity
-	定义shader名字,用于Shader.Find
-	Shader "" 
-	{
-		1.	定义shader变量,可以在Unity中赋值 2D Float Int Vector Range Color CUBE
-			Properties { _Name ("InspectorName",Type) = default } 
-		2.	SubShader 只选取一个执行
-			首先判断SubShader的标签和Pass的标签,检测渲染路径、渲染类型
-			然后在判断shader代码指令是否和当前GPU兼容
-			SubShader 
-			{
-				3.SubShader&shader_feature&multi_compile
-					shader_feature 会根据KEY的使用情况编译对应的变体
-					multi_compile 编译所有的变体,可通过shader.EnableKeyword来开启
-				3.SubShader&Tags
-					Queue包括BackGround背景天空盒1000 Geometry不透明2000 AlphaTest2450 2500以下属于不透明物体 Transparent半透明3000 Overlay4000
-					RenderType包括Opaque Transparent
-					ForceNoShadowCasting 计算阴影时不计算该物体,灯光空间计算深度纹理忽略该类型
-					IgnoreProjector 是否接受投影 
-				4.SubShader&States
-					LOD n 设置距离摄像机多近才有效,例如设定不同的LOD级别来渲染物体
-					Cull Back/Front On/Off 裁剪正、反面的开关
-					AlphaTest Less CutOff 透明度测试,测试选项和深度测试一样		
-					Offset 深度偏移结果为Factor * DZ + r * Units 用于控制两个多边形重叠时始终保持每帧渲染结果一致,计算后离摄像机更远则不渲染,负数离摄像机更近
-					ZTest Less/LEqual/Equal/NotEqual/GEqual/Greater/Always 检测Z值与深度缓冲的值大小,不满足条件则不渲染
-					Zwrite On/Off 是否将当前物体的Z值写入深度缓冲
-					Lighting On/Off 是否计算光照			
-					Fog On/Off 是否计算雾效果
-					Blend One/One SrcAlpha/OneMinusSrcAlpha 颜色混合方式,src是指当前颜色,dst是指颜色缓冲区内的颜色
-					stencil
-					{
-						Ref 参考值,模板缓冲内的值和它作比较
-						ReadMask 读取掩码,过滤模板缓冲内的值
-						WriteMask 写入掩码,过滤写入到模板缓冲内的值
-						Comp Less/LEqual/Equal/NotEqual/GEqual/Greater/Always
-						Pass 模板测试通过执行什么操作 keep/zero/incrsat/incrwrap/decrsat/decrwrap
-						Fail 模板测试失败执行什么操作 keep
-						ZFail 模板测试通过,深度测试失败执行什么操作 keep
-					}
-				5.Pass
-				{
-					Name "PassName" 定义Pass名字
-					UsePass "Shader/PassName 插入在其他位置定义的Pass代码
-					GrabPass { "texName" } 抓起当前屏幕到指定纹理内
-					5.Pass&Tag
-						LightMode
-							Always 不计算光照
-						    ForwardBase模式的Pass用于计算主光源和所有的逐顶点、球谐函数光源
-						    ForwardAdd模式计算其他逐像素光源,并且不产生阴影
-						    Deferred延迟渲染
-						    ShadowCaster计算阴影时写入该物体的深度
-					CGPROGRAM
-						6.Pass&Uniform
-							一个uniform是针对一个shader的常量,由应用程序设定
-							可以再shader内定义uniform变量,在C#内使用Shader.PropertyToID()获取变量ID,通过mat.Set来设置变量
-							常用的常量包括UNITY_MATRIX_MVP UNITY_PI
-						6.Pass&DataType
-							float32为 half16位[-60000,60000],精确到小数点3.3位 fixed12位定点数[-2,2],精确度1/256
-								颜色和单位向量使用fixed足够
-								其他信息尽量使用half,除非三位小数点不够用,或者数值超过+-60000
-							sampler2D 图片类型,变量名和Properties一致
-						7.Pass&#pragma
-							target SM版本
-						8.Pass&#include "xx.cginc"
-							路径需要保证编译打包时可以读到
-					ENDCG
-				}
-				6.surf
-				{
-					定义
-					#pragma surface surf LightMode 
-				}
-			}
-			Fallback ""
-	} 
-
-ShaderForOgre
-	.cg文件用来写vert和frag相关函数
-	.program文件用来定义shader程序的名字、源码、入口函数、版本
-	.material文件用来定义使用哪种方式渲染
-		material定义不同的材质
-		technique定义显卡适配参数
-		pass内定义shader初始参数,使用哪个shader程序
 
 OC
 	面向对象的语言
@@ -580,8 +501,8 @@ OC
 Java:
 	JDK分类
 		J2ME J2SE J2EE分别是针对移动平台和嵌入式、PC平台、企业版设计的JDK
-		JDK是Java开发工具包,包括了开发环境JRE、Java编译运行工具、一些基础类库
-		JRE是Java的运行环境,包括了JVM虚拟机和核心类库
+		JDK是Java开发工具包,包括了专用开发环境JRE、Java编译运行工具
+		JRE是Java的公共运行环境,包括了JVM虚拟机和核心类库
 	JDK工具
 		javac 编译工具,把.java编译为.class字节码
 		jar 打包工具,把.class文件打包在一起
@@ -597,6 +518,8 @@ Java:
 	包
 		package x; 类似命名空间,包名是当前java文件的目录结构
 		import x;  导入java类库,类似引用命名空间
+	线程
+		ASyncTask 包:android.os,使用方式:执行execute或executeOnExecutor
 
 		
 

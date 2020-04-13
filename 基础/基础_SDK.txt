@@ -34,6 +34,9 @@
         ndk库ndk-build用于构建动态库,-j选项用于多线程编译,platforms目录下是安卓平台标准库(包含JNI库)
         注意放入之后CPU架构要选择好对应的类型 ARMV7 X86
         直接放入对应的libs/x86|armeabi-v7a文件夹下
+    obb:
+        googleplay对apk大小做了限制,需要把apk的一部分资源拆分出来打成obb包(main|patch.版本号.包名.obb)
+        googlesdk包含了对应的下载和读取功能(功能有BUG,需要做一些调整)
     jar: 
         java文件集合,包含一个META-INF/MANIFEST.MF清单文件和一组.class文件
             jar -cu *.class -f .jar 创建/更新jar包
