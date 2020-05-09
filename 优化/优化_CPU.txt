@@ -2,8 +2,11 @@
     内存分配
         日志写入
             tostring、format、concat等等都会产生新的字符串
+        装箱拆箱
+            Enum类型作为字典的key时因为没有实现IEquable接口,会进行object装箱
         参数传递
             委托、协程、匿名函数、闭包等等都会创建一个类对象
+            params[]多参数会进行装箱操作
         粒子系统
             Start/Stop/Pause/Clear/Simulate调用时withChildren=true会通过GetComponents获取组件
         组件获取
