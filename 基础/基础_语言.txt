@@ -268,6 +268,7 @@ C/C++
 			2.资源管理
 				以对象的形式进行资源管理,依靠构造和析构函数来处理资源的初始化和释放
 				智能指针不能用于数组,因为析构调用的是delete而不是delete[]
+
 C#   
 	.NET规范
 		类似于OpenGL规范,.NET规范定义了实现这种技术需要的API集合
@@ -492,11 +493,12 @@ Java:
 	线程
 		ASyncTask 包:android.os,使用方式:执行execute或executeOnExecutor
 
-		
-
-			  
-
-
-
-
-
+Html:
+	版本: <!DOCTYPE HTML>
+	头部: <head></head>
+		编码: <meta charset="utf-8">
+		标题: <title></title>
+	内容: <body></body>
+		换行: <br/>
+		字体: <font size="6" color="ffffff"></font> <b></b> <i></i> <sub></sub> <sup></sup>
+		链接: <a href=url>链接内容描述</a>
