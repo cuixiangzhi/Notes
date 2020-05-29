@@ -9,6 +9,8 @@
         sin(a-b)=sina*cosb-cosa*sinb
     正弦定理
         a:b:c=sina:sinb:sinc
+    余弦定理
+        a²=b²+c²-2bc*cosa
     海伦公式
         已知三边长a、b、c,p为半周长
         s=sqrt(p*(p-a)*(p-b)*(p-c))
@@ -22,9 +24,9 @@
   	重心  	三角形中线交点,满足定点到质心距离:质心到中点距离=2:1    
     质心     三角形内的点相对于其它顶点的位置
   	匀速	f=vt
-	匀加速 	s=0.5at^2+vt
-	重力 	s=0.5gt^2
-    斜抛     s=vtcos0 h=vtsin0-0.5gt^2
+	匀加速 	s=0.5at²+vt
+	重力 	s=0.5gt²
+    斜抛     s=vtcos0 h=vtsin0-0.5gt²
 	抛物线   y=ax²+bx+c
     双曲线   x²/a²-y²/b²=1
     反比例   y=1/x

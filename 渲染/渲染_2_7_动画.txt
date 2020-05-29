@@ -3,17 +3,19 @@
 		骨骼动画是指动画帧控制骨骼运动,MESH通过绑定骨骼(每个顶点4根骨骼)和权重计算某一帧的状态
 		关键帧控制骨骼运动、骨骼控制顶点运动
 		骨骼动画包括
-			关键帧动画(Animation,控制骨骼运动)
+			关键帧(Animation,控制骨骼运动)
 			骨骼信息(skinMeshRender.bones)
-			骨骼绑定姿势(skinMeshRender.bindPose即每根骨骼的bone.worldToLocal * mesh.localToWorld)
+			骨骼绑定姿势(skinMeshRender.bindPose即每根骨骼的bone.worldToLocal * render.transform.localToWorld)
 			MESH信息(skinMeshRender.sharedMesh 每个mesh的每个顶点都有boneWeight即绑定和权重信息) 
 		蒙皮计算
-			VbindPos是顶点初始位置,就是vertex信息
-			BbindPos是骨骼初始变换,就是skinMesh的bindPos
-		IK FK
-			反向动力学,正向动力学
-			IK是子骨骼带动父骨骼运动(根据子骨骼运动范围计算??)
-		RootMotion(只对根骨骼存在位移的动画有效)
+			MESH顶点从骨骼空间变换到世界空间 
+			skinMatrix = bindBone.localToWorld * bindPose
+			finalPos = bindWeight * skinMatrix * vertex
+		反向动力学(IK)
+			子骨骼带动父骨骼运动,给定子骨骼的目标位置和上一级父骨骼的朝向,可以根据余弦定理计算出父骨骼的位置
+			IKBone:需要移动到指定位置的骨骼 JointBone:IK骨骼的父骨骼 RootBone:JointBone的父骨骼
+		根运动(RootMotion)
+			只对根骨骼存在位移的动画有效
 			ApplyRootMotion开启之后会把位移加到模型上
 			BakeIntoPose会把根骨骼的指定位移转移到子骨骼上(模型在某个方向上固定不动)
 	动画融合
@@ -22,10 +24,3 @@
 		同时播放的两个动画衔接的过程
 	蒙皮优化
 		MESH顶点计算转移到shader内(把变换矩阵存储到纹理),降低CPU计算量
-	Animation Instancing
-		减少Animator.Update开销
-		减少MeshSkining.Update开销
-		减少CPU到GPU的数据传输
-		不支持BlendTree
-		不支持IK
-		动画精确性降低
