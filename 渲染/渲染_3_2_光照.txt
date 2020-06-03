@@ -49,15 +49,39 @@
                 反射方程
                     Lo(p,wo) = ∫(fd*brdf+fs*brdf)Li(p,wi)dot(n,wi)dwi
                     fr(l,v)分为diffuse和specular两部分,采用不同的公式
-                IBL漫反射
-                    1.静态物体间接漫反射光计算并存储到Lightmap中,动态物体一般在场景中布置大量探针使用球谐系数存储环境光
-                IBL镜面反射
+                方向参数
+                    法线方向n:tangentNormal*TBN
+                    反射方向l:lightPos-worldPos
+                    视线方向v:cameraPos-worldPos
+                直接光漫反射
+                    1.公式为 brdf_d*Li*dot(n,l) brdf_d=kd*albedo/π Li=light.color*shadow kd=lerp(vec(0.96),(1-albedo),metallic)
+                直接光镜面反射
+                    1.公式为 brdf_s*Li*dot(n,l) brdf_s=DFG/4*nl*nv Li=light.color*shadow
+                    2.D项为法线分布(微表面法线朝向等于H的比例)  GGX公式:D=k/π*[dot(n,h)²*(k-1)+1]²  k=rough²
+                    3.F项为菲涅尔反射(视线和法线夹角越大越明显) Fresnel公式:F0+(1-F0)(1-dot(h,v))⁵=lerp((1-dot(h,v))⁵,1,F0)   F0=ks=lerp(0.04,albedo,metallic) F0值指定了基础反射系数,nh越接近垂直,反射系数越大
+                    4.G项为几何遮蔽因子(反射光线被遮挡比例)     GGX公式:G=Gs(n,v,k)*Gs(n,l,k) Gs=nv/lerp(nv,1,k)  k=(rough+1)²/8(直接光) k=rough²/2(间接光) 粗糙度越大,k值越大,G值越小
+                间接光漫反射(lightmap&lightprobe * ao)
+                    1.静态物体间接漫反射光计算并存储到Lightmap中,动态物体一般在场景中布置大量探针使用球谐系数存储环境光         
+                    球谐光照
+                        球谐函数
+                            球面函数可以分解为无限个球谐基函数*球谐系数之和
+                            两个函数乘积的球面积分等于它们对应的球谐系数向量的点积
+                            半球方向上光照L和传输函数F的乘积积分等于对应的球谐系数点积,模型旋转的时候需要进行SH旋转
+                        球谐系数积分
+                            Ci=1/(NP)*∑Li*Yi Ci是球谐基系数的积分值(所有方向入射光Li与球谐基底点乘之和)
+                        球谐光照重建
+                            L'=∑Ci*Yi L'是采样点的入射光函数,Yi是球谐基底函数,Ci是投影系数之和
+                        球谐基函数公式
+                            l表示阶数,l越高信号频率越高,m表示每一阶内的某个基底函数,每个基底函数都是正交的,n阶球谐函数有n*n个基底函数
+                            具体公式计算公式参考杂项球谐公式图片(根据采样点的0,φ计算该点对应的球谐函数Yi) l,m转换为连续序列i=l(l+1)+m
+                        球谐函数应用
+                            预计算得出球谐基函数系数Ci,运行时可以近似重建原光照,光照探针记录了所在位置的球谐基函数系数
+                            计算时首先根据模型位置找出附近的探针,探针之间根据位置做权重加和,根据像素点的法线方向计算球谐光照
+                间接光镜面反射(reflectprobe * ao)
                     1.静态物体间接镜面反射光计算并存储到方向图中,动态物体一般在场景中布置反射探针使用cubemap存储,boxprojection
                     2.预过滤环境贴图
-                        拍摄反射探针六个方向的环境生成HDRCubemap
-                        mip级别转粗糙度(roughness=mipmap/totalmips)
-                        低差异序列和重要性采样生成采样方向(根据N=V和roughness计算H,根据H和R计算L,把NdotL作为权重采样HDRCubemap,越接近法线的权重越高)
-                        预过滤环境贴图是把观察向量(反向)作为反射向量,采样HDRCubemap得出反射方向的亮度近似值
+                        采样贴图生成:拍摄反射探针六个方向的环境生成HDRCubemap
+                        采样方向生成:低差异序列和重要性采样(根据N=V=R和roughness=mipmap/totalmips计算H,根据H和R计算L,把NdotL作为权重采样HDRCubemap,越接近法线的权重越高)
                     3.BRDF积分LUT图
                         横轴表示nl点乘结果,数值在[0,1]之间,纵轴表示粗糙度,数值在[0,1]之间
                         BRDF积分的F被分成了F0*a+b的形式,a和b分别做积分存储到LUT的R和G通道
@@ -65,71 +89,6 @@
                         prefilterColor = texCube(prefilterMap,V,roughness * MAX_LOD)
                         brdf = tex2D(brdfLUT,(NdotV,roughness)).xy
                         specular = prefilterColor * (F * brdf.x + brdf.y)
-                球谐光照
-                    球谐函数
-                        球面函数可以分解为无限个球谐基函数*球谐系数之和
-                        两个函数乘积的球面积分等于它们对应的球谐系数向量的点积
-                        半球方向上光照L和传输函数F的乘积积分等于对应的球谐系数点积,模型旋转的时候需要进行SH旋转
-                    球谐系数积分
-                        Ci=1/NP*∑Li*Yi Ci是球谐基系数的积分值(所有方向入射光Li与球谐基底点乘之和)
-                    球谐光照重建
-                        L'=∑Ci*Yi L'是采样点的入射光函数,Yi是球谐基底函数,Ci是投影系数之和
-                    球谐基函数公式
-                        l表示阶数,l越高信号频率越高,m表示每一阶内的某个基底函数,每个基底函数都是正交的,n阶球谐函数有n*n个基底函数
-                        具体公式计算公式参考杂项球谐公式图片(根据采样点的0,φ计算该点对应的球谐函数Yi) l,m转换为连续序列i=l(l+1)+m
-                    球谐函数应用
-                        预计算得出球谐基函数系数Ci,运行时可以近似重建原光照,光照探针记录了所在位置的球谐基函数系数
-                        计算时首先根据模型位置找出附近的探针,探针之间根据位置做权重加和,根据像素点的法线方向计算球谐光照
-        具体实现
-            光照分解
-                直接光 Diffuse Specular
-                间接光 IndirectDiffuse(动态物体来源于LightProbes,静态物体来源于LightMap)
-                       InDirectSpecular(全都来源于ReflectionProbes)
-                最终结果 直接光*Shadow+间接光*AO
-            灯光颜色
-                精准光源只会在一个方向对辐照度有贡献,其他方向都是0,灯光颜色和强度用来表示入射辐射率Li
-                直接光
-                    实时计算,由于距离、遮挡的影响会发生衰减
-                    directlight.color *= atten
-                间接光
-                    静态物体通过LightMap直接读取,动态物体通过SH函数计算
-                    indirect.diffuse = (lightmap|lightprobe) * ao
-                    indirect.specular = reflectprobe * ao
-            反射比例
-                ks=lerp(vec3(0.04),albedo.rgb,metallic)
-                kd=lerp(vec(0.96),(1-albedo.rgb),metallic)
-            漫反射BRDF
-                diffTerm = albedo/π
-                diffTerm = albedo/π * (1+(Fd-1)(1-dot(n,l))⁵*(1+(Fd-1)(1-dot(n,v))⁵)) Fd=0.5+2m(n,l)²
-            镜面反射BRDF
-                D=k/π*[dot(n,h)²*(k-1)+1]²                          k=rough²
-                F=F0+(1-F0)(1-dot(h,v))⁵=lerp((1-dot(h,v))⁵,1,F0)   F0=ks F0值指定了基础反射系数,nh越接近垂直,反射系数越大
-                G=Gs(n,v,k)*Gs(n,l,k) Gs=nv/lerp(nv,1,k)            k=(rough+1)²/8(直接光) k=rough²/2(间接光) 粗糙度越大,k值越大,G值越小
-                specTerm = DFG / 4*nl*nv
-            终极结果
-                直接光 diff = diffTerm * light.color * dot(n,l) * kd
-                直接光 spec = specTerm * light.color * dot(n,l)
-                间接光 diff = indirect.diffuse * kd
-                间接光 spec = indirect.specular * F
-            顶点计算
-                1.计算裁剪坐标
-                2.计算纹理坐标(可以有多套UV,uv1一般被光照贴图占用)
-                3.计算世界坐标
-                4.计算世界转切线空间的变换矩阵(先把顶点法线和切线变换到世界空间,然后构造TBN矩阵)
-                5.计算环境光或者lightmapUV坐标(LIGHTMAP_ON开启会生成lightmapUV,否则根据SHOULD_SAMPLE_SH宏计算探针存储的球谐环境光)
-                6.计算顶点雾效
-                7.计算阴影坐标(shadowmaskUV坐标或者shadowmapUV坐标)
-                8.计算视线向量
-            像素计算
-                1.计算法线向量(首先从法线贴图内取出切线空间的法线,然后用TBN矩阵计算世界空间法线)
-                2.计算视线向量和世界坐标
-                3.计算Albedo颜色(主要是从D贴图内读取数据)
-                4.计算PBR信息(主要是从M贴图内读取粗糙度、金属度、AO等)
-                5.计算specColor和diffColor,specColor是反射率ks,diffColor是kd*albedo,其中ks是lerp(0.04,albedo,metallic),kd是lerp(0.96,0,metallic)
-                6.计算直接光颜色(shadowmask或者shadowmap控制直接光衰减)
-                7.计算间接光颜色(漫反射来自lightmap或者lightprobe,高光来自reflectprobe,ao控制间接光衰减)
-                8.BRDF公式计算
-                9.自发光、雾效、自定义光源等等额外计算
 光照探头
     LightProbe
         数据存储

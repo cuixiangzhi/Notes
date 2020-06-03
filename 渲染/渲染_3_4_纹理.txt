@@ -13,17 +13,13 @@ AmbientOcclusion
 NormalMap
     原理
         T:切线 B:副切线 N:法线
-        1.光照计算时需要用法线来体现出物体表面的凹凸感
-        2.通过一张纹理来存储每个像素点的法线来减少面数增加凹凸细节
-        3.法线贴图存储的法线是切线空间下的一个向量,以TBN表示
-            施密特正交化 normalize(T - dot(T, N) * N)
-            1.先把光线和视线从世界空间变化到模型坐标系下
-            2.根据模型局部法线和切线计算TBN矩阵
-            3.把模型坐标下的光线和视线变换到切线空间
-            4.TBN矩阵是行优先填充的,TBN*向量是局部坐标系变换到TBN坐标系
-        4.法线贴图存储的RGB范围是[0,1],而法线范围是[-1,1],因此存储法线和解析法线需要一个转换公式 
-          rgb=normal*0.5+0.5 normal=rgb*2-1 法线贴图法线不会偏移Z轴太远,因此法线贴图都是偏蓝色的
-          对应CGINC内的UnpackNormal函数
+        1.法线贴图存储的法线是切线空间下的一个向量,以TBN表示
+            施密特正交化 T=normalize(T-dot(T,N)*N)
+            1.已知模型坐标系下的切线T和法线N(顶点属性),叉乘可得B
+            2.TBN行矩阵等价于ObjectToTangent(正交矩阵的转置等价于逆矩阵)
+        2.法线贴图存储的RGB范围是[0,1],而法线范围是[-1,1]
+            rgb=normal*0.5+0.5 normal=rgb*2-1 对应CGINC内的UnpackNormal函数
+            法线贴图法线不会偏移Z轴太远,因此法线贴图都是偏蓝色的
 ParallaxMap
     原理
         1.法线贴图只是通过修改像素的法线方向来调整表面的明暗效果,做出一种假的凹凸感,没有遮挡关系
@@ -67,9 +63,10 @@ LightMap
         AF是按照uv比例在两个方向采样不同的次数进行加权平均,4x采样32次,16x采样128次
         AF是在三线性的基础上进行采样的,因此在mipmap变化的地方比三线性更清晰
     MipMap计算
-        ddx&ddy通过pixel quad内的4个像素的纹理坐标变化率来得出mipmap等级
-        ddx&ddy通过pixel quad内的4个像素的世界坐标偏导数得出面内两个向量,然后叉乘得出面法线
-        ddx&ddy在延迟渲染中边缘由于丢失
+        ddx&ddy通过pixel quad内的4个像素的纹理坐标变化率(两直线UV的斜率)来得出mipmap等级
+        首先根据纹理宽高计算出uv=i.uv*texture.wh
+        然后求出UV方向的偏导数dx=ddx(uv) dy=ddy(uv) delta = max(dot(dx,dx),dot(dy,dy))
+        最后求解mipmap d = max(floor(0.5 + 0.5 * log2(delta)),0)
 纹理压缩
     文件存储压缩格式
         基于整幅图片进行压缩,不支持分块解压,无法利用GPU并行功能
