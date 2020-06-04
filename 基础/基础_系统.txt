@@ -174,6 +174,9 @@
 			读取 PTRACE_PEEKTEXT PTRACE_PEEKDATA PTRACE_PEEKUSR
 			写入 PTRACE_POKETEXT PTRACE_POKEDATA PTRACE_POKEUSR
 线程管理
+		线程进程
+			进程的创建需要分配独立的地址空间,代码段、数据段、堆栈段
+			线程的创建只需要很小的空间,比进程消耗小很多,线程切换比进程切换速度快
 		线程创建   				  
 			pthread_create(pthread_t &pid,NULL,void* loopfunc,this);
 			CreateThread(NULL,0,DWORD WINAPI loopfunc,this,DWORD &pid)
@@ -181,6 +184,9 @@
 		线程退出
 			pthread_cancel();
 			pthread_exit(NULL);
+		线程回收
+			默认创建的线程处于joinable(可以通过设置pthread_attr来改变)状态,需要调用pthread_join(pid)之后才会回收已退出的线程的资源
+			调用pthread_detach后线程处于游离状态,由操作系统来回收资源
 		线程状态
 			不同的操作系统有不同的线程模型,同时对于了不同的线程状态
 			通用状态
@@ -197,8 +203,6 @@
 				pthread_rwlock_init(&rwid);
 				pthread_rwlock_rdlock(&rwid);
 				pthread_rwlock_rdunlock(&rwid);
-			等待指定线程结束,会进入阻塞状态,该函数返回之后目标线程才会被释放掉,一个线程如果没有被join,结束后成了僵尸线程
-				pthread_join(pid)
 			C#Lock&Monitor
 				lock(obj)
 					是一个语法糖,实际展开为Monitor.Enter try&finally Monitor.Exit
@@ -207,12 +211,11 @@
 					Pulse	释放一个等待队列的线程到就绪队列
 					Enter   获取锁对象,Enter之后可能会由于异常而被终止,try&finally没有执行,导致线程死锁
 					Exit    释放锁对象
-		线程资源
-			默认创建的线程处于joinable(可以通过设置pthread_attr来改变)状态,需要调用pthread_join(只有一个调用者)之后才会回收已退出的线程的资源
-			分离状态,调用pthread_detach后线程处于游离状态,由操作系统来回收资源
-		线程进程
-			进程的创建需要分配独立的地址空间,代码段、数据段、堆栈段
-			线程的创建只需要很小的空间,比进程消耗小很多,线程切换比进程切换速度快
+			信号量(头文件semaphore.h)
+				信号量的API操作均是原子操作,等待信号量时值为0会阻塞
+				创建 sem_init(sem_t, 0, 0)
+				等待 sem_wait(sem_t)
+				释放 sem_post(sem_t)
 进程通信
 		本地通信
 				mmap shm filemap
