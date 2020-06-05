@@ -103,12 +103,12 @@
 
 汇编语言
 	寄存器分类
-		R0-R10 通用数据
-		IP-R11 函数栈帧
-		FP-R12 暂存数据
+		R0-R3  参数传递
+		R4-R11 局部变量
+		IP-R12 
 		SP-R13 栈顶指针
 		LR-R14 返回地址
-		PC-R15 指令指针
+		PC-R15 指令地址
 		CPSR   程序状态
 	常见操作指令
 		MOV A B 赋值指令,把B值赋给A
@@ -120,9 +120,9 @@
 		CALL PC 调用指令
 		RET     返回指令
 	SSE操作指令
-		加载数据 _mm_load_si128
-		存储数据 _mm_store_si128
-		逻辑运算 __mm_adds_* _mm_or_* __mm_and_* __mm_subs_* __mm_cmp_*
+		加载数据 _mm_load_ss|ps _mm_set_ss|ps
+		存储数据 _mm_store_ss|ps
+		逻辑运算 __mm_add|mul_ss|ps
 
 C/C++
 	关键字
