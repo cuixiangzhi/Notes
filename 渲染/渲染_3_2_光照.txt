@@ -50,9 +50,10 @@
                     Lo(p,wo) = ∫(fd*brdf+fs*brdf)Li(p,wi)dot(n,wi)dwi
                     fr(l,v)分为diffuse和specular两部分,采用不同的公式
                 方向参数
-                    法线方向n:tangentNormal*TBN
-                    反射方向l:lightPos-worldPos
-                    视线方向v:cameraPos-worldPos
+                    法线方向n:normalize(tangentNormal*TBN)
+                    反射方向l:normalize(lightPos-worldPos)
+                    视线方向v:normalize(cameraPos-worldPos)
+                    半角向量h:normalize(l+v)
                 直接光漫反射
                     1.公式为 brdf_d*Li*dot(n,l) brdf_d=kd*albedo/π Li=light.color*shadow kd=lerp(vec(0.96),(1-albedo),metallic)
                 直接光镜面反射
