@@ -91,72 +91,51 @@
 			userdel -r username 删除用户及其主目录
 			groupadd -g id name 添加用户组并制定ID和组名
 内存管理
-	    物理内存
-	        CPU访问内存是一个慢速过程(L1->L2->L3->MM)
-	            减少CacheMiss,访问连续内存,数据内存对齐
-	        移动设备与台式设备内存架构差异
-	            没有独立显卡,没有独立显存
-	            CPU缓存级数更少,大小更小
-	    虚拟内存
-	        内存交换
-	            物理内存不足时会把DeadMemory交换到磁盘上
-	            移动设备不支持内存交换
-	            iOS可以进行内存压缩,Android不支持
-	    Android内存管理
-	        内存基本单位Page
-	            4K一页,回收和分配以Page为单位
-	            内存分为用户态和内核态两部分
-	        内存杀手进程
-	        	按照Cached->Previous->Home->Service->
-	        内存指标
-	        	procrank命令查看
-	        		VSS 虚拟内存占用(包含共享库内存)
-	        		RSS 实际物理内存(包含共享库内存)
-	        		PSS 实际物理内存(比例分配共享库内存)
-	        		USS 进程独占内存
-		内存布局: 
-				stack-map-heap-bss-rwdata-rodata-code
-		内存分配: 
-			  	brk系统调用分配小于128KB内存,中间内存碎片无法释放,mmap系统调用分配大于128KB内存,自由释放
-			  	具体大小可由M_MMAP_THRESHOLD来调节 M_TRIM_THRESHOLD调节堆碎片紧缩值
+	    内存访问
+			MMU:接收CPU的内存访问请求,把虚拟地址转换为物理地址(L1 L2 主存)
+			虚拟地址:页表索引(占用20位)+页内偏移(占用12位)
+			页表:每一项占用32位,其中20位对应物理页基地址,12位对应物理内存状态(访问权限、是否缺页)
+			进程:每个进程都有自己的页表,切换进程会同时更新MMU内的页表地址
+			TLB:页表访问缓存,降低页表查找次数(页表也是存储在物理内存中的)
+		内存布局
+			stack-map-heap-bss-rwdata-rodata-code
+		内存分配
+			brk系统调用分配小于128KB内存,中间内存碎片无法释放,mmap系统调用分配大于128KB内存,自由释放
+			具体大小可由M_MMAP_THRESHOLD来调节 M_TRIM_THRESHOLD调节堆碎片紧缩值
 
-			  	new/delete new[]/delete[] 分配/释放内存,然后调用构造/析构函数
-			  	malloc/free 只负责分配/释放内存
-			  	mmap(NULL,size,PROT_READ|PROT_WRITE|PROT_EXEC,MMAP_PRIVATE,fd,offset);
-			  	munmap(PTR,size);
-			  		头文件 sys/mman
-			  		mmap有SHARED和PRIVATE两种方式,即共享内存和私有内存,前者会写入文件,后者不会
-			  		mmap共享模式下映射大小不大于文件大小,多余部分不会写入文件(页对齐)
-			  		fseek可以设置文件大小
-			  		msync同步共享内存写入到映射文件
-			  	shmget(key,size,IPC_CREAT)
-			  		头文件 sys/shm sys/ipc
-			  		SHM需要先创建共享内存,然后映射到进程地址空间内,shmat(&sid,NULL,0);
-			  		取消映射使用shmdt(PTR);
-			  		删除内存使用shmctl(sid,IPC_RMID,NULL);
-			  		shm映射内存不会写入文件,进程退出不删除则系统关机才会删除
-			  	FileMap
-			  		windows共享内存机制
-			  		创建共享内存 CreateFileMapping(INVALID_HANDLE_VALUE,NULL,PAGE_READWRITE,0,SIZE,KEY);
-			  		打开共享内存 OpenFileMapping(FILE_MAP_ALL_ACCESS,TRUE,KEY);
-			  		进程映射内存 MapViewOfFile(handle,FILE_MAP_ALL_ACCESS,0,0,0);
-			  		取消内存映射 UnmapViewOfFile(PTR);
-			  		关闭共享内存 CloseHandle(handle)
-		  		VirtualAlloc
-		  			ntdll的API,windows虚拟内存
-			  	DLL映射
-			  		映射到内存,内存修改不会写入文件
+			new/delete new[]/delete[] 分配/释放内存,然后调用构造/析构函数
+			malloc/free 只负责分配/释放内存
+			mmap(NULL,size,PROT_READ|PROT_WRITE|PROT_EXEC,MMAP_PRIVATE,fd,offset);
+			munmap(PTR,size);
+				头文件 sys/mman
+				mmap有SHARED和PRIVATE两种方式,即共享内存和私有内存,前者会写入文件,后者不会
+				mmap共享模式下映射大小不大于文件大小,多余部分不会写入文件(页对齐)
+				fseek可以设置文件大小
+				msync同步共享内存写入到映射文件
+			shmget(key,size,IPC_CREAT)
+				头文件 sys/shm sys/ipc
+				SHM需要先创建共享内存,然后映射到进程地址空间内,shmat(&sid,NULL,0);
+				取消映射使用shmdt(PTR);
+				删除内存使用shmctl(sid,IPC_RMID,NULL);
+				shm映射内存不会写入文件,进程退出不删除则系统关机才会删除
+			FileMap
+				windows共享内存机制
+				创建共享内存 CreateFileMapping(INVALID_HANDLE_VALUE,NULL,PAGE_READWRITE,0,SIZE,KEY);
+				打开共享内存 OpenFileMapping(FILE_MAP_ALL_ACCESS,TRUE,KEY);
+				进程映射内存 MapViewOfFile(handle,FILE_MAP_ALL_ACCESS,0,0,0);
+				取消内存映射 UnmapViewOfFile(PTR);
+				关闭共享内存 CloseHandle(handle)
+			VirtualAlloc
+				ntdll的API,windows虚拟内存
+			DLL映射
+				映射到内存,内存修改不会写入文件
 		内存权限
-				mprotect(ADDR,LEN,PROT_READ | PROT_WRITE | PROT_EXEC);
-		RingBuffer
-				环形缓冲区
-					一个size大小的buffer,head指向第一个可读的位置,tail指向第一个可写的位置
-					buffer判空 head==tail
-					buffer空闲 head大于tail则left=head-tail-1 head小于tail则left=total-tail-1+head
-					buffer有效 head大于tail则left=total-head+tail head小于tail则left=tail-head
-				无锁逻辑
-					读操作只修改head的值,读取之前先把tail值缓存下来,避免读的过程中被修改,读完之后在修改head的值
-					写操作只修改tail的值,写入之前先把tail值缓存下来,写完之后在修改
+			mprotect(ADDR,LEN,PROT_READ | PROT_WRITE | PROT_EXEC)
+		内存占用
+			VSS 虚拟内存占用(进程申请的所有内存)
+			RSS 实际物理内存(进程内存+共享库内存)
+			PSS 实际物理内存(进程内存+共享库内存平均值)
+			USS 实际物理内存(进程内存)
 进程管理
 		进程关系
 			父子进程: fork创建进程,pid为0是子进程,大于0是父进程
@@ -216,6 +195,15 @@
 				创建 sem_init(sem_t, 0, 0)
 				等待 sem_wait(sem_t)
 				释放 sem_post(sem_t)
+		数据队列
+			环形缓冲区
+				一个size大小的buffer,head指向第一个可读的位置,tail指向第一个可写的位置
+				buffer判空 head==tail
+				buffer空闲 head大于tail则left=head-tail-1 head小于tail则left=total-tail-1+head
+				buffer有效 head大于tail则left=total-head+tail head小于tail则left=tail-head
+			无锁逻辑
+				读操作只修改head的值,读取之前先把tail值缓存下来,避免读的过程中被修改,读完之后在修改head的值
+				写操作只修改tail的值,写入之前先把tail值缓存下来,写完之后在修改
 进程通信
 		本地通信
 				mmap shm filemap
