@@ -58,8 +58,8 @@
                     1.公式为 brdf_d*Li*dot(n,l) brdf_d=kd*albedo/π Li=light.color*shadow kd=lerp(vec(0.96),(1-albedo),metallic)
                 直接光镜面反射
                     1.公式为 brdf_s*Li*dot(n,l) brdf_s=DFG/4*nl*nv Li=light.color*shadow
-                    2.D项为法线分布(微表面法线朝向等于H的比例)  GGX公式:D=k/π*[dot(n,h)²*(k-1)+1]²  k=rough²
-                    3.F项为菲涅尔反射率(视线和法线夹角越大越明显) Fresnel公式:F0+(1-F0)(1-dot(h,v))⁵=lerp((1-dot(h,v))⁵,1,F0)   F0公式为[(n1-n2)/(n1+n2)]² 近似值为F0=lerp(0.04,albedo,metallic) 
+                    2.D项为法线分布(微表面法线朝向等于H的比例)  GGX公式:D=m²/π*[dot(n,h)²*(m²-1)+1]²
+                    3.F项为菲涅尔反射率(反射光线比例随角度变化) Fresnel公式:F0+(1-F0)(1-dot(h,v))⁵    基础反射率(垂直观察表面)F0=lerp(0.04,albedo,metallic)
                     4.G项为几何遮蔽因子(反射光线被遮挡比例)     GGX公式:G=Gs(n,v,k)*Gs(n,l,k) Gs=nv/lerp(nv,1,k)  k=(rough+1)²/8(直接光) k=rough²/2(间接光) 粗糙度越大,k值越大,G值越小
                 间接光漫反射(lightmap&lightprobe * ao)
                     1.静态物体间接漫反射光计算并存储到Lightmap中,动态物体一般在场景中布置大量探针使用球谐系数存储环境光         
