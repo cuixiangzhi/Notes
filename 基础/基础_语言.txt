@@ -4,13 +4,29 @@
 
 基础知识
 	数值存储
-		计算机只有加法运算器,计算机存储补码,运算器补码运算
-		正数补码与原码一致 负数补码符号位不变,其余位取反加1
-		N位有符号整数范围是1000..0->0111..1
-	SSE指令
-		支持SSE的CPU有8个128位寄存器,每个可以存储4个浮点类型数据
-		支持SSE的CPU提供了一个指令集,可以把数据加载到这些寄存器以及对寄存器的数据执行逻辑运算
-		在一个指令周期内可以同时进行多次相同的运算,减少循环次数
+		原码补码
+			计算机只有加法运算器,计算机存储补码,运算器补码运算
+			正数补码与原码一致 负数补码符号位不变,其余位取反加1
+			N位有符号整数范围是1000..0->0111..1
+		浮点类型	
+			IEEE754编码方式 符号位(1) + 指数位(8|11) + 尾数(23|52) 指数=E-127|1024 符号位*(1.M)*2^E
+		指数状态
+			指数位全0且尾数全0,表示0
+			指数位全1且尾数全0,表示INFINITY(无穷大)
+			指数位全1且尾数非0,表示NAN(非数值)
+		取值范围
+			指数0和255被占用,因此指数范围是[-126,127]|[-1022,1023]
+		有效位数
+			单精度32位 误差为2^(e-23)
+			双精度64位 误差为2^(e-52)
+			lua采用双精度浮点数
+			注意点
+				有效位数并不是指前6位数字是有效的,而是指真实值和存储值的差与原值的比值在误差范围之内
+				例如
+					123456789存储为123456792,误差为3(小于2^(26-23)=8)
+					1.1存储结果为1.10000002,误差为0.00000002(小于2^(-23)=0.0000001)
+		定点数
+				Sx.y(x为整数位数,y为小数位数),定点数会精确存储小数的每一位,误差在1/2^y以内
 	字节对齐
 		硬件支持
 			不同的硬件对存储空间的处理不同,某些平台对特定类型的数据只能从特定地址开始存取,而不允许任意存放,有时会触发异常
@@ -27,38 +43,6 @@
 			结构对齐:成员最大字节大小对齐
 			指定对齐:#pragma pack(n)
 			有效值:  min{自身对齐,指定对齐}
-	变量类型
-		int uint 32位
-		short ushort 16位
-		float double 
-			表示形式	
-				IEEE754编码方式 符号位(1) + 指数位(8|11) + 尾数(23|52) 指数=E-127|1024 符号位*(1.M)*2^E
-			指数状态
-				指数位全0且尾数全0,表示0
-				指数位全1且尾数全0,表示INFINITY(无穷大)
-				指数位全1且尾数非0,表示NAN(非数值)
-			取值范围
-				指数0和255被占用,因此指数范围是[-126,127]|[-1022,1023]
-			有效位数
-				单精度32位 误差为2^(e-23)
-				双精度64位 误差为2^(e-52)
-				lua采用双精度浮点数
-				注意点
-					有效位数并不是指前6位数字是有效的,而是指真实值和存储值的差与原值的比值在误差范围之内
-					例如
-						123456789存储为123456792,误差为3(小于2^(26-23)=8)
-						1.1存储结果为1.10000002,误差为0.00000002(小于2^(-23)=0.0000001)
-			定点数
-				Sx.y(x为整数位数,y为小数位数),定点数会精确存储小数的每一位,误差在1/2^y以内
-		string char uchar 
-			 	字符数组和字符 
-			 	char*最后是一个\0字符  
-			 	C# char代表一个字符或者一个中文符号,长度不固定 
-			 	lua和C++一样 字符集分为ASCII、GBK、Unicode等等  UTF-8是一种UNICODE编号的编码方式 GBK是GBK字符集编号的编码方式
-				UTF-8不定字节编码以字节数开头,0xxxxxxx 表示一个字节  110xxxxx表示2个字节,后续字节以10开头  最多会有6个字节
-		auto decltype typeid
-			auto可以根据变量初始值的类型自动为此变量选择合适的类型,可以简化代码,不适合指针之类的语法记忆
-			decltype用来查询表达式的返回值类型,不会计算表达式
 	函数栈帧
 		函数调用约定
 			cdecl    参数从右至左入栈,调用参数之后生成add esp指令清理函数参数栈
@@ -88,21 +72,13 @@
 				pop ebp       ebp恢复为调用函数栈底(ebp指向调用函数栈帧的栈底)
 				调用约定
 				ret ?         stdcall调用约定会生成该指令
-	多线程
-		RingBuffer无锁环形缓冲区,适用于命令队列
-		atomic标记,原子类型,加减操作是原子操作,不可再分 例如atomic<int>
-	编译执行
-		C++  GCC(LINUX) CL(WINDOWS) MINGW(WINDOWS)  
-		JIT 即时编译,在运行时将频繁执行的方法编译成本地机器代码,需要可执行内存支持
-		AOT 提前编译,运行前编译
 	脚本语言 
 		https://www.cnblogs.com/murongxiaopifu/p/4557365.html
 	逆波兰式  
 		后缀表达式,方便堆栈操作实现任意复杂度的表达式,一次扫描即可得出结果,遇到操作数压栈,遇到运算符弹出操作数并运算
-		波兰式即前缀表达式,对应于二叉树的前序遍历结果,逆波兰式对应于后序遍历结果
 
-汇编语言
-	寄存器分类
+ASM
+	寄存器
 		R0-R3  参数传递
 		R4-R11 局部变量
 		IP-R12 
@@ -110,7 +86,7 @@
 		LR-R14 返回地址
 		PC-R15 指令地址
 		CPSR   程序状态
-	常见操作指令
+	指令集
 		MOV A B 赋值指令,把B值赋给A
 		CMP A B 比较指令
 		JNE     跳转指令,条件跳转
@@ -119,69 +95,48 @@
 		POP     出栈指令
 		CALL PC 调用指令
 		RET     返回指令
-	SSE操作指令
+	SSE指令
 		加载数据 _mm_load_ss|ps _mm_set_ss|ps
 		存储数据 _mm_store_ss|ps
 		逻辑运算 __mm_add|mul_ss|ps
 
 C/C++
 	关键字
-		指针	
-			它也是个变量,它的值是对象的地址,使用&运算符获取对象  p->等价于(&p).
-			指针和引用变量赋值时必须匹配类型
-		引用	
-			变量换了个名字,没有内存分配,它和它引用的变量用的是一份内存
-			引用必须在声明时初始化
-		const
+		指针   它也是个变量,它的值是对象的地址,使用&运算符获取对象  p->等价于(&p).
+		引用   变量换了个名字,没有内存分配,它和它引用的变量用的是一份内存
+		static 静态全局常量(文件内有效) 静态局部变量(作用域内有效)
+		extern 外部变量或函数
+		#define ##拼接变量 #替换变量
+		typedef 类型组合定义
+		sizeof  编译期有效,不能在运行时判断数据长度
+		const  指针常量
 			顶层const：指针本身是个常量
 			底层const：指针所指的对象是个常量
 			const函数: 不可以修改类成员变量
 			const参数: 不可以参数内容,const参数可以接收任意参数,非const只能接收非const类型参数
 			const返回: 不可以修改返回值的内容
-		static
-			静态全局常量(文件内有效) 静态局部变量(作用域内有效)
-		extern 
-			外部变量
-		#define 
-			宏定义 ##宏拼接 ##用于拼接变量 #宏替换
-		typedef 
-			类型组合定义
-		sizeof
-			编译期有效,不能在运行时判断数据长度
 		new&delete
 			new object()  调用operator new函数分配内存,然后调用object的构造函数
 			delete ptr    调用ptr所指向的对象的析构函数,然后调用operator delete函数释放内存
 			operator new  内存分配函数void* operator new(size_t size)
 			placement new 在指定内存块上构造对象 new (buffer) object()
 	类型转换 
-		static_cast 基本类型之间相互转换,可替代隐式转换
-					类层次转换,父类到子类没有类型检查
+		static_cast 基本类型之间相互转换,可替代隐式转换 类层次转换,父类到子类没有类型检查
 		const_cast 只能改变底层const,也就是指针所指向的对象的const
 		dynamic_cast 用于指针和引用的类层次转换,向下转换有类型检查,不一致结果为NULL
 		reinterpret_cast 用于将二进制位解释为另一种类型
 		operator T() 类型转换运算符,前面添加explicit后禁止隐式转换
-	函数
+	类&&继承
 		参数传递
-			引用&值参数传递 
-		左值参数传递
-			直接在调用函数时构造一个对象传递,会发生两次构造
-		右值参数传递
-			传递构造出来的对象,避免二次构造
-		函数指针  
-			指针指向一个函数,可以直接P()调用
-			定义一个函数,返回函数指针 int (*f())()
-	类&继承
-		private public protected friend class 
-		virtual vptr 重载 覆盖 vtable virtual=0 
+			传递方式:引用&值参数传递 
+			左值传递:直接在调用函数时构造一个对象传递,会发生两次构造
+			右值传递:传递构造出来的对象,避免二次构造
 		虚表&虚表指针&虚继承&虚析构函数
 			虚表: 每个带有虚函数的类都有一个静态的虚表
 			虚表指针: 每个带有虚函数的类对象都有一个虚表指针,在构造函数内初始化
 			虚析构函数: 声明了虚函数的基类必须实现虚析构函数,确保正确析构
 			虚继承: 保证基类只有一份实例virtual-base-class
 			注意点: 基类构造函数不能调用虚函数 子类必须实现虚基类的构造
-		多态性
-			编译时多态性,模板,重载
-			运行时多态性,虚函数重写
 		类初始化
 		  	虚表指针->初始化列表->构造函数体
 		内存布局
@@ -194,80 +149,28 @@ C/C++
 			虚函数表(多继承时有多个)
 				基类虚函数(会被子类相同的虚函数覆盖)
 				子类虚函数(只存在于第一个基类虚表)
-		对象创建
-			拷贝构造函数&赋值运算符重载 避免指针所指内存被共享
-			把析构函数设置为私有,可以禁止在栈上创建对象,添加自定义函数删除对象
 	模板&泛型
-		模板定义	
-			template<class T> return_type function_name(arg_type) {}
-		模板特化
-			template<> return_type function_name(special_arg_type) {}
-		函数类型
-			function<return_type (arg_type)>
-			自定义函数类型模板(声明一个重载了()运算符的模板类)
-			template<type_name T>
-			class function<return_type (arg_type)> { return_type operator()(arg_type) }
-			参数重新排列
-			bind(func,placeorders::_1,_2,var);
-		lambda  
-			[捕捉列表](参数列表){函数体} =值捕捉 &引用
+		模板定义 template<class T> return_type function_name(arg_type) {}
+		模板特化 template<> return_type function_name(special_arg_type) {}
+		函数对象 function<return_type (arg_type)> function是一个重载了()运算符的模板类
+		lambda   [捕捉列表](参数列表){函数体} =值捕捉 &引用
 	常用基础函数
-			   __LINE__ __FUNCTION__ __FILE__
-		stddef NULL定义
-		assert assert(ptr)
+		assert assert(expression)
 		ctype  isupper islower isdigit isalpha toupper tolower
-		limit  最值宏定义
-		math   常用数学函数
-		signal 进程信号处理,signal函数用于注册信号处理函数,常见信号有
-				SIGILL 非法指令 SIGINT 输入CTRL+D SIGABRT 终止 SIGCHLD 子进程异常停止 SIGFPE 除0异常 SIGKILL 杀死进程 SIGSEGV 非法内存访问 SIGSYS 非法系统调用
+		signal SIGILL 非法指令 SIGINT 输入CTRL+D SIGABRT 终止 SIGCHLD 子进程异常停止 SIGFPE 除0异常 SIGKILL 杀死进程 SIGSEGV 非法内存访问 SIGSYS 非法系统调用
 		stdlib 内存分配 malloc free 数值与字符串转换 atoi itoa 随机数 srand(seed) rand 系统操作 system exit abort 环境变量 getenv putenv
 		stdarg 不定长参数  __VA_ARGS__ va_list ap; va_start(ap,format); char buffer[512]; len = vsprintf(buffer,format,ap); va_end(ap);
 		string 字符串处理 strcat(dst,src) strcpy(dst,src) strstr(src,content) strlen(src) strcmp(src,dst) c_str
 		ctime  低精度时间 time_t time(NULL)秒级系统时间 clock_t clock()毫秒级运行时间 tm localtime(time_t t)具体日期 
 		chrono 高精度时间 steady_clock::now精度为100ns high_resolution_clock::now()
-		stdio  C文件读写 fopen("path","wrab+") fclose(fp) fread(buffer,size,count,fp) fseek(fp,offset,seek_cur) ftell(fp)
-						r:只读取ASCII可显示字符,遇到不可显示字符时读取结束
-						open和write属于系统调用,低级IO无内存缓冲,不同操作系统不一样
-		fstream C++文件读写 
-		 			f("",ios::in|ios::out|ios:binary) f.close() eof()文件结尾
-				   	tellg() tellp() 用于获取当前文件读取或者写入的位置
-				   	seekg(offset,ios::cur) seekp() 用于移动读写指针到指定位置 ios::beg ios::cur ios::end
-				   	read(buffer,size) write(buffer,size) 字节数组读写
+		stdio  C文件读写 fopen("path","wrab+") fclose(fp) fread(buffer,size,count,fp) fseek(fp,offset,seek_cur) ftell(fp) r模式遇到不可显示字符时读取结束
+		fstream C++文件读写 OO方式读写文件
 		sstream 字符串读写 istringstream istr(string) istr.clear() istr.c_str() istr >> "string value"
-		stl		vector 插入元素push_back insert 删除元素erase clear 
-				list   插入元素push_back push_front insert 访问元素front back 删除元素erase pop_front pop_back
-				stack  插入元素push 删除元素pop 访问元素top
-				map&multimap  构造元素make_pair(key,value) 添加元素insert 删除元素erase 
+		stl		vector list stack map&multimap set&multiset 增insert 删erase make_pair(key,value)
 		algorithm 查找(find、find_if) 删除 remove remove_if 赋值 fill fill_n 替换 replace replace_if 排序 sort 去重 unique
 		iterator  迭代器 ::iterator iter = ww.begin() ww.end() cbegin cend rbegin rend
-		dll		__declspec(dllexport) __stdcall __cdecl
-				头文件 dlfcn.h unix可用 mac/windows需要别的API,编译时-ldl -rdynamic
-				void* dlptr = dlopen("dlname",RTLD_NOW) 
-				void* funcptr = dlsym(dlptr,"funcname")
-				int ret = dlclose(dlptr)
 		goto 	函数内跳转
 		jmp     非局部跳转
-				setjmp(jmp_buf env) 设置跳转点,保存函数上下文 直接调用返回0,跳转调用返回longjmp第二个参数
-				longjmp(jmp_buf env,int ret) 调到跳转点,恢复函数上下文
-	C++编程规范
-		对象相关
-			1.类的设计
-				遵循设计模式原则:接口简单清晰易用
-			2.类的实现
-				构造与析构:带指针或者资源的类必须重载拷贝构造函数、赋值运算符,没特殊需求编译器默认生成的就可以
-				头文件包含:使用前置声明代替INCLUDE,删除没意义的引用,降低文件依赖关系,加快编译速度
-				虚函数:构造和析构过程中不要调用虚函数
-			3.类的继承
-				组合模式
-				接口继承
-				实现继承
-				虚继承
-		语言特性
-			1.使用const代替#define 
-				有类型检查并且const常量会被编译到机器指令
-			2.资源管理
-				以对象的形式进行资源管理,依靠构造和析构函数来处理资源的初始化和释放
-				智能指针不能用于数组,因为析构调用的是delete而不是delete[]
 	C++11特性
 		构造函数
 			删除函数:声明为private或者使用delete关键字 
@@ -287,89 +190,24 @@ C/C++
 		初始化列表
 			以{}作为参数调用类的构造函数,参数类型为std::initializer_list<T>&
 
-C#   
-	.NET规范
-		类似于OpenGL规范,.NET规范定义了实现这种技术需要的API集合
-		CIL CLR CLI FCL等组成,CLR是运行时,CIL是中间语言,FCL是基础类库
-		.NET2.0支持最常用的类库
-		.NET3.5支持System.Linq
-	.NET实现
-		.NET FRAMEWORK是windows平台的.NET实现
-		MONO是跨平台的.NET实现 mono2.0/.net2.0/3.5 mono2.10/.net4.0 mono3.4/.net4.5 mono4.4/.net4.6
-  	反射
-		特性,继承自System.Attribute的类,放在类上面通过构造函数初始化,可以使用GetType().GetCustomAttributes(类型,继承)获取所有特性
-		Reflection 反射程序集包含 Type 类型管理 Assembly 程序集管理
-  	DLL
-		C++使用__cdecl __declspec(dllexport)导出API
-		C#使用DllImport(dllName,EntryPoint,CharSet,CallVersion) static extern调用API
-		int float bool uint long直接对应
-	  	string对应char* 
-	  	byte[]对应unsigned char*,传递时需要使用Marshal.Copy用于在托管与非托管之间转换内存 Marshal.Copy(src, start, dst, len);  Marshal.Copy(src, dst, start, len);
-	  	function pointer对应 delegate MonoPInvokeCallback(typeof(DelegateName))
-      	StructLayout(LayoutKind.Sequential),RequiredByNativeCode
-		[MethodImpl(MethodImplOptions.InternalCall), WrapperlessIcall] 标记该方法在C++内实现		  
-		C++使用mono运行C# DLL,需要mono提供的库和头文件,注意c# dll需要使用 mono命令来生成, msc *.cs -t:library
+C#
+	类型系统
+		Type类包含一个类型的的所有信息,包括BaseType ConstructInfo FieldInfo PropertyInfo MethodInfo ParameterInfo等等,Attribute给类型提供了额外的元数据
+	反射系统
+		Assembly类记录了当前程序集(dll或exe)的所有信息,引用的类、定义的类,类需要程序集+命名空间来确定
+  	托管交互
+	  	C++导出 windows:extern "C" __cdecl|__declspec(dllexport) other: extern "C"
+		C++实现 [MethodImpl(MethodImplOptions.InternalCall), WrapperlessIcall] 标记该方法在C++内实现
+		C#导入  DllImport(dllName,EntryPoint,CharSet,CallVersion) static extern
+		参数对应 int float bool uint long string对应char* byte[]对应unsigned char*
+		数据拷贝 Marshal.Copy(src, start, dst, len);  Marshal.Copy(src, dst, start, len);
+		函数指针 MonoPInvokeCallback(typeof(DelegateName))
+		引用传递 StructLayout(LayoutKind.Sequential),RequiredByNativeCode
 	ref&out
 		参数传递默认为值传递(值类型复制一份,引用类型复制引用)
 		引用传递传递地址,ref&out不会进行装箱操作
 
-python 
-	函数定义
-		def name(params):
-	判断是否是主动执行
-		__name__ == "__main__": 
-	设置文件编码
-		#coding:utf-8 
-		import sys
-		reload(sys)
-		sys.setdefaultencoding("utf-8")
-	当前脚本执行路径
-		import os
-		os.path.abspath(sys.path[0])
-	参数
-		sys.argv数组
-	数组  append   
-	循环  for var in 数组或者range(1,n):
-	文件操作  file = open(path,"wb")  file.write() file.close() file.readline file.readlines file.seek(cur,off) file.tell
-	目录操作 是否为目录 os.path.isdir() 
-			目录列表 os.listdir()
-			删除空目录 os.rmdir()
-			路径是否存在 os.path.exists()
-			分解为文件名和路径 os.path.split()
-			删除目录 shutil.rmtree()
-						shutil copy()文件夹
-						shutil copyfile 文件
-						shutil move 移动
-						shutil remove 删除文件
-	堆栈   traceback.print_exc()
-	输入  rawinput()
-	字符串  string[0:-3]  
-			string.split() 
-			字符串拼接 string.join(array)  "%s" % varname  a + b
-			替换replace
-	字节   b前缀后跟ASCII字符
-			b前缀后跟转义16进制 b'xFF'
-			bytesarray(b'')
-	编码   python字符串是对象,有两种,
-			一个是str类型,可能是gbk或utf-8编码或者ascii编码 通过decode("gbk|ascii|utf-8")操作转换为unicode对象
-			一个是unicode类型,通过encode("gbk|utf-8|ascii")转换为str对象
-			判断对象类型 type(x) is unicode or type(x) is str
-	
-	库  excel库xlrd
-				excel = xlrd.open_workbook(path)
-				sheetnames = excel.sheet_names()
-				sheet = excel.sheet_byname(name)
-				cols = sheet.row_values(n)
-				ctype = sheet.cell(row,col)
-				value = sheet.cell_value(row,col);
-	库  xml库xml.etree.ElementTree
-	   			  root = ET.parse(".xml")
-	   			  for child in root:
-	   			  	for field in child:
-	   			  		filed.tag 
-	   			  		field.text
-
-lua
+Lua
 	常量定义 luaconf.h       平台相关 搜索路径 堆栈大小 
 	基础函数定义lua.h        以lua_为前缀,版本、REGISTERINDEX、GLOBALSINDEX、T* lua_Alloc lua_CFunction lua_is* lua_to* lua_push* lua_get* lua_set*
 	辅助函数定义luaxlib.h    以luaL_为前缀
@@ -442,25 +280,63 @@ lua
 						PROTO    source constants upvalnames varnames
 		LUA_TUSERDATA   envtable metatable
 		LUA_TTHREAD     luastate
-	jit优化
-        原理
-            JIT是把字节码编译成机器码,放到可执行内存中执行,需要申请带可执行权限的内存空间
-        工具
-            jit/*.lua 可以用来控制JIT的编译过程
-            开启/关闭JIT模式 jit.on/jit.off 
-        问题1
-            ARM限制跳转指令只能跳转前后32MB的空间,如果连续的64MB空间内被其他代码占用,LUAJIT就分配不出可执行内存
-            能否进行JIT只能不断重复尝试编译,导致性能急速下降,如何预分配这些内存空间?
-        问题2
-            ARM可用寄存器比X86少,LUAJIT会尽可能使用寄存器存储LOCAL变量,LOCAL太多会导致寄存器分配失败
-        问题3
-            调用C函数的代码无法JIT,可以使用FFI库调用C函数是可以JIT优化的
-        问题4
-            某些字节码无法JIT优化,有哪些?
 
+Python
+	基本类型
+		string
+		tuple
+		list   l={} l.append()
+		map
+	类&函数
+		类型信息 type(obj) is class
+		类定义   class typename:
+		构造函数 def __init__(self):
+		成员函数 def funcname():
+	函数库
+		path
+				绝对路径 os.path.abspath()
+		dir
+				是否为目录 os.path.isdir() 
+				目录列表 os.listdir()
+				删除空目录 os.rmdir()
+				路径是否存在 os.path.exists()
+				分解为文件名和路径 os.path.split()
+				删除目录 shutil.rmtree()
+							shutil copy()文件夹
+							shutil copyfile 文件
+							shutil move 移动
+							shutil remove 删除文件
+		file
+				打开文件 f = open(path,"rwab+") codecs.open(path,"rwab+","utf-8-sig")
+				文件读写 f.readlines() f.readline() f.write(str_obj)
+				文件偏移 f.tell() f.seek(cur,off)
+				关闭文件 f.close()
+		string  
+				编码转换 str_obj = unicode_obj.encode("utf-8|gbk") unicode_obj = str_obj.decode("utf-8|gbk") chardet.detect(obj)
+				字符截取 str_obj[start:end] 其中start和end为负数表示从后往前,0表示第一个字符,-1表示最后一个字符
+				字符拆分 str_obj.split(".")
+				字符拼接 str_obj.join(str_obj||list)
+		excel	
+				导入类库 import xlrd
+				打开文件 excel = xlrd.open_workbook(path)
+				表格操作 sheet = excel.sheet_byname(name) excel.sheet_names()
+				子表操作 rowdata = sheet.row_values(n) ctype = sheet.cell(row,col) value = sheet.cell_value(row,col);
+		xml		
+				导入类库 import xml.etree.ElementTree as ET
+				打开文件 root_node = ET.parse(".xml")
+				结点属性 node.attrib node.tag node.text
+				结点遍历 for child_node in root_node   
+	常用操作
+		主动执行 __name__ == "__main__"
+		执行路径 os.path.abspath(sys.path[0])
+		启动参数 sys.argv
+		等待输入 raw_input
+		文件编码 #coding:utf-8 import sys reload(sys) sys.setdefaultencoding("utf-8")
+		数组遍历 for k in values|range(1,n)
+		打印堆栈 traceback.print_exc()
+	
 OC
-	面向对象的语言
-	基础函数类库 
+	函数库 
 		#import <Foundation/Foundation.h>
 		日志打印:NSLog
 		字符串:NSString
@@ -518,5 +394,6 @@ Html:
 		标题: <title></title>
 	内容: <body></body>
 		换行: <br/>
+		空格: <&nbsp>英文半角空格 <&emsp>中文全角空格
 		字体: <font size="6" color="ffffff"></font> <b></b> <i></i> <sub></sub> <sup></sup>
 		链接: <a href=url>链接内容描述</a>
