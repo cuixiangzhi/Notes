@@ -191,10 +191,12 @@ C/C++
 			以{}作为参数调用类的构造函数,参数类型为std::initializer_list<T>&
 
 C#
+	程序域
+		AppDomain类记录了当前应用(exe)的所有引用和定义的程序集信息
+	程序集
+		Assembly类记录了当前程序集(dll)的所有信息,包括包含的模块(封装为Module)、引用和定义的类型信息(封装为Type类)
 	类型系统
 		Type类包含一个类型的的所有信息,包括BaseType ConstructInfo FieldInfo PropertyInfo MethodInfo ParameterInfo等等,Attribute给类型提供了额外的元数据
-	反射系统
-		Assembly类记录了当前程序集(dll或exe)的所有信息,引用的类、定义的类,类需要程序集+命名空间来确定
   	托管交互
 	  	C++导出 windows:extern "C" __cdecl|__declspec(dllexport) other: extern "C"
 		C++实现 [MethodImpl(MethodImplOptions.InternalCall), WrapperlessIcall] 标记该方法在C++内实现
@@ -263,23 +265,10 @@ Lua
 		GC对象          LuaState.gclist
 		函数Env         Closure.env
 		函数LocVar 		Proto.localvars
-		函数UpVar       LClosure.upvals LuaState.openupval
-						注意点
-							如果upval不在直接外层函数内,那么这个upval也会成为直接外层函数的upval
-							upval一定在外层函数的localvars或者upvals中
-							外层函数的local是通过openupval间接引用的
+		函数UpVar       LClosure.upvals LuaState.openupval upval一定在外层函数的localvars或者upvals中,外层函数的local是通过openupval间接引用的
 		package.loaded  LuaState.l_G.l_registry._LOADED require会先到该表查找对应模块是否已加载,加载出来之后有返回值则为返回值,否则为true
 		package.loaders LuaState.env
 		module          push_module->mod_init->setenv
-	变量引用关系
-		LUA_TSTRING    	没有对其它对象的引用
-		LUA_TTABLE 		keys values array metatable
-		LUA_TFUNCTION   proto upvals
-						CCLOSURE upvals proto
-						LCLOSURE upvals
-						PROTO    source constants upvalnames varnames
-		LUA_TUSERDATA   envtable metatable
-		LUA_TTHREAD     luastate
 
 Python
 	基本类型

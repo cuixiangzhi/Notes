@@ -1,5 +1,5 @@
 PlanarShadow
-    原理:地面是一个高度一致的平面,通过计算投影矩阵把投影物体的顶点变换到平面上渲染阴影
+    原理:地面是一个平面(高度为d),通过计算投影矩阵把投影物体的顶点变换到平面上渲染阴影(多一个批次渲染)
     计算:
         假设地面法向量为n,顶点为v,光源方向为l,投影点为p=v-[dot(n,v)-d]/[n*l]*l,其中dot(n,v)-d等于v到平面的距离
         1.先渲染地面
@@ -20,7 +20,7 @@ PlanarShadow
             像素shader
                 根据距离物体原点的距离来做阴影渐变
                 o.color.xyz = fixed3(0,0,0);
-                o.color.w = pow(1-clamp(sqrt(dot(proj2WorldD,proj2WorldD)*_ShadowInvLen)-_ShadowFade.x,0,1),_ShadowFade.y) * _ShadowFade.z
+                o.color.w = pow(1-clamp(sqrt(dot(p2o,p2o)*_ShadowInvLen)-_ShadowFade.x,0,1),_ShadowFade.y) * _ShadowFade.z
 Projector
     1.用一个摄像机在指定方向渲染指定层级的物体生成_ProjectTexture
         生成过程:
@@ -41,10 +41,11 @@ ShadowMap
     ShadowAcne
         阴影图分辨率不够,导致与光源方向角度很小时产生条纹状的自阴影现象
         shadow bias
-            计算光源空间深度图时统一向光源朝向移动一点距离,减弱光源空间下倾斜物体的自阴影现象
+            计算光源空间深度图时统一离光源远一点,减弱光源空间下倾斜物体的自阴影现象
             bias = max(factor * (1 - dot(normal,light)),constant) 微调factor和constant
         normal bias
-            计算光源空间深度图时统一把模型沿法线方向稍微缩小,减弱角色阴影偏移脚底(悬空)的现象
+            离光源的真实距离变大之后,会导致本来是阴影的地方变亮,物体与地面交接的地方悬空
+            计算光源空间深度图时统一把模型沿法线方向稍微缩小,减弱悬空现象
     LightSpaceShadowMap
         1.以实时灯光位置作为视点,渲染一张深度纹理
             生成过程: 
