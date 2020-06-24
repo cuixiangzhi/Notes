@@ -1,0 +1,2 @@
+1.androidP(9)报错ClassNotFound org.apache.http.xx
+    AndroidManifest.xml application添加<uses-library android:name="org.apache.http.legacy" android:required="false"/>

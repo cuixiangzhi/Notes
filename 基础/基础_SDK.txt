@@ -70,8 +70,17 @@
                             </intent-filter>
                             <meta-data android:name="key" android:value="value" />
                         </activity>
+                        <provider>
+                            TODO
+                        </provider>
+                        <receiver>
+                            TODO
+                        </receiver>
+                        <service>
+                            TODO
+                        </service>
                     </application>
-                基础知识
+                节点介绍
                     activity
                         activity是一个活动窗口,使用setContentView来显示不同的控件
                     android:name
