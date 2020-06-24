@@ -40,18 +40,10 @@
     jar: 
         java文件集合,包含一个META-INF/MANIFEST.MF清单文件和一组.class文件
             jar -cu *.class -f .jar 创建/更新jar包
-            或者使用eclipse右键->Export->Java->jarfile
-            引入时直接import com.xx.xxx;
-            jar包只有清单和类文件,不包含资源文件
-        直接放入libs文件夹下
     aar:
-        jar包+资源文件的集合
-        aar是一个包含自定义UI和字体等资源的类库,例如调用API之后弹出一个窗口,窗口的UI和字体都是库内的
-        直接放入libs文件夹下
+        aar是一个包含自定义UI和字体等资源和代码的类库,例如调用API之后弹出一个窗口,窗口的UI和字体都是库内的
     assets:
         有些jar库使用了外部的资源或者配置文件,需要放在assets(对应于apk/assets目录)文件夹下
-        这些jar没有打包成aar文件
-        直接放入Android文件夹下
     AndroidMainfest:
         安卓apk配置文件
             首先是一个xml文件头 <?xml version="1.0" encoding="utf-8"?>
@@ -62,26 +54,32 @@
                 android:versionName=字符串(显示用)
                 android:installlocation=
             接下来是配置内容
-                权限配置
-                    <uses-permission android:name="android.permission.INTERNET" />
                 SDK版本配置
                     <uses-sdk android:minSdkVersion=16 android:targetSdkVersion=22 android:maxSdkVersion=26 />
+                权限配置
+                    <uses-permission android:name="android.permission.INTERNET" />
                 屏幕配置
                     <uses-screens android:resizeable=true />
                 应用配置
-                    <application android:label="@string/app_name" android:networkSecurityConfig="@xml/network_security_config" android:allowBackup=true默认为true,允许应用在未获取ROOT时使用abd备份和恢复数据 >
-                        一个activity是一个单独的屏幕,使用setContentView来显示不同的控件
-                        <activity android:name="com.xx.xx.Unity3dPlayer" 入口类名
-                                  android:label="@string/app_name" >
+                    <application android:label="@string/app_name" android:icon android:debuggable android:largeHeap >
+                        <activity android:name="com.xx.xx.Unity3dPlayer"android:label="@string/app_name" android:launchMode="singleTop|singleTask"> 
                             <intent-filter>
+                                <data android:scheme="http" android:mimeType="text/plain">
                                 <action android:name="android.intent.action.MAIN" />
                                 <category android:name="android.intent.category.LAUNCHER" />
                             </intent-filter>
                             <meta-data android:name="key" android:value="value" />
                         </activity>
                     </application>
-                其他配置 instructments调式 configuration&feature硬件配置
-        直接放入Android文件夹下
+                基础知识
+                    activity
+                        activity是一个活动窗口,使用setContentView来显示不同的控件
+                    android:name
+                        activity入口类的import路径
+                    intent-filter
+                        startActivity或startService的参数是一个intent,intent会和activity的filter配置进行匹配
+                    @string/app_name
+                        引用res指定子目录下的某个文件内的配置,app_name引用的是strings.xml的app_name
     keystoreName keyaliasName
         安卓应用打包签名所需要的文件,用于标识一个应用,相同签名的应用会覆盖安装
         这个文件一般是渠道给的,用于发布APK使用
@@ -90,19 +88,14 @@
         oc语言的源代码文件,放入iOS/模块名字/ 目录下
     .a:
         静态库,使用DllImport("__Internal")特性标记,xcode编译时会链接该静态库
-        gcc .. -o *.o | ar rcs libxx.a *.o
-        放入iOS根目录下
+        gcc .. -o *.o | ar rcs libxx.a *.OnPostProcessBuild
     .framework
-        系统的.framework文件属于动态库,个人创建的属于静态库
-        .framework包含资源文件
-        放入iOS根目录下
+        系统的.framework文件属于动态库,个人创建的属于静态库 .framework包含资源文件
     .dylib
-        动态库,在xcode内以*.tbd形式存在
-        一般都是系统库,iOS不支持自己实现动态库
+        动态库,一般都是系统库,在xcode内以*.tbd形式存在,iOS不支持自己实现动态库
     常见的工程配置
         OTHER_LDFLAGS -ObjC
         ENABLE_BITCODE NO
-        各种权限
     导出xcode工程时,依赖库配置
         xcode工程文件是*.xcodeproj文件夹,具体配置文件是*.xcodeproj/*.pbxproj文件
         xcode工程配置包含两种类型,一种是库的依赖、搜索路径;另一种是k/v形式的编译配置
@@ -158,7 +151,3 @@
             public Unity_Xcode_Json_KV[] buildset_add;
             public Unity_Xcode_Json_KV[] plistset;
         }
-通用SDK
-    有两种形式: 一种是独立的C#dll,放入Plugins根目录或者指定的SDK目录即可;另外一种不需要引入DLL,以http服务形式存在
-    http形式的服务一般需要服务器返回一个token或者其它数据,请求时配置在参数内,注意传输时使用Base64编码避免与特殊字符冲突
-    例如:https://IP:PORT/token=xx&content=xx

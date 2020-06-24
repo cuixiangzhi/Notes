@@ -325,33 +325,30 @@ Python
 		打印堆栈 traceback.print_exc()
 	
 OC
-	函数库 
-		#import <Foundation/Foundation.h>
-		日志打印:NSLog
-		字符串:NSString
 	类声明
-		声明类以@interface开头,@end结尾 
+		类声明以@interface开头,@end结尾 
 		@interface cls : NSObject
 		@end
 	类实现
-		实现类以@implementation开头,以@end结尾
+		类实现以@implementation开头,以@end结尾
 		@implementation cls
-		{
-			大括号内部是成员变量
-		}
 		@end
+	类属性
+		@property (nonatomic不加锁,strong强引用,readwrite可读可写,assign简单赋值) type var;
 	类函数:
-		-(void)name:(bool)param1 paramt:(int)param2;  
-		-是成员函数,+是静态函数
-		:前面是函数名字和返回值
-		[object func:param1 paramt:param2]
+		-(return_type)func_name:(arg_type)arg_name arg_tag:(arg_type)arg_name;  +表示静态函数 -表示成员函数 id表示self
+		[object func_name:arg_value arg_tag:arg_value arg_tag:@selector(func_name:)] @selector函数指针
 	类对象:
 		创建
-			cls* ptr = [[cls alloc] init];
+			cls* ptr = [cls new] 等价于 [[cls alloc] init];
 			类对象创建使用中括号,前面是类名,后面是分配函数,在后面是初始化函数
 		释放
-			[cls release:1];
+			[cls release];
 			OC不支持垃圾回收,用完需要释放,参数用冒号表示开始
+	函数库
+		#import <Foundation/Foundation.h>
+		打日志:NSLog
+		字符串:NSString
 
 Java:
 	JDK分类

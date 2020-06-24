@@ -21,19 +21,6 @@ PlanarShadow
                 根据距离物体原点的距离来做阴影渐变
                 o.color.xyz = fixed3(0,0,0);
                 o.color.w = pow(1-clamp(sqrt(dot(p2o,p2o)*_ShadowInvLen)-_ShadowFade.x,0,1),_ShadowFade.y) * _ShadowFade.z
-Projector
-    1.用一个摄像机在指定方向渲染指定层级的物体生成_ProjectTexture
-        生成过程:
-            把FrameBuffer清空为透明颜色
-            顶点shader常规计算裁剪坐标
-            像素shader直接返回不透明颜色,最终的贴图alpha大于0表示阴影
-    2.被投影的物体渲染两次,第一次正常渲染,第二次使用指定材质球渲染
-        计算过程:
-            正片叠底混合 Blend DstColor Zero
-            顶点shader计算当前顶点的投影纹理齐次坐标
-                sproj = mul(_Projector,v.vertex);
-            像素shader采样然后插值计算alpha进行混合
-                shadow = tex2D(_ShadowTex,sproj.xy//sproj.w).a
 ShadowMap
     Hard&SoftShadows
         本影区属于硬阴影,常规SM只能模拟硬阴影
@@ -47,29 +34,13 @@ ShadowMap
             离光源的真实距离变大之后,会导致本来是阴影的地方变亮,物体与地面交接的地方悬空
             计算光源空间深度图时统一把模型沿法线方向稍微缩小,减弱悬空现象
     LightSpaceShadowMap
-        1.以实时灯光位置作为视点,渲染一张深度纹理
-            生成过程: 
-                顶点shader计算深度
-                    o.pos = UnityObjectToClipPos(v.vertex);
-                    o.depth = o.pos.zw
-                像素shader记录深度(因为有差值)
-                    float depth = o.depth.x / o.depth.y
-                    fixed4 depth_color = EncodeFloatRGBA(depth)
-                    这种方式已经过时,直接使用DepthFormat格式的Framebuffer即可
-         2.接受阴影的物体从模型空间转换到灯光空间,和深度图作比较,大于深度图中的深度则为阴影
-            计算过程
-                顶点shader计算深度
-                    objectToLightProj = mul(worldToLightProj,unity_ObjectToWorld);
-                    o.proj = mul(objectToLightProj,v.vertex);
-                    o.depth = o.proj.zw
-                像素shader比较深度
-                    fixed4 depth_texture_color = tex2Dproj(_LightDepthTexture,o.proj);
-                    float depth_texture = DecodeFloatRGBA(depth_texture_color);
-                    float depth_current = o.depth.x / o.depth.y - shadowBias
-                    if(depth_texture < depth_current) 阴影
+        1.以实时灯光位置作为视点,对不透明投影物体渲染一张深度纹理
+            生成过程(走一遍渲染管线生成深度图)
+        2.接受阴影的物体从模型空间转换到灯光空间,和深度图作比较,大于深度图中的深度则为阴影
+            计算过程(变换到灯光空间下采样深度图比较远近)
     CascadeShadowMap
-        原理:如果使用相同的正交投影矩阵计算物体在平行光下的投影坐标,近处的物体会由于深度精度问题而产生很多锯齿
-        优化:把摄像机的视椎体分成N个部分,每个部分分别根据梯形8个顶点得出平行光正交摄像机下的AABB包围盒作为平行光的正交摄像机范围
+        原理:阴影深度图分辨率固定的情况下,可视范围越大近处的物体所占像素越少,精度越低
+        实现:把摄像机的视椎体分成N个部分,每个部分单独占用一张阴影深度图
         计算:
             计算灯光摄像机的视椎体参数
                 视锥SIZE取决于VIEW.AABB在LightSpace下的XY大小,视锥远近平面位置取决于SCENE.AABB在LightSpace下的Z值范围
@@ -82,33 +53,25 @@ ShadowMap
             计算CSM级别划分和视锥参数
                 用户自定义把摄像机远近平面构成的可视范围划分成N份
     ScreenSpaceShadowMap
-        ZBuffer
-            zbuffer=(az+b)/(z|-z)
-            深度图记录的是非线性变换的zbuffer值,采样之后要使用Linear01Depth映射到[0,1]或者[n,f]
-        1.首先在当前摄像机处创建相机渲染一张深度图
-            生成结果是_CameraDepthTexture
-        2.然后在灯光位置创建相机渲染一张深度图
-            生成结果是_LightDepthTexture
+        1.首先在当前摄像机处创建相机渲染一张深度图_CameraDepthTexture
+        2.然后在灯光位置创建相机渲染一张深度图_LightDepthTexture
         3.对屏幕进行一次后处理操作,输入两张深度图,输出_ShadowMapTexture
             顶点shader直接转存uv坐标
                 o.uv = v.uv
             像素shader计算屏幕空间阴影图
-                首先需要把当前像素点从屏幕坐标系变换到灯光坐标系
                 屏幕坐标系->摄像机坐标系
                 float3 vpos = computeCameraSpacePosFromDepth
                 摄像机坐标系->世界坐标系
                 float4 worldPos = mul(unity_CameraToWorld,vpos)
                 世界坐标系->灯光坐标系
                 float4 lightPos = mul(unity_WorldToLightProj,worldPos)
-            生产结果是_ShadowMapTexture
         4.正常渲染物体
             像素shader使用屏幕坐标采样_ShadowMapTexture
     PerspectiveShadowMap
         原理:通过改变灯光空间下的投影矩阵,使得靠近镜头的对象占用更大的投影区域
     VarianceShadowMap
         公式:表面可见比例p=s/[s+(t-M1)²] 其中s=M2-M1²表示方差,t表示receiver深度,M1表示caster样本深度均值,M2表示caster样本深度平方均值
-        原理:根据一定区域内的caster到光源距离的方差来衡量receiver阴影的强度,也就是计算遮挡物的距离大于当前像素到光源距离的比例有多少,以此模拟软阴影效果
-             靠近caster边缘的时候方差会变大,方差越大,深度差异越大
+        原理:根据caster到光源距离的方差来衡量receiver阴影的强度,也就是计算遮挡物的距离大于当前像素到光源距离的比例有多少,以此模拟软阴影效果
         缺点:当两个caster相邻并且其中一个距离receiver更近时,方差会比较大,发生漏光现象,公式计算的p是一个最大值,并不是准确值
         实现:生成两张SM,一张存储depth(样本深度的期望值),一张存储depth*depth(样本深度平方的期望值)
     PCF
