@@ -23,9 +23,8 @@
     .ipa        安装包
                 xcodebuild -exportArchive -archivePath *.xcarchive -configuration D|R -exportPath *.ipa -exportOptionsPlist
     .app        执行程序
-    iOS证书与描述文件
-                证书包含公钥和私钥,用来对app进行加密和解密
-                描述文件包含了AppID、BundleID、证书、设备的关联信息
+    .provisioning profiles && certificates
+                描述文件包含了AppID、BundleID、证书、设备的关联信息,对ipa签名需要用到证书
                 自动签名只需要设置好TeamID和BundleID,会自动筛选对应的证书和描述文件信息,这种必须使用开发证书
                 主动签名需要指定TeamID、BundelID、描述文件ID,根据证书类型选择是开发还是发布
 安卓SDK
@@ -47,7 +46,7 @@
     AndroidMainfest:
         安卓apk配置文件
             首先是一个xml文件头 <?xml version="1.0" encoding="utf-8"?>
-            然后是mainfest头
+            然后是manifest头
                 xmlns:android=命名空间
                 package=包名
                 android:vesionCode=数值(用于表示APP更新过几次,比较哪个是最新的) 
@@ -58,37 +57,50 @@
                     <uses-sdk android:minSdkVersion=16 android:targetSdkVersion=22 android:maxSdkVersion=26 />
                 权限配置
                     <uses-permission android:name="android.permission.INTERNET" />
+                特征配置
+                    <uses-feature android:name="android.hardware.camera" android:required="true|false" >
                 屏幕配置
-                    <uses-screens android:resizeable=true />
+                    <supports-screens android:resizeable=true android:smallScreens|normalScreens|largeScreebs|xlargeScreens|anyDensity/>
                 应用配置
-                    <application android:label="@string/app_name" android:icon android:debuggable android:largeHeap >
+                    <application android:label="@string/app_name" android:icon="@drawable:app_icon" android:debuggable调试 android:usesCleartextTraffic明文HTTP android:largeHeap >
+                        <!-- activity       activity是一个活动窗口,使用setContentView来显示不同的控件 -->
+                        <!-- launchMode     singleTop栈顶单例,打开栈顶的activity singleTask栈内单例,弹出它上面的所有activity-->
+                        <!-- intent-filter  startActivity或startService的参数是一个intent,intent会和activity的filter配置进行匹配-->
                         <activity android:name="com.xx.xx.Unity3dPlayer"android:label="@string/app_name" android:launchMode="singleTop|singleTask"> 
                             <intent-filter>
-                                <data android:scheme="http" android:mimeType="text/plain">
-                                <action android:name="android.intent.action.MAIN" />
-                                <category android:name="android.intent.category.LAUNCHER" />
+                                <action android:name="android.intent.action.MAIN" />            action.MAIN表示主activity
+                                <category android:name="android.intent.category.LAUNCHER" />    category.LAUNCHER表示在桌面添加启动图标
                             </intent-filter>
                             <meta-data android:name="key" android:value="value" />
                         </activity>
-                        <provider>
-                            TODO
+
+                        <!-- provider是一个应用之间共享数据的方式,继承自ContentProvider,默认有一个文件实现FileProvider-->
+                        <provider
+                            android:name="com.xx.xx.XXProvider" 类名
+                            android:authorities="com.xx.xx"     唯一标识
+                            android:exported=""                 是否可被其它应用启动
+                            android:grantUriPermission=""       授权文件访问权限
+                            >
                         </provider>
-                        <receiver>
-                            TODO
-                        </receiver>
-                        <service>
-                            TODO
+
+                        <!-- service是一个在后台运行的服务,start/stopService启动/关闭和应用无关的服务,bind/unbindService启动/关闭和应用绑定的服务 -->
+                        <service 
+                            android:name="com.xx.xx.XXService" 服务名字
+                            android:exported="false"           是否可被其它应用启动
+                            android:permission=""              启动该服务需要的权限
+                            android:process=""                 是否在单独的进程中执行
+                            >
                         </service>
+
+                        <!-- receiver是一个继承自BroadcastReceiver的接收器,接收来自sendBroadcast的广播,xml内配置之后可以在应用没有运行的时候接收广播-->
+                        <receiver 
+                            android:name="com.xx.xx.XXReceiver" 类名
+                            android:process="">                 进程
+                            <intent-filter>
+                                <action android:name="android.intent.action.CAMERA_BUTTON"> 系统事件广播或者应用自定义广播
+                            </intent-filter>
+                        </receiver>
                     </application>
-                节点介绍
-                    activity
-                        activity是一个活动窗口,使用setContentView来显示不同的控件
-                    android:name
-                        activity入口类的import路径
-                    intent-filter
-                        startActivity或startService的参数是一个intent,intent会和activity的filter配置进行匹配
-                    @string/app_name
-                        引用res指定子目录下的某个文件内的配置,app_name引用的是strings.xml的app_name
     keystoreName keyaliasName
         安卓应用打包签名所需要的文件,用于标识一个应用,相同签名的应用会覆盖安装
         这个文件一般是渠道给的,用于发布APK使用

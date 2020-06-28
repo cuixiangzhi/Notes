@@ -1,2 +1,9 @@
-1.androidP(9)报错ClassNotFound org.apache.http.xx
-    AndroidManifest.xml application添加<uses-library android:name="org.apache.http.legacy" android:required="false"/>
+android
+    1.android9.0(API28) 安全问题
+        找不到HTTP类 ClassNotFound org.apache.http.xx
+            AndroidManifest.xml application添加<uses-library android:name="org.apache.http.legacy" android:required="false"/>
+        禁止明文传输 CleartextNotPermitted
+            AndroidManifest.xml application添加android:usesCleartextTraffic="true"
+    2.android6.0(API23) 权限问题
+        关闭启动弹窗
+            AndroidManifest.xml 主activity添加<meta-data android:name="unityplayer.SkipPermissionDialog" android:value="true">
