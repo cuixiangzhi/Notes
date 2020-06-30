@@ -4,6 +4,16 @@ android
             AndroidManifest.xml application添加<uses-library android:name="org.apache.http.legacy" android:required="false"/>
         禁止明文传输 CleartextNotPermitted
             AndroidManifest.xml application添加android:usesCleartextTraffic="true"
+        添加https支持
+            使用System.Net.HttpWebRequest进行https请求,并添加证书验证回调ServicePointManager.ServerCertificateValidationCallback
     2.android6.0(API23) 权限问题
         关闭启动弹窗
             AndroidManifest.xml 主activity添加<meta-data android:name="unityplayer.SkipPermissionDialog" android:value="true">
+ios
+    1.iOS9.2以后的版本必须支持IPV6-Only网络
+        IPV4转换为IPV6
+            addrinfo hint; hint.ai_flags=AI_DEFAULT; hint.ai_family=PF_UNSPEC;hint.ai_socktype=SOCK_STREAM;
+            addrinfo* result;
+            getaddrinfo(host,NULL,&hint,&result)
+            inet_ntop(result.ai_family,result.ai_addr.sin6_addr,buffer,sizeof(buffer))
+            返回值result是一个链表,遍历检查是否存在ai_family==AF_INET6的地址,使用inet_ntop把网络地址转换为IP地址
