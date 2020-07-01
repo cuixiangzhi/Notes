@@ -16,7 +16,6 @@
     场景
     特效
     音频
-
     视频
         视频格式 使用H264视频编码和AAC音频编码,某些机型播放时画面会卡死,可以转为VP8的webm格式(尚未测试)
         登录视频 大小一般在10MB以内,循环播放
@@ -33,8 +32,9 @@
             shader实现多个不同LOD的subshader,LOD越低效果越差但是性能越好,例如PBS有高中低三个版本
             shader.globalMaximumLODLevel设置当前渲染质量,低于该值的shader的pass才会被使用
             shader.maximumLodLevel设置特定shader的渲染质量
-        3.AnimationLOD
-            根据计算出的LOD级别调整动画计算的最大骨骼数、动画的更新频率
+        3.ParticleLOD
+            prefab级别的LOD:按照LOD距离或者平均帧率来计算出当前prefab应该用哪一级LOD,每隔一段时间检测一次
+            system级别的LOD:指定每个ParticleSystem所属的LOD级别,LOD变更的时候进行比较
         4.QualityLevel
             运行时通过修改Unity的渲染配置,来提高质量或者降低消耗,通过QualitySettings.SetQualityLevel调节
             渲染
@@ -65,5 +65,3 @@
             反射
                 BoxProjection    视线向量的起点不在Cubemap中心,因此需要经过计算转换为正确的采样向量
         6.AdaptivePerformance
-            时钟频率
-                c/gpuLevel       CPU和GPU的时钟频率,高频模式会增加发热量
