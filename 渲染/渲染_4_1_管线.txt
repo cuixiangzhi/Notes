@@ -16,7 +16,7 @@
         一个DrawCall分为setpass和batch两部分,相同的setpass也就是使用相同的材质,batch是合并的Mesh个数
         批次分类及合批影响因素
             DepthLoop
-                1.自定义渲染目标可以取消这个批次,需要规范深度图使用方式,好像有一些渲染效果会出异常
+                1.自定义渲染目标可以取消这个批次,需要规范深度图使用方式
             ShadowLoop
                 1.Unity会根据ShadowCaster这个Pass的状态设置计算一个hash用于判断是不是相同,相同则可以执行合批
                 2.影响合批的是Shader内ShadowCaster的实现和StaticBatchIndex,SkinMesh无法合批
@@ -25,17 +25,18 @@
                 2.BatchIndexSort,Unity默认的静态合批并不是按照材质球分类的,按照StaticBatchIndex排序之后渲染队列内出现穿插现象,手动指定静态合批可以减少一定批次
                 3.LightmapIndexSort,静态物体同一个静态批次内会按照光照贴图来排序,光照贴图每增加一张批次数量增加一倍,尽量一张2048搞定
                 4.ShadowDistance,同一个静态批次内可能会被ShadowDistance分成两部分,批次极限情况会翻一倍
-                5.MaterialCount,批次数量可以用staticBatchCount * lightmapCount * 2粗略计算,材质球极限不多于50个(3张lightmap不多于30个)
+                5.MaterialCount,场景批次数量可以用staticBatchCount * lightmapCount * 2粗略计算
             TransparentLoop
 关键函数
     Player.Render
         BeginFrame
         RenderAllCameras
+            Camera.Cull
             Camera.Render
         EndFrame
         WaitForPresent
     Camera.Cull
-        根据摄像机的cullingMask和viewBounds进行裁剪,得到可见列表
+        根据摄像机的cullingMask和viewBounds进行裁剪,得到可见对象列表
     RenderManager.SetCurrentCamera
         设置当前摄像机,记录上一帧位置,计算镜头移动速度向量
     Camera.UpdateDepthTextures
@@ -48,7 +49,7 @@
                 深度图是16位深度+单通道,深度法线图是16位深度+四通道
                 每帧都会通过RTBuffer申请和释放TempBuffer
             RT渲染
-                RT.SetActive()  && GL.Clear(color+depth+stencil)
+                RT.SetActive()  && RT.Clear(color+depth+stencil)
                 Camera.SetupRender
                     设置全局变量CameraPos、CameraToWorld、WorldToCamera、DeltaTime、ZbufferParams、ProjectParams、ColorSpace等等
                 Camera.RenderSceneShaderReplacement 
@@ -64,14 +65,15 @@
             RT升级
                 5.x之前DepthTexture和DepthNormalTexture使用Replace方式用InternalShader来渲染,没有批处理
                 5.x之后DepthTexture会使用LightMode为ShadowCaster的Pass来渲染
-                5.x之后DepthNormalTexture貌似仍然使用Replace方式渲染
+                5.x之后DepthNormalTexture仍然使用Replace方式渲染
     Camera.SetupRender
         设置渲染目标
             后期目标RT设置,HDR、ColorSpace、AntiAliasing等会影响RT的格式(FP16|R11G11B10 SRGB)
             渲染目标RT合并,渲染到RT或者清屏渲染不需要处理之前的渲染结果,修改当前RT(指向第一张后期RT或者当前摄像机的RT)
             渲染目标设置,glBindFramebuffer->glFramebufferTexture2D||glFramebufferRenderbuffer
             渲染视口设置,glViewport
-        设置CameraPos、CameraToWorld、WorldToCamera、DeltaTime、ZbufferParams、ProjectParams、ColorSpace等等
+        设置全局变量
+            CameraPos、CameraToWorld、WorldToCamera、DeltaTime、ZbufferParams、ProjectParams、ColorSpace等等
     Camera.DoRender
         RenderLoop.PrepareFrame
             RenderContext全局环境变量设置,包括各种矩阵、对象数组、排序方式等等
