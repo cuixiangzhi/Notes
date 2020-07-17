@@ -17,6 +17,8 @@
             计算高斯核UV坐标,在顶点内计算之后三角面的其它像素UV插值生成
         像素shader
             根据高斯核采样像素点加权平均,得出最终结果
+    ZPrePass
+        剔除AlphaTest物体,把AlphaTest的物体用ColorMask提前写深度,然后正常渲染的时候改成ZEqual
 场景渲染
     材质
         默认统一使用PBR标准材质
