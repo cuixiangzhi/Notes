@@ -1,42 +1,13 @@
-VI编辑器
-	编辑模式
-		输入i进入编辑模式,编辑文本
-	命令模式
-		输入esc进入命令模式
-		:行号,跳转到指定行
-		/ name 向后查找
-		? name 向前查找
-		:wq 保存并退出
-		:set number 显示行号
-CMAKE编译
-	#最低版本
-	cmake_minimum_required(VERSION 2.8)
-	#项目名字
-	project(ProjName)
-	#源码信息
-	aux_source_directory(<dir> DIR_SRCS)
-	#包含目录
-	include_directories(<dir> <dir> <dir>)
-	#子级目录
-	add_subdirectory(<dir>)
-	#链接目录
-	link_directories(<dir>)
-	#生成目标
-	add_executable(ProjName ${DIR_SRCS})
-	add_library(LibName ${DIR_SRCS})
-	#链接目标
-	target_link_libraries(ProjName LibName)
 GCC编译
-	编译汇编生成obj文件
-    	gcc/g++ -c -o  -static -l -std  -Wl 
-	文件包含目录
-		-I
-	编译优化选项
-		-g -m64 -O2
-	生成动态库
-		-fPIC -shared
-	生成静态库
-    	ar rcs *.o
+	编译汇编生成obj文件	gcc/g++ -c -o  -static -l -std  -Wl 
+	文件包含目录 -I
+	编译优化选项 -g -m64 -O2
+	生成动态库 	 -fPIC -shared
+	生成静态库 	 ar rcs *.o
+CROSS编译
+	指定编译工具 HOST_CC="gcc -m32" CROSS=$PLATFORM_GCC_TOOLCHAIN_PATH/arm-linux-androideabi-
+	指定搜索目录 --sysroot $NDK_PATH/platforms/android-18/arch-arm" 
+	指定编译选项 指令集-march=armv7-a CPU架构-mcpu=cortex-a8 浮点运算规则-mfloat-abi=soft|softfp|hard
 NDK编译
 	Android.mk
 		指定编译路径
@@ -105,3 +76,31 @@ XCODE编译
 		mcs *.cs 把cs文件编译成mono可执行的exe
 		mcs -r:*.dll -target:library *.cs 把cs文件编译成dll文件
 		mono --aot-only *.exe 以FULL_AOT模式执行exe
+VI编辑器
+	编辑模式
+		输入i进入编辑模式,编辑文本
+	命令模式
+		输入esc进入命令模式
+		:行号,跳转到指定行
+		/ name 向后查找
+		? name 向前查找
+		:wq 保存并退出
+		:set number 显示行号
+CMAKE编译
+	#最低版本
+	cmake_minimum_required(VERSION 2.8)
+	#项目名字
+	project(ProjName)
+	#源码信息
+	aux_source_directory(<dir> DIR_SRCS)
+	#包含目录
+	include_directories(<dir> <dir> <dir>)
+	#子级目录
+	add_subdirectory(<dir>)
+	#链接目录
+	link_directories(<dir>)
+	#生成目标
+	add_executable(ProjName ${DIR_SRCS})
+	add_library(LibName ${DIR_SRCS})
+	#链接目标
+	target_link_libraries(ProjName LibName)
