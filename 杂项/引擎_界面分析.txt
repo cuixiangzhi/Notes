@@ -399,6 +399,6 @@ IOS界面
         UISwitch 开关
         UIWindow 主View
     UIApplication 
-        应用程序运行入口,管理声明周期、事件转发,一些系统事件都有对应的函数
+        应用程序运行入口,管理生命周期、事件转发,一些系统事件都有对应的函数
         UIApplicationDelegate是接收事件的地方
         UIApplicationMain函数是启动入口,会创建UIApplication对象和Delegate对象,并开始主循环
