@@ -16,11 +16,11 @@
     场景
     特效
     音频
-        采样频率 录音时每秒钟多少样本数,占用内存大小为samples * bitcount * channels
-        音频格式
+        音频采样 8kHZ:人声 22kHZ:广播 44kHZ:音频 声卡位数:16位
+        音频格式 PCM:无损编码,1411kbps MP3:有损编码,192kbps AAC:有损编码,256kbps OGG:有损编码,128kbps以上音质最好
     视频
-        视频码率 720P.3Mbps 1080P.5Mbps
-        视频格式 使用MP4格式(H264视频编码和AAC音频编码),某些机型播放时画面会卡死,可以转为WEBM格式(VP8视频编码和VORBIS音频编码)
+        视频码率 720P 低码率1Mbps 中码率2Mbps 高码率4Mbps 1080P 低码率2Mbps 中码率4Mbps 高码率8Mbps
+        视频格式 MP4格式  H264视频编码和AAC音频编码 WEBM格式 VP8视频编码和VORBIS音频编码
 配置选项
     1.LODGroup
         使用LODGroup组件设置Render列表,根据网格占屏比选择适当的LODMESH,支持淡入淡出(unity_LODFade)
@@ -29,7 +29,7 @@
         shader实现多个不同LOD的subshader,LOD越低效果越差但是性能越好,例如PBS有高中低三个版本
         shader.globalMaximumLODLevel设置当前渲染质量,低于该值的shader的pass才会被使用
         shader.maximumLodLevel设置特定shader的渲染质量
-    3.ParticleLOD
+    4.ParticleLOD
         prefab级别的LOD:按照LOD距离或者平均帧率来计算出当前prefab应该用哪一级LOD,每隔一段时间检测一次
         system级别的LOD:指定每个ParticleSystem所属的LOD级别,LOD变更的时候进行比较
     4.QualityLevel

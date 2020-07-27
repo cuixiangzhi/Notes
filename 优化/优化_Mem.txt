@@ -71,7 +71,7 @@
         dsp_buffer
             FMOD播放声音会先写入到一个BUFFER内,BUFFER填充满了才会播放,太大会导致声音延迟,太小CPU消耗上升
         speaker_mode
-            FMOD使用双声道内存会占用两份,最好选用MONO模式
+            FMOD使用双声道内存会占用两份,最好选用mono模式(默认是stereo)
     animation_memory
 
     bundle_memory

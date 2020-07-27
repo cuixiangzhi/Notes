@@ -20,23 +20,34 @@
     ZPrePass
         剔除AlphaTest物体,把AlphaTest的物体用ColorMask提前写深度,然后正常渲染的时候改成ZEqual
 场景渲染
-    材质
-        默认统一使用PBR标准材质
-    光照
+    灯光
         背光面 修正LightMap计算,加入法线扰动变亮 indirect.diffuse*dot(normal_texture,normal_vertex)*_intensity
         主光源 一个Mixed模式平行光,模拟太阳光的方向和强度,运行时可调整颜色和方向
         辅光源 任意多个Bake模式平行光,与主光形成冷暖对比,运行时不可调整
         点光源 任意多个Bake模式点光源,一般放在灯笼、草丛或者树木附近,运行时不可调整
         环境光 整个场景间接光的总体色调,HDRGradient模式,运行时不可调整
         天空盒 背景:双层背景 太阳&月亮:大小、颜色、方向 云层:两层叠加运动
+    云雾
+        简单雾
+            利用NDC坐标和雾效的范围在雾颜色和目标颜色之间做线性插值,只处理了物体表面的雾效果
+        体积雾
+            添加一个屏幕后处理,根据深度图和viewRay重建世界坐标然后计算雾效,可以模拟体积雾效果
+            世界坐标重建
+                顶点shader
+                    根据相似三角形和像素插值原理,此处计算出射线之后乘以线性深度值可以得出世界坐标
+                    viewRay = VIEW_RAY_ARRAY[index]
+                    screenPos = ComputeScreenPos(clipPos)
+                像素shader
+                    linear01Depth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture,screenPos.xy / screenPos.w)
+                    worldPos = _CameraWorldPos + viewRay * linear01Depth
+                    根据雾效范围在源颜色和雾颜色之间插值,可以利用深度差更进一步添加软粒子效果
+                    可以模拟烟雾弹效果
     地形
-    建筑
-    山石
     植被
     水面
-    云雾
     天气
     昼夜
+    天光
 角色渲染
     头发
     眉毛
@@ -51,22 +62,31 @@
             配置地图格子,在指定格子里是半透的
         3.遮挡半透
             角色最后渲染2次,第一次正常渲染并且ZTest Less,第二次半透渲染并且ZTest GEqual
-后期特效
-    体积雾
-        简单雾:利用NDC坐标和雾效的范围在雾颜色和目标颜色之间做线性插值,只处理了物体表面的雾效果
-        体积雾:添加一个屏幕后处理,根据深度图和viewRay重建世界坐标然后计算雾效,可以模拟体积雾效果
-        世界坐标重建
+    描边
+        边缘发光
+            利用视线和法线的点乘计算边缘,模型越边缘的地方点乘越接近0,用1减去点乘结果作为边缘光的强度
+            对边缘光的强度做一个菲涅尔处理,再乘上边缘光颜色,作为自发光叠加到原始颜色上
+                1.rimValue = 1-saturate(dot(N,V));
+                2.rimValue = pow(rimValue,rimPow);
+                3.emission = rimColor * rimValue;
+        法线外扩
+            第一次渲染背面,Cull Front & ZWrite Off,在裁剪空间对XY沿着法线方向增大一圈
+                1.clipPos = mul(MVP,v.vertex); 
+                2.viewNormal = mul(IT_MV,v.normal);
+                3.clipNormal = mul(P,viewNormal.xy);
+                4.clipPos.xy += clipNormal.xy * outline;
+            第二次正常渲染,Cull Back,正常计算颜色即可
+        边缘检测(深度或亮度)
+            利用Sobel(水平和垂直方向)或者Roberts(斜对角)计算方向偏导数Gx,Gy作为梯度向量,然后计算其长度并根据指定阈值得出边缘
+                水平|-1 0 1| 垂直|-1 -2 -1|  |-1 0| |0 -1|
+                    |-2 0 2|     | 0  0  0|  |0  1| |1  0|
+                    |-1 0 1|     | 1  2  1|  
             顶点shader
-                根据相似三角形和像素插值原理,此处计算出射线之后乘以线性深度值可以得出世界坐标
-                viewRay = VIEW_RAY_ARRAY[index]
-                screenPos = ComputeScreenPos(clipPos)
+                计算sobel算子所需要的9个uv坐标
             像素shader
-                linear01Depth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture,screenPos.xy / screenPos.w)
-                worldPos = _CameraWorldPos + viewRay * linear01Depth
-                根据雾效范围在源颜色和雾颜色之间插值,可以利用深度差更进一步添加软粒子效果
-                可以模拟烟雾弹效果
-    体积光
-
+                计算出亮度偏导值Gx、Gy和梯度向量的长度或者计算出两个像素的深度差
+                和指定阈值比较得出边缘程度
+后期特效
     景深效果
         原理:利用深度差确定模糊范围,也就是模糊的焦距
         实现:简单的一个后期处理,根据模糊距离进行高斯模糊操作即可
@@ -132,29 +152,3 @@
                 波动的偏移 offsetFactor = clamp(range-abs(center-offset),0,1) / range,避免波动范围内的明显的边界
                 波动的比例 factor = factor * offsetFactor
             最后计算扩散后的UV坐标 uv = uv + dv * factor
-    屏幕扭曲
-        原理:
-    物体描边
-        边缘发光
-            利用视线和法线的点乘计算边缘,模型越边缘的地方点乘越接近0,用1减去点乘结果作为边缘光的强度
-            对边缘光的强度做一个菲涅尔处理,再乘上边缘光颜色,作为自发光叠加到原始颜色上
-                1.rimValue = 1-saturate(dot(N,V));
-                2.rimValue = pow(rimValue,rimPow);
-                3.emission = rimColor * rimValue;
-        法线外扩
-            第一次渲染背面,Cull Front & ZWrite Off,在裁剪空间对XY沿着法线方向增大一圈
-                1.clipPos = mul(MVP,v.vertex); 
-                2.viewNormal = mul(IT_MV,v.normal);
-                3.clipNormal = mul(P,viewNormal.xy);
-                4.clipPos.xy += clipNormal.xy * outline;
-            第二次正常渲染,Cull Back,正常计算颜色即可
-        边缘检测(深度或亮度)
-            利用Sobel(水平和垂直方向)或者Roberts(斜对角)计算方向偏导数Gx,Gy作为梯度向量,然后计算其长度并根据指定阈值得出边缘
-                水平|-1 0 1| 垂直|-1 -2 -1|  |-1 0| |0 -1|
-                    |-2 0 2|     | 0  0  0|  |0  1| |1  0|
-                    |-1 0 1|     | 1  2  1|  
-            顶点shader
-                计算sobel算子所需要的9个uv坐标
-            像素shader
-                计算出亮度偏导值Gx、Gy和梯度向量的长度或者计算出两个像素的深度差
-                和指定阈值比较得出边缘程度
