@@ -171,7 +171,7 @@ IO模型
 					SO_KEEPALIVE:一定时间内C/S端没有数据交换,会发送探测分节
 					ECONNRESET:对端崩溃or重启 ETIMEOUT:网络不通
 				TCP_NODELAY
-					开启之后TCP不会把数据写入发送缓冲区
+					开启之后TCP会关闭收发缓冲区,可以降低延迟
 		多路复用
 				select FD_SETSIZE是单线程最大连接数
 					//创建轮询数组
