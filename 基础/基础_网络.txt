@@ -99,23 +99,27 @@ TCP/IP协议栈
 		接口层
 TCP流程
 	三次握手  
-		client->send状态,发送syn请求连接
-		server收到syn请求,发送syn+ack,进入recv状态
-		client收到syn+ack,发送ack,进入establistened
-		server收到ack,进入establistened
-		syn报文中包含了TCP的MSS选项,用来控制本地最大TCP报文长度
+		1.client  发送syn请求,进入SYN_SENT状态
+		  server  收到syn请求,进入SYN_RCVD状态
+		2.server  发送syn+ack
+		  client  收到syn+ack,进入establistened
+		3.client  发送ack确认
+		  server  收到ack确认,进入establistened
 	四次挥手
-	  	client发送fin请求断开连接,表示我不会再给你发数据了进入FIN_WAIT1
-	  	server收到fin请求,返回ack给client,表示我还有数据要发送,client进入FIN_WAIT2状态,server进入close_wait
-	  	server发送fin给client,告诉它我没有数据要发送了,server进入last_wait
-	  	client返回ack给server,进入TIME_WAIT,server收到ack进入closed,client等待2MSL后进入closed
-	半关闭
-		主动断开连接的一端发送FIN之后进入半关闭状态,只能收不能发
+	  	1.client  发送fin请求,进入FIN_WAIT_1
+		  server  收到fin请求,进入CLOSE_WAIT
+		2.server  发送ack确认
+		  client  收到ack确认,进入FIN_WAIT_2
+	  	3.server  发送fin请求,进入LAST_ACK
+	  	  client  返回ack确认,进入TIME_WAIT,等待2MSL之后进入CLOSED,2MSL是报文最大生存时间
+		4.server  收到ack确认,进入CLOSED
 	收包发包
 		丢包 发送速度太快、缓存溢出、带宽太小
 		seq是当前数据包的编号,下一个数据包的编号是seq+data_len,也就是发送端的seq号是按照发送字节排序的
 		ack是对发送端seq的回应,其数值等于要回应的数据包编号+要回应的数据包长度
 		win是发送端剩余可接收数据的大小
+	流量控制
+		seq和ack报文中包含了SOCKET的剩余接收缓冲区大小
 IO模型
 	内存空间: 操作系统的内存都属于内核空间,应用进程的内存都属于用户空间,硬盘数据或者网络数据读写都要先经过内核空间
 	数据读写: 读:先从硬盘或者网卡拷贝到内核空间,然后从内核空间拷贝到用户空间 写:先从用户空间到内核空间,然后从内核空间到硬盘或者网卡
@@ -127,9 +131,6 @@ IO模型
 		sys/socket arpa/inet netinet/in
 		winsock2 comment(lib,"ws2_2.lib")
 		INVALID_SOCKET SOCKET_ERROR INADDR_ANY
-		关注要点
-				每一个socket函数执行之前都要等待发送缓冲区数据发送完毕,等待中网络断开则触发SOCKET_ERROR
-				对端接收缓冲区一直未处理,则发送端发送缓冲区会处于可用空间为0的状态,也就是数据无法发送
 		创建连接
 				int sock = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
 				地址
@@ -137,11 +138,10 @@ IO模型
 					addr.sin_family = AF_INET;
 					addr.sin_addr.s_addr = inet_addr(host); ntoa(); htonl();
 					addr.sin_port = htons(port); ntohs();
-					客户端不需要绑定
-					bind(sock,(sockaddr*)&addr,sizeof(sockaddr));
 				连接						
 					connect(sock,(sockaddr*)&addr,sizeof(sockaddr));
 				监听
+					bind(sock,(sockaddr*)&addr,sizeof(sockaddr));
 					listen(sock,5);
 		接受连接
 				accept阻塞模式下没有连接到来时会进入挂起状态
@@ -149,18 +149,6 @@ IO模型
 				clientsock->port = ntohs(clientsock->addr.sin_port);
 				strncpy(clientsock->host,inet_ntoa(clientsock->addr.sin_addr),SIZE);
 		收发数据
-				send阻塞模式下
-					首先执行通用的发送缓冲区检查并在网络断开后返回SOCKET_ERROR
-					然后把数据拷贝到发送缓冲区,如果缓冲区不足则会一直等待,否则返回拷贝字节大小
-				send非阻塞模式下
-					首先执行通用的发送缓冲区检查并在网络断开后返回SOCKET_ERROR
-					然后尽可能把数据拷贝到发送缓冲区并会返回拷贝字节大小
-				recv阻塞模式下
-					首先执行通用的发送缓冲区检查并在网络断开后返回SOCKET_ERROR
-					然后检查接收缓冲区是否有数据,阻塞等待协议接收数据,接收完会拷贝到BUFFER并返回拷贝字节大小
-				recv非阻塞模式下
-					首先执行通用的发送缓冲区检查并在网络断开后返回SOCKET_ERROR
-					然后检查接收缓冲区是否有数据,有则拷贝,没有直接返回,返回值为拷贝字节大小
 				send(sock,buff,size,0);
 				recv(sock,buff,size,0);
 				sendto(sock,buff,size,0,(sockaddr*)&addr,sizeof(addr));
@@ -169,21 +157,21 @@ IO模型
 				closesocket(sock);
 		连接状态
 				SOCKET收发缓冲区
-			   	g/setsockopt(sock,SOL_SOCKET,SO_RCVBUF,&size,sizeof(UINT))   设置接收缓冲区大小
-			   	g/setsockopt(sock,SOL_SOCKET,SO_SNDBUF,&size,sizeof(UINT))   设置发送缓冲区大小
-			   	g/setsockopt(sock,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(INT)) 设置接收超时时间
+					g/setsockopt(sock,SOL_SOCKET,SO_RCVBUF,&size,sizeof(UINT))   设置接收缓冲区大小
+					g/setsockopt(sock,SOL_SOCKET,SO_SNDBUF,&size,sizeof(UINT))   设置发送缓冲区大小
+					g/setsockopt(sock,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(INT)) 设置接收超时时间
 			   	SOCKET阻塞非阻塞
-			   	ioctlsocket(sock,FIONBIO,0)
-			   	fcntl(sock,F_GETFL,O_NONBLOCK)
+					ioctlsocket(sock,FIONBIO,0)
+					fcntl(sock,F_GETFL,O_NONBLOCK)
 			   	SOCKET关闭行为
-			   	linger l; l.l_onoff = 1; l.l_linger = 0;
-			   	g/setsockopt(sock,SOL_SOCKET,SO_LINGER,&L,sizeof(linger)) 设置关闭时是否发送缓冲区数据和超时时间
-			   	g/setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,1,sizeof(INT))  保证端口被释放后立即可用
+					linger l; l.l_onoff = 1; l.l_linger = 0;
+					g/setsockopt(sock,SOL_SOCKET,SO_LINGER,&L,sizeof(linger)) 设置关闭时是否发送缓冲区数据和超时时间
+					g/setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,1,sizeof(INT))  保证端口被释放后立即可用
 			   	SOCKET保持存活
-			   	SO_KEEPALIVE选项默认在2小时内C/S端没有数据交换,会发送探测分节
-			   	返回RST表示对端已经崩溃或者重启,错误标志会被置为ECONNRESET,套接字本身会被关闭
-			   	不返回任何信息,表示网络不通,错误标志会被置为ETIMEOUT,套接字本身会被关闭
-			   	该选项属于传输层功能,服务端出现异常时无法检测
+					SO_KEEPALIVE:一定时间内C/S端没有数据交换,会发送探测分节
+					ECONNRESET:对端崩溃or重启 ETIMEOUT:网络不通
+				TCP_NODELAY
+					开启之后TCP不会把数据写入发送缓冲区
 		多路复用
 				select FD_SETSIZE是单线程最大连接数
 					//创建轮询数组
