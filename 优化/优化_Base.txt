@@ -1,27 +1,30 @@
-资源规范
-    界面
-        字体规范
-            公共字体 TTF字体(1个)
-        图集规范
-            公共图集 2048*2048*(3~4个,1个物品图集,1个通用背景图集,1个通用小图图集)
-            功能图集 2048*1024|1024*1024*(3~5) 1024*512|512*512*(不限制)
-            功能背景 越少越好,最好没有
-            功能图标 使用动态图集,大图单个使用,提供缓存机制
-            压缩格式 统一使用ASTC6x6
-        预设规范
-            图集使用 只能使用公共图集和对应系统的功能图集
-            背景使用 只能使用公共背景和对应系统的功能背景
-            图标使用 预设上不保留对图标的引用,通过代码动态加载
-    角色
-    场景
-    特效
-    音频
-        音频采样 8kHZ:人声 22kHZ:广播 44kHZ:音频 声卡位数:16位
-        音频格式 PCM:无损编码,1411kbps MP3:有损编码,192kbps AAC:有损编码,256kbps OGG:有损编码,128kbps以上音质最好
-    视频
-        视频码率 720P 低码率1Mbps 中码率2Mbps 高码率4Mbps 1080P 低码率2Mbps 中码率4Mbps 高码率8Mbps
-        视频格式 MP4格式  H264视频编码和AAC音频编码 WEBM格式 VP8视频编码和VORBIS音频编码
-配置选项
+界面
+    字体规范
+        公共字体 TTF字体(1个)
+    图集规范
+        公共图集 2048*2048*(3~4个,1个物品图集,1个通用背景图集,1个通用小图图集)
+        功能图集 2048*1024|1024*1024*(3~5) 1024*512|512*512*(不限制)
+        功能背景 越少越好,最好没有
+        功能图标 使用动态图集,大图单个使用,提供缓存机制
+        压缩格式 统一使用ASTC6x6
+    预设规范
+        图集使用 只能使用公共图集和对应系统的功能图集
+        背景使用 只能使用公共背景和对应系统的功能背景
+        图标使用 预设上不保留对图标的引用,通过代码动态加载
+角色
+场景
+特效
+音频
+    音频采样 8kHZ:人声 22kHZ:广播 44kHZ:音频 声卡位数:16位 通道:单声道
+    音频格式 PCM:无损编码,1411kbps MP3:有损编码,192kbps AAC:有损编码,256kbps OGG:有损编码,128kbps以上音质最好
+    音频播放 SpeakerMode:Mono DSPBuffer:Default
+    音效数量 2D:1 2D_ONE:1 3D:5 BG:1 CG:2
+视频
+    视频码率 720P 低码率1Mbps 中码率2Mbps 高码率4Mbps 1080P 低码率2Mbps 中码率4Mbps 高码率8Mbps
+    视频格式 MP4格式  H264视频编码和AAC音频编码 WEBM格式 VP8视频编码和VORBIS音频编码
+纹理
+动画
+阴影
     1.LODGroup
         使用LODGroup组件设置Render列表,根据网格占屏比选择适当的LODMESH,支持淡入淡出(unity_LODFade)
         物体占屏比是通过当前屏幕空间AABB和近平面时物体的AABB的比例值来计算
@@ -61,3 +64,100 @@
                                 开启后会额外创建一个缓冲区存储HDR计算结果
         反射
             BoxProjection    视线向量的起点不在Cubemap中心,因此需要经过计算转换为正确的采样向量
+画质
+    低画质 DisableShadow
+    中画质 ShadowMask MediumResolution HardShadowOnly StableFit
+    高画质 DistanceShadowMask.40 HighResolution HardAndSoftShadow StableFit
+    顶级画质 DistanceShadowMask.80 VeryHighResolution HardAndSoftShadow CloseFit FourCascades(5.7 13.3 26.7 53.3)
+灯光
+    模型烘焙质量
+        LightmapParamters  提高烘焙速度Resolution-0.2 ClusterResolution0.4   Resolution-3 ClusterResolution0.6  
+    模型缩放比例
+        ScaleInLightmap    粗糙非金属墙面,主要是低频光,0.5  城市街道3 野外大面积地形植被0.5 主体物件2
+    光照贴图大小
+        LightmapResolution 每米几个像素,数值越大质量越高内存也越大,地形0.1~0.5,室外0.5~1,室内2~3
+        LightmapPadding    图元之间的像素间隔,避免不同图元由于采样算法导致混合了不同物体的光照颜色(光照溢出)
+        LightmapSize       控制每张贴图最大多大,超过这个数值会生成多张
+        DirectionMode      是否生成间接光的贡献度最大的光方向贴图,可以制作出间接高光效果
+    光照贴图质量(样本是不是指光源发射光线的数量?)
+        Bounces            光线反射次数
+        EnvironmentSamples 控制环境光样本数量                                            调试阶段可以降低
+        DirectSamples      控制直接光样本数量(在光源方向上采样的光线数量)                 调试阶段可以降低
+        IndirectSamples    控制间接光样本数量(在半球方向上采样的光线数量,室外推荐值为100) 调试阶段可以降低
+        IndirectIntensity  控制间接光整体强度
+        AmbientOcclusion   控制间接光的AO效果  调试阶段可以关闭
+        AlbedoBoost        控制间接光反射比例,默认值1是物理精确的
+        Filter             模糊图片,减弱光照贴图噪点
+    环境光照
+        有三种模式,固定颜色、渐变颜色、天空盒,用来计算路径追踪没有碰到光源时的光照颜色
+    环境反射
+        Bounces            控制镜子类的物体互相反射最多反射几次
+光照探头
+    LightProbe
+        数据存储
+            LightmapSettings.lightProbes.bakedProbes
+        自动摆放
+            探针应该摆放在发生亮度变化的位置,可以沿着寻路图大量设置LightProbe,然后过滤掉变化不大的
+        实时补光
+            不要用补光的方式来提高角色亮度,可以在LightProbe中添加环境光来提高动态物体亮度
+    ReflectionProbe
+        给所有物体提供间接反射光,动态的间接高光
+光照模式
+    Realtime
+        直接光实时计算,阴影使用ShadowMap计算(ShadowMap只计算ShadowDistance以内的动态对象)
+        RealtimeGI计算静态物体表面所有可能的反射光线,运行时动态计算间接光
+        IndirectMultiplier在强度不是0并且不开启RealtimeGI时会把间接光烘焙到LightMap
+    Mixed
+        BakeIndirect
+            直接光实时计算,间接光存储在LightMap和LightProbes,阴影使用ShadowMap计算
+        ShadowMask
+            直接光实时计算,间接光存储在LightMap和LightProbes,阴影使用ShadowMask(最多4个Mixed光源,存储直接光被静态物体遮挡信息)
+                            动态物体Receive     静态物体Receive
+            动态物体Cast    ShadowMap           ShadowMap+ShadowMask
+            静态物体Cast    ShadowMap           ShadowMap+ShadowMask
+    Baked
+        直接光、间接光、阴影烘焙到LightMap和LightProbes,只对静态物体生效,LightProbes对动态物体生效
+渲染路径
+    Forward
+        MESH->VS->FS(光照计算)->FRAME_BUFFER
+        ForwardBase: 
+            #pragma multi_compile_fwdbase
+            计算自发光、环境光、主平行光、SH光、光照贴图、阴影
+            Unity中设置为NotImportant的光会被按照逐顶点或者SH处理
+            逐顶点光照计算 Shade4PointLights(...) unity_4LightPosXYZColorAtten
+            球谐光照计算 
+        ForwardAdd:  
+            Blend One One 
+            #pragma multi_compile_fwdadd
+            计算额外的逐像素光源,AddPass会根据照亮该物体的光源数量被执行多次
+            照亮每个物体的逐像素光源个数有限制,Unity会根据光源的类型及对物体的影响程度(距离、强度、类型等)进行排序
+            _LightColor0和_WorldSpaceLightPos0存储当前逐像素光源的颜色和位置
+        光源信息
+            Unity会根据当前光源类型为PASS的执行设置对应的光源属性 位置、颜色、衰减纹理、变换矩阵
+            获取光的方向 
+                UnityWorldSpaceLightDir(i.worldPos)
+            获取光的颜色 
+                _LightColor0
+            获取光的衰减 
+                平行光为 atten=1
+                其它类型 
+                        lightSpacePos=mul(_LightMatrix0,i.worldPos).xyz 
+                        attenUV=dot(lightSpacePos,lightSpacePos).xx
+                        atten=tex2D(_LightTexture0,attenUV).UNITY_ATTEN_CHANNEL;
+                直接获取 
+                        UNITY_LIGHT_ATTENUATION(atten,i,i.worldPos)
+    Deferred
+        第一次渲染
+            不计算光照信息,只进行深度测试,光照相关数据写入G-BUFFER(坐标、法线、UV、反射系数等等)
+        第二次渲染
+            遍历屏幕像素,针对有效的像素点读取G-BUFFER数据进行光照计算,更新颜色缓冲区
+            Unity默认使用Standard光照模型来计算,Internal-DeferrredShading.shader
+        计算流程
+            MESH->VS->FS(无光)->MRT(深度、法线、颜色三个BUFFER存储光照所需信息)->FRAME_BUFFER
+        GBuffer信息
+            RT0,存储漫反射颜色,A通道未使用
+            RT1,存储高光反射颜色,A通道存储高光指数
+            RT2,存储法线方向,A通道未使用
+            RT3,存储自发光+光照贴图+反射探针
+    ShadowCaster
+        渲染阴影映射纹理时调用该shader,没有会调用Fallback的对应shader,否则不产生阴影
