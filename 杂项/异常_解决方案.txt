@@ -17,10 +17,15 @@ android
         DontAskMeAgain
             ActivityCompat.shouldShowRequestPermissionRationale(activity, permission) == false
 ios
-    1.iOS9.2以后的版本必须支持IPV6-Only网络
-        IPV4转换为IPV6
+    1.iOS9.2系统升级
+        支持IPV6-Only网络
             addrinfo hint; hint.ai_flags=AI_DEFAULT; hint.ai_family=PF_UNSPEC;hint.ai_socktype=SOCK_STREAM;
             addrinfo* result;
             getaddrinfo(host,NULL,&hint,&result)
             inet_ntop(result.ai_family,result.ai_addr.sin6_addr,buffer,sizeof(buffer))
             返回值result是一个链表,遍历检查是否存在ai_family==AF_INET6的地址,使用inet_ntop把网络地址转换为IP地址
+    2.iOS13系统升级
+        第二次点击系统键盘无法打开
+            TouchScreenKeyboard.Open->[UnityGetGLView() addSubView: editView]->[inputView becomeFirstResponder]
+            第二步addView之后系统延迟调用了[inputView resignFirstResponder]把键盘关掉了
+            解决方案:延时打开[self performSelector: @selector(delayFunction) withObject:nil afterDelay:0.05]

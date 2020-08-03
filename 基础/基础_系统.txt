@@ -170,10 +170,10 @@
 			不同的操作系统有不同的线程模型,同时对于了不同的线程状态
 			通用状态
 				新建: 已经创建,等待start
-				就绪: 可以执行,等待cpu_timeslice
+				就绪: 可以执行,等待cpu
 				运行: 正在执行,执行code
-				阻塞: 等待事件,等待阻塞:lockobj.wait 同步阻塞:lock(obj) 其他阻塞:sleep或者join或者io
-				终止: 执行结束,等待主线程回收资源
+				阻塞: 等待事件,等待阻塞:event.wait(等待event.notify|pulse) 睡眠阻塞:sleep(等待timeout|interrupt)
+				死亡: 执行结束,等待主线程回收资源
 		线程同步
 			共享锁和互斥锁
 				pthread_mutex_init(&mid)
@@ -182,19 +182,14 @@
 				pthread_rwlock_init(&rwid);
 				pthread_rwlock_rdlock(&rwid);
 				pthread_rwlock_rdunlock(&rwid);
-			C#Lock&Monitor
-				lock(obj)
-					是一个语法糖,实际展开为Monitor.Enter try&finally Monitor.Exit
-				Monitor
-					Wait	释放锁并把自己加入到等待队列
-					Pulse	释放一个等待队列的线程到就绪队列
-					Enter   获取锁对象,Enter之后可能会由于异常而被终止,try&finally没有执行,导致线程死锁
-					Exit    释放锁对象
 			信号量(头文件semaphore.h)
 				信号量的API操作均是原子操作,等待信号量时值为0会阻塞
 				创建 sem_init(sem_t, 0, 0)
 				等待 sem_wait(sem_t)
 				释放 sem_post(sem_t)
+			自解锁(互斥锁)
+				对代码块的执行进行加锁,例如c#的lock,java的synchronized,c++的mutex(构造时lock,析构时unlock)
+				死锁:lock(A)内部调用外部代码时也执行了lock(A)
 		数据队列
 			环形缓冲区
 				一个size大小的buffer,head指向第一个可读的位置,tail指向第一个可写的位置

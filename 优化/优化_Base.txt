@@ -15,13 +15,13 @@
 场景
 特效
 音频
-    音频采样 8kHZ:人声 22kHZ:广播 44kHZ:音频 声卡位数:16位 通道:单声道
-    音频格式 PCM:无损编码,1411kbps MP3:有损编码,192kbps AAC:有损编码,256kbps OGG:有损编码,128kbps以上音质最好
-    音频播放 SpeakerMode:Mono DSPBuffer:Default
-    音效数量 2D:1 2D_ONE:1 3D:5 BG:1 CG:2
+    音频采样 8kHZ:人声 22kHZ:广播 44kHZ:音频 声道:Mono&Stereo 编码:PCM无损1411kbps,AAC有损256kbps,OGG有损128kbps
+    音频格式 中长音乐:Streaming+Vorbis 短音效:DeCompressOnLoad+ADPCM
+    音频数量 2D:1 2D_ONE:1 3D:5 BG:1 CG:2
+    音频效果 DSP:LowPas&HighPass&Distrotion  混音: SOUND: CHANNEL: SYSTEM:
 视频
-    视频码率 720P 低码率1Mbps 中码率2Mbps 高码率4Mbps 1080P 低码率2Mbps 中码率4Mbps 高码率8Mbps
-    视频格式 MP4格式  H264视频编码和AAC音频编码 WEBM格式 VP8视频编码和VORBIS音频编码
+    视频码率 720P:低码率1Mbps,中码率2Mbps,高码率4Mbps 1080P:低码率2Mbps,中码率4Mbps,高码率8Mbps
+    视频格式 MP4格式:H264视频编码和AAC音频编码 WEBM格式:VP8视频编码和VORBIS音频编码
 纹理
 动画
 阴影
@@ -69,9 +69,25 @@
     中画质 ShadowMask MediumResolution HardShadowOnly StableFit
     高画质 DistanceShadowMask.40 HighResolution HardAndSoftShadow StableFit
     顶级画质 DistanceShadowMask.80 VeryHighResolution HardAndSoftShadow CloseFit FourCascades(5.7 13.3 26.7 53.3)
+烘焙
+    Cluster  unity先进行体素化然后对体素进行光照计算,IndirectResolution决定体素的多少,和光照图大小无关,调试阶段可以降低
+    AO       调试阶段可以关闭AO生成,提高迭代速度
+    LightmapParamters  提高烘焙速度Resolution-0.2 ClusterResolution0.4   Resolution-3 ClusterResolution0.6  只影响计算精度,不影响光照图大小和UV分布
+    Lightmap 分辨率决定了1米多少个像素
+    UVChartingControl  修改物体在光照贴图上的UV分布
+
+    Mixed光源  根据场景原画设定灯光强度和颜色、根据原画阴影设定方向
+    Baked光源  只有主光源会有很多暗角,色调单一  补光平行光光源最好一个,太多不真实,  建议用ColorGrading和Lut来处理
+
+    球谐光照适用  结构复杂的小物件 颜色单一  UVChart分布不合理
+    低画质可以降低lightprobe数量
+
+    ReflectionProbe 256Bake 禁用Blending
+
+    大场景拆分 避免同一物体占用不同的lightmap
 灯光
     模型烘焙质量
-        LightmapParamters  提高烘焙速度Resolution-0.2 ClusterResolution0.4   Resolution-3 ClusterResolution0.6  
+        LightmapParamters  
     模型缩放比例
         ScaleInLightmap    粗糙非金属墙面,主要是低频光,0.5  城市街道3 野外大面积地形植被0.5 主体物件2
     光照贴图大小

@@ -121,12 +121,12 @@ TCP流程
 	流量控制
 		seq和ack报文中包含了SOCKET的剩余接收缓冲区大小
 IO模型
-	内存空间: 操作系统的内存都属于内核空间,应用进程的内存都属于用户空间,硬盘数据或者网络数据读写都要先经过内核空间
-	数据读写: 读:先从硬盘或者网卡拷贝到内核空间,然后从内核空间拷贝到用户空间 写:先从用户空间到内核空间,然后从内核空间到硬盘或者网卡
-	阻塞:	  用户空间到内核空间的数据读写是阻塞的,内核空间到硬盘或网卡的数据读写是阻塞的
-	非阻塞:   内核从硬盘或网卡读写数据时会返回错误码,用户空间与内核空间的数据读写是阻塞的
-	异步:     读数据时异步操作结束后数据已经在内存空间了,整个过程都是非阻塞的
-	多路复用: 把io封装到select epoll等函数内,把感兴趣的io加到列表内
+	bio:同步阻塞 nio:同步非阻塞 aio:异步非阻塞
+	内存空间:  操作系统的内存都属于内核空间,应用进程的内存都属于用户空间,硬盘和网卡数据读写都要先经过内核空间
+	阻塞:	   准备数据和拷贝数据两个阶段进程都处于阻塞状态
+	非阻塞:    准备数据是非阻塞的,拷贝数据是阻塞的,需要轮询检查准备数据阶段是否完成
+	多路复用:  select/epoll是阻塞的,内部是非阻塞方式轮询检查socket准备数据阶段是否完成
+	异步:      准备数据和拷贝数据两个阶段进程都处于非阻塞状态
 网络通信
 		sys/socket arpa/inet netinet/in
 		winsock2 comment(lib,"ws2_2.lib")
@@ -138,7 +138,7 @@ IO模型
 					addr.sin_family = AF_INET;
 					addr.sin_addr.s_addr = inet_addr(host); ntoa(); htonl();
 					addr.sin_port = htons(port); ntohs();
-				连接						
+				连接
 					connect(sock,(sockaddr*)&addr,sizeof(sockaddr));
 				监听
 					bind(sock,(sockaddr*)&addr,sizeof(sockaddr));
@@ -161,8 +161,8 @@ IO模型
 					g/setsockopt(sock,SOL_SOCKET,SO_SNDBUF,&size,sizeof(UINT))   设置发送缓冲区大小
 					g/setsockopt(sock,SOL_SOCKET,SO_RCVTIMEO,&timeout,sizeof(INT)) 设置接收超时时间
 			   	SOCKET阻塞非阻塞
-					ioctlsocket(sock,FIONBIO,0)
-					fcntl(sock,F_GETFL,O_NONBLOCK)
+					windows: ioctlsocket(sock,FIONBIO,0)
+					unix:    fcntl(sock,F_GETFL|F_SETFL,O_NONBLOCK)
 			   	SOCKET关闭行为
 					linger l; l.l_onoff = 1; l.l_linger = 0;
 					g/setsockopt(sock,SOL_SOCKET,SO_LINGER,&L,sizeof(linger)) 设置关闭时是否发送缓冲区数据和超时时间
