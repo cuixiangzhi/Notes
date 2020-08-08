@@ -218,4 +218,4 @@
 			macos dscl . -delete /Users/uname
 			macos dscl . -append /Groups/gname GroupMembership uname
 		执行文件加锁
-			flock -xn path.lock -c 'sh cmd'
+			flock -xn path.lock -c 'sh cmd' -n表示加锁失败不等待 -c后边是sh文件

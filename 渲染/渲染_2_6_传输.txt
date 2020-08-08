@@ -1,86 +1,17 @@
-渲染传输
-    OGL渲染时并不是立即把渲染指令传到GPU,而是等待一定时机(例如swapBuffers)才会传输
-    二如果是渲染和写数据交替进行(使用同一个BUFFER),那么就会导致CPU阻塞传输渲染指令
 OpenGL Context
     当前渲染状态,不同的渲染线程有不同的context
 OpenGL Object
     vao vbo ubo ebo tbo fbo
-    存放原始数据或者中间数据
-context与object的关系
+    显卡内的一块内存buffer,BO内存管理会根据用户选项,将缓存对象放在最佳地方(SystemMemory、AGPMemory、VideoMemory)
+Context与Object的关系
     gen创建object bind绑定到context(此时object数据才能传输到显存里) glbufferdata传输数据
     vao存储顶点属性的格式和地址 vbo存储顶点数据 ebo存储索引 ubo存储shader数据 tbo存储纹理数据 fbo存储帧数据
-立即模式
-    使用方式
-        glBegin(GL_*)
-            glVertex*();
-            glColor*|glIndex*();
-        glEnd();
-    优缺点:
-        传输速度很慢调用次数太多(glVertex命令太多),效率很低
-        数据量大一点那么代码量变大,数据发送开销增加
-        OpenGL3.0 已废弃
-显示列表
-    使用方式:
-        GLuint id = glGenLists(1);
-        glNewList(id,GL_COMPILE);
-        glEndList();
-        glCallList(id);
-        glDeleteLists(id,1);
-    优缺点:
-        一次性把渲染命令(包含数据)传输到GPU显存,一次传输不可修改
-        适用于 材质定义 纹理定义 光照定义 静态图形
-顶点数组
-    使用方式
-        1.定义一维顶点、颜色、UV、法线的数组GLFloat v[];
-        2.启用数组glEnableClientState,包括8种GL_VERTEX_ARRAY GL_COLOR_ARRAY GL_TEXTURE_COORD_ARRAY GL_NORMAL等等
-        3.指定被启用的数组的地址及内容格式
-            glVertexPointer指定顶点在数组内的信息
-            glColor|IndexPointer指定颜色在数组内的信息
-            glTexCoordPointer指定UV在数组内的信息
-            glNormalPointer指定法线在数组内的信息
-        4.传输被启用的数组数据进行渲染
-            glDrawArrays(MODE,FIRST,COUNT)必须从起点到终点按顺序绘制
-            glDrawElements(MODE,COUNT,TYPE,indices)每次绘制多组数据,顶点顺序任意
-        5.禁用数组glDisableClientState
-    优缺点:
-        在传输之前,数据一直在应用程序内存里,很容易修改,每次渲染都要传输
-        减少了函数调用次数和冗余顶点数
 缓冲对象
-    概念:
-        内存:
-            SystemMemory 系统内存,主内存,CPU访问速度很快
-            AGPMemory    系统内存的一部分,显卡通过特殊通道访问,访问速度介于两者之间
-            VideoMemory  显卡内存32M 64M 128M,显卡直接访问,GPU访问速度很快
-        BO:
-            显卡内的一块内存buffer,BO内存管理会根据用户选项,将缓存对象放在最佳地方(系统内存、AGP内存和视频卡内存)
-        VBO:
-            顶点Buffer,用来存储顶点、颜色、UV、法线等等数据
-        VAO:
-            每次VBO渲染都要做一些通用设置,这些通用设置可以封装起来,即VAO
-        FBO:
-            每个FBO都有多个绑定点,用于和真实的渲染目标关联起来,包括多个颜色绑定点、一个深度、一个模板绑定点
-            FBO不能单独使用,必须把渲染目标关联到FBO的绑定点才可以
-        TBO:
-            纹理Buffer
-        Bind:
-            指定当前状态机指定的目标使用的是哪个对象 glBind(objType,objID)
-        渲染:
-            绘制命令
-                glDrawElements(图元类型,图元数量,图元INDEX类型,图元INDEX指针)
-                glDrawElementsInstanced(..,instanceCount)
-            DynamicBatching
-                首先按照材质和距离以及渲染顺序对带渲染物体进行排序
-                一次遍历待渲染物体,检测是否可以加入到当前批次内,是则合批
-                每个批次有顶点上限限制,能够合批的顶点也需要限制,合批需要一定CPU消耗
-            GPUInstance
-                Instance会在对每个顶点执行instanceCount次来进行实例化操作
-                gl_InstanceID可以获取当前是第几个实例
-                VAO内会包含一个VBO来存储针对每个实例的数据
-    VBO创建过程
+    VBO
         分配VBO句柄 glGenBuffers(1,vboID|eboID)
         绑定VBO对象 glBindBuffer(GL_ARRAY_BUFFER|GL_ELEMENT_ARRAY_BUFFER,vboID|eboID)
         传输VBO数据 glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(indices),indices,GL_STATIC_DRAW)
-    VAO创建过程
+    VAO
         分配VAO句柄 glGenVertexArrays(1,vaoID)
         绑定VAO对象 glBindVertexArray(vaoID)
             顶点、颜色、UV、法线、切线、索引
@@ -90,10 +21,7 @@ context与object的关系
             指定VBO间隔 glVertexAttribDivisor(shaderLocation,1)
         解除VAO绑定 glBindVertexArray(NULL)
         解除VBO绑定 glBindBuffer(GL_ARRAY_BUFFER|GL_ELEMENT_ARRAY_BUFFER,NULL)
-    VAO渲染过程
-        glBindVertexArray(vaoID); 
-        glDrawElements(...); 
-        glBindVertexArray(0);
+        VAO渲染过程 glBindVertexArray(vaoID); glDrawElements(...); glBindVertexArray(0);
     TBO
         创建纹理 glGenTexture(1,&texID);
         指定纹理 glActiveTexture(GL_TEXTURE0)
@@ -113,7 +41,7 @@ context与object的关系
             绑定渲染目标 glBindRenderBuffer(GL_RENDERBUFFER,rboID)
             分配显存空间 glRenderBufferStorage glRenderBufferStorageMultisample
             关联绑定点   glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_RENDERBUFFER,&rboID)
-        渲染到纹理
+        纹理渲染
             创建纹理&绑定纹理&分配纹理内存
             关联绑定点   glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D|GL_TEXTURE_2D_MULTISAMPLE,&tboID)
         SRGB模式
@@ -129,22 +57,19 @@ context与object的关系
         传输UBO数据 glBufferData(GL_UNIFORM_BUFFER,sizeof(data),data,GL_STATIC_DRAW)
         指定UBO偏移 glBindBufferBase(GL_UNIFORM_BUFFER,bindingPoint,uboID)
 着色器
-    变量类型
-        int float bool vec*float向量 bvec*bool向量 ivec*int向量 mat*矩阵 sampler*D纹理
-        shader程序内可以使用struct和变量类型来定义数据结构
+    变量类型(包含三种精度lowp&highp&mediump)
+        int float bool vec*float向量 bvec*bool向量 ivec*int向量 mat*矩阵 sampler*D纹理 struct结构体
     变量修饰符
-        attribute 
+        attribute
             顶点属性,只能在顶点shader内使用,只读
             获取变量位置 glGetAttribLocation(programID,name) 
             设置变量数据 glVertexAttrib*
+        varying 
+            顶点和像素shader之间传递数据的变量,顶点shader可写输出,像素shader只读输入
         uniform 
             图元属性,顶点和像素shader都可用,只读
             获取变量位置 glGetUniformLocation(programID,name); glGetUniformBlockIndex(programID,name)
             设置变量属性 glUniform* glUniform1i(loc,texIndex); glUniformBlockBinding(programID,blockIndex,bindingPoint)
-        varying 
-            顶点和像素shader之间传递数据的变量,顶点shader可写输出,像素shader只读输入
-        lowp&highp&mediump 
-            变量精度限制
     内置变量
         gl_Layer        几何着色器内指定输出数据位于立方体纹理的哪个面(Framebuffer绑定立方体纹理时才有效)
         gl_InstanceID   所有着色器内指定当前实例化渲染的是第几个实例
@@ -156,10 +81,9 @@ context与object的关系
         编译源代码     glCompileShader(shaderID);
         检查编译状态   glGetShaderiv(shaderID,GL_COMPILE_STATUS,&status);
         获取错误信息   glGetShaderiv(shaderID,GL_INFO_LOG_LENGTH,&length); glGetShaderInfoLog(shaderID,length,&length, &errLog);
-    链接过程
         创建program对象  programID = glCreateProgram();
         添加shader对象   glAttachShader(programID,shaderID)
-        绑定变量位置     glBindAttribLocation(programID,pos,name)
+        绑定变量位置     glBindAttribLocation(programID,pos,name)1·
         链接program对象  glLinkProgram(programID)
         检查链接状态     glGetProgramiv(programID,GL_LINK_STATUS, &status);
         获取错误信息     glGetProgramiv(programID,GL_INFO_LOG_LENGTH, &length); glGetProgramInfoLog(programID,length,&length,&errLog);

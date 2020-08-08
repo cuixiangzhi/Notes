@@ -29,3 +29,7 @@ ios
             TouchScreenKeyboard.Open->[UnityGetGLView() addSubView: editView]->[inputView becomeFirstResponder]
             第二步addView之后系统延迟调用了[inputView resignFirstResponder]把键盘关掉了
             解决方案:延时打开[self performSelector: @selector(delayFunction) withObject:nil afterDelay:0.05]
+    3.iOS录音异常
+        播放音乐时录音报异常,音乐停止播放,切到后台再切回来音乐正常
+            默认Category为SoloAmbient,播放音乐时去录音,iOS会去关闭音乐[[AVAudioSession sharedInstance] setActive:NO,然后报错并且音乐无法恢复
+            解决方案:录音时修改Category为PlayAndRecord(此模式iOS会在听筒播放音乐),录音结束改成SoloAmbient

@@ -1,26 +1,17 @@
 骨骼动画
-	基本概念
-		骨骼动画是指动画帧控制骨骼运动,MESH通过绑定骨骼(每个顶点4根骨骼)和权重计算某一帧的状态
-		关键帧控制骨骼运动、骨骼控制顶点运动
-		骨骼动画包括
-			关键帧(Animation,控制骨骼运动)
-			骨骼信息(skinMeshRender.bones)
-			骨骼绑定姿势(skinMeshRender.bindPose即每根骨骼的bone.worldToLocal * render.transform.localToWorld)
-			MESH信息(skinMeshRender.sharedMesh 每个mesh的每个顶点都有boneWeight即绑定和权重信息) 
-		蒙皮计算
-			MESH顶点从骨骼空间变换到世界空间 
-			skinMatrix = bindBone.localToWorld * bindPose
-			finalPos = bindWeight * skinMatrix * vertex
-		反向动力学(IK)
+	关键帧    AnimationClip,记录了每根骨骼相对于父骨骼的位置、旋转、缩放
+	绑定骨骼  SkinnedMeshRenderer.bones,记录了当前SkinMesh的动画绑定的骨骼
+	绑定姿势  Mesh.bindposes,记录了顶点变换到骨骼坐标系下的变换矩阵(bone.worldToLocal * renderer.localToWorld)
+	绑定权重  Mesh.boneWeights,记录了每个顶点绑定的骨骼和权重
+	蒙皮公式  worldPos = bindWeight * bineBone.localToWorld * bindBone.bindPose * vertex,每一帧先计算动画得出骨骼的变换矩阵,然后根据绑定骨骼和权重计算
+	动画融合  连续播放的两个动画衔接的过程
+	动画混合  同时播放的两个动画衔接的过程
+	IK动画
 			子骨骼带动父骨骼运动,给定子骨骼的目标位置和上一级父骨骼的朝向,可以根据余弦定理计算出父骨骼的位置
 			IKBone:需要移动到指定位置的骨骼 JointBone:IK骨骼的父骨骼 RootBone:JointBone的父骨骼
-		根运动(RootMotion)
-			只对根骨骼存在位移的动画有效
-			ApplyRootMotion开启之后会把位移加到模型上
+	RootMotion
+			ApplyRootMotion开启之后会把根骨骼的位移加到模型根结点上(UE4会在移动组件里添加Motion的计算)
 			BakeIntoPose会把根骨骼的指定位移转移到子骨骼上(模型在某个方向上固定不动)
-	动画融合
-		连续播放的两个动画衔接的过程
-	动画混合 
-		同时播放的两个动画衔接的过程
-	蒙皮优化
-		MESH顶点计算转移到shader内(把变换矩阵存储到纹理),降低CPU计算量
+变形动画
+	顶点数据  需要多套数量相同的顶点数据,只能是静态网格
+	插值计算  可以在GPU上用额外的顶点属性保存顶点数据来插值

@@ -18,7 +18,6 @@
     音频采样 8kHZ:人声 22kHZ:广播 44kHZ:音频 声道:Mono&Stereo 编码:PCM无损1411kbps,AAC有损256kbps,OGG有损128kbps
     音频格式 中长音乐:Streaming+Vorbis 短音效:DeCompressOnLoad+ADPCM
     音频数量 2D:1 2D_ONE:1 3D:5 BG:1 CG:2
-    音频效果 DSP:LowPas&HighPass&Distrotion  混音: SOUND: CHANNEL: SYSTEM:
 视频
     视频码率 720P:低码率1Mbps,中码率2Mbps,高码率4Mbps 1080P:低码率2Mbps,中码率4Mbps,高码率8Mbps
     视频格式 MP4格式:H264视频编码和AAC音频编码 WEBM格式:VP8视频编码和VORBIS音频编码
