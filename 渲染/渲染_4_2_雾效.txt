@@ -1,0 +1,14 @@
+简单雾
+    利用NDC坐标和雾效的范围在雾颜色和目标颜色之间做线性插值,只处理了物体表面的雾效果
+体积雾
+    添加一个屏幕后处理,根据深度图和viewRay重建世界坐标然后计算雾效,可以模拟体积雾效果
+    世界坐标重建
+        顶点shader
+            根据相似三角形和像素插值原理,此处计算出射线之后乘以线性深度值可以得出世界坐标
+            viewRay = VIEW_RAY_ARRAY[index]
+            screenPos = ComputeScreenPos(clipPos)
+        像素shader
+            linear01Depth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture,screenPos.xy / screenPos.w)
+            worldPos = _CameraWorldPos + viewRay * linear01Depth
+            根据雾效范围在源颜色和雾颜色之间插值,可以利用深度差更进一步添加软粒子效果
+            可以模拟烟雾弹效果

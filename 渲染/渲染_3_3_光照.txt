@@ -1,94 +1,92 @@
-光照方程
-    经验模型
-        Phong
-            I = 环境光 + 漫反射光 + 高光
-            I = KaIa + KdId*dot(n,l) + KsIs*pow(max(0,dot(r,v)),α)
-            K是反射系数,I是光照强度,n是法线方向,l是入射方向,v是视线方向,r是反射方向 α是表面粗糙度,α越小越粗糙
-        BlinnPhone
-            Phone模型在反射方向和观察方向夹角超过90度,也就是观察方向趋向平行表面时,Phong会发生突变,BlinnPhong更接近真实情况
-            pow(dot(n,h),α),h是l和v的半角向量,v在趋向于平行表面过程中h与n的夹角始终在90度之内,也就是边缘有一个渐变过程
-    毛发模型
-        Kajiya-Kay
-            将头发视为一个直径很小长度很长的圆柱,宏观上头发某一点的光照是微观圆柱上一圈点的光照的总和
-            漫反射
-                积分公式为 diffuse=kd*Li*∫dot(l,n0)d0 = kd*Li*sin<T,L>
-                积分计算:
-                    已知切线向量T,入射向量L,投影向量L'=normalize(L-dot(T,L)*T),边界向量B=cross(T,L')
-                    积分向量n0=Bcos(0)+L'sin(0) kd是一个常量,因此该积分是一个定积分
-                    美术需要沿着发丝生长的方向展开UV,使得U方向正好是切线方向
-                优化版本
-                    diffuse = lerp(0.25,1,dot(n,l)) 考虑了毛发的自阴影,也就是AO效果
-            高光反射
-                计算原理
-                    光照击中头发后,反射方向是沿着切线在圆柱上以镜面反射角度射出的,反射光线均位于切线为轴线一定角度的圆锥体上
-                    已知视线向量为V,视线在反射光线的圆锥体上的投影为V',V与T夹角为0,V'与T夹角为0',高光计算结果为ks*pow(cos(0'-0),s)
-                    化简之后为ks*(dot(T,L)*dot(T,V)+,sin<T,L>sin<T,E>,s)
-                两层高光-Marschner-Model
-                    由于头发的透明产生了多次反射和折射,因此高光反射有两条反射线(只考虑一次折射),两条高光反射一个有颜色,一个没有颜色,相互错开
-                    沿着法线方向去偏移切线,Ts=T+shift*N,需要一张切线扰动图计算shift=constShift+tex2D(_ShiftTexture,uv)-0.5
-                散射分布
-                    横向散射N描述水平方向反射光的分布情况,用一张2DLUT来表示
-                    纵向散射M描述垂直方向反射光的分布情况,用一张2DLUT来表示
-            渲染排序
-                毛发一般是边缘半透明而内部是不透明的,因此不能简单的使用AlphaTest来渲染,这样会导致边缘锯齿很严重
-                1.渲染不透明部分,写入深度
-                    ZWrite On ZTest Less Cull Off ColorMask RGB AlphaTest 1
-                2.渲染不透明部分,写入颜色
-                    Zwrite Off ZTest Equal Cull Off
-                3.渲染背面透明部分
-                    ZWrite Off ZTest Less Cull Front Blend SrcAlpha OneMinusSrcAlpha
-                4.渲染正面透明部分
-                    ZWrite Off ZTest Less Cull Back Blend  SrcAlpha OneMinusSrcAlpha
-
-    物理模型
-        公式原理以及输入参数
-            http://artisaverb.info/PBT.html 资源库
-            https://www.cnblogs.com/timlly/p/10631718.html 原理介绍
-            https://blog.csdn.net/i_dovelemon/article/details/79091105 IBL算法
-            终极公式
-                反射方程
-                    辐射率:单位时间内通过单位面积单位立体角的辐射能量
-                    辐照度:单位时间内通过单位面积的辐射能量
-                    入射微分辐照度 dEi(p,ωi)=Li(p,ωi)*cosθi*dωi
-                    反射微分辐射率 dLo(p,ωo)=fr(p,ωi,ωo)*dEi(p,ωi)
-                    Lo(p,ωo) = ∫fr*Li(p,ωi)dot(n,ωi)dωi
-                方向参数
-                    法线方向n:normalize(tangentNormal*TBN)
-                    反射方向l:normalize(lightPos-worldPos)
-                    视线方向v:normalize(cameraPos-worldPos)
-                    半角向量h:normalize(l+v)
-                直接光漫反射
-                    1.公式为 brdf_d*Li*dot(n,l) brdf_d=kd*albedo/π Li=light.color*shadow kd=lerp(0.96,0,metallic)
-                直接光镜面反射
-                    1.公式为 brdf_s*Li*dot(n,l) brdf_s=DFG/4*nl*nv Li=light.color*shadow ks=F0=lerp(0.04,albedo,metallic)
-                    2.D项为法线分布(微表面法线朝向等于H的比例)           TR-GGX公式:D=m²/π*[dot(n,h)²*(m²-1)+1]²
-                    3.F项为菲涅尔反射率(反射光线比例随角度变化) Fresnel-Schlick公式:F0+(1-F0)(1-dot(h,v))⁵
-                    4.G项为几何遮蔽因子(反射光线被遮挡比例)         Schlick-GGX公式:G=Gs(n,v,k)*Gs(n,l,k) Gs=nv/[nv*(1-k)+k]  k=(rough+1)²/8(直接光) k=rough²/2(间接光) 粗糙度越大,k值越大,G值越小
-                间接光漫反射(lightmap&lightprobe * ao)
-                    1.静态物体间接漫反射光计算并存储到Lightmap中,动态物体一般在场景中布置大量探针使用球谐系数存储环境光         
-                    球谐光照(PRT)
-                        球谐函数
-                            球面光照函数可以分解为无限个球谐基函数*球谐系数之和
-                            半球光照L和传输函数F的乘积积分等于对应的球谐系数点积
-                        球谐系数积分
-                            Ci=1/(NP)*∑Li*Yi Ci是球谐基系数的积分值(所有方向入射光Li与球谐基底点乘之和)
-                        球谐光照重建
-                            L'=∑Ci*Yi L'是采样点的入射光函数,Yi是球谐基底函数,Ci是投影系数之和
-                        球谐基函数公式
-                            l表示阶数,l越高信号频率越高,m表示每一阶内的某个基底函数,每个基底函数都是正交的,n阶球谐函数有n*n个基底函数
-                            具体公式计算公式参考杂项球谐公式图片(根据采样点的0,φ计算该点对应的球谐函数Yi) l,m转换为连续序列i=l(l+1)+m
-                        球谐函数应用
-                            预计算得出球谐基函数系数Ci,运行时可以近似重建原光照,光照探针记录了所在位置的球谐基函数系数
-                            计算时首先根据模型位置找出附近的探针,探针之间根据位置做权重加和,根据像素点的法线方向计算球谐光照
-                间接光镜面反射(reflectprobe * ao)
-                    1.静态物体间接镜面反射光计算并存储到方向图中,动态物体一般在场景中布置反射探针使用cubemap存储,boxprojection
-                    2.预过滤环境贴图
-                        采样贴图生成:拍摄反射探针六个方向的环境生成HDRCubemap
-                        采样方向生成:低差异序列和重要性采样(根据N=V=R和roughness=mipmap/totalmips计算H,根据H和R计算L,把NdotL作为权重采样HDRCubemap,越接近法线的权重越高)
-                    3.BRDF积分LUT图
-                        横轴表示nl点乘结果,数值在[0,1]之间,纵轴表示粗糙度,数值在[0,1]之间
-                        BRDF积分的F被分成了F0*a+b的形式,a和b分别做积分存储到LUT的R和G通道
-                    4.反射探针计算
-                        prefilterColor = texCube(prefilterMap,V,roughness * MAX_LOD)
-                        brdf = tex2D(brdfLUT,(NdotV,roughness)).xy
-                        specular = prefilterColor * (F * brdf.x + brdf.y)
+经验模型
+    Phong
+        I = 环境光 + 漫反射光 + 高光
+        I = KaIa + KdId*dot(n,l) + KsIs*pow(max(0,dot(r,v)),α)
+        K是反射系数,I是光照强度,n是法线方向,l是入射方向,v是视线方向,r是反射方向 α是表面粗糙度,α越小越粗糙
+    BlinnPhone
+        Phone模型在反射方向和观察方向夹角超过90度,也就是观察方向趋向平行表面时,Phong会发生突变,BlinnPhong更接近真实情况
+        pow(dot(n,h),α),h是l和v的半角向量,v在趋向于平行表面过程中h与n的夹角始终在90度之内,也就是边缘有一个渐变过程
+物理模型
+    公式原理以及输入参数
+        http://artisaverb.info/PBT.html 资源库
+        https://www.cnblogs.com/timlly/p/10631718.html 原理介绍
+        https://blog.csdn.net/i_dovelemon/article/details/79091105 IBL算法
+        终极公式
+            反射方程
+                辐射率:单位时间内通过单位面积单位立体角的辐射能量
+                辐照度:单位时间内通过单位面积的辐射能量
+                入射微分辐照度 dEi(p,ωi)=Li(p,ωi)*cosθi*dωi
+                反射微分辐射率 dLo(p,ωo)=fr(p,ωi,ωo)*dEi(p,ωi)
+                Lo(p,ωo) = ∫fr*Li(p,ωi)dot(n,ωi)dωi
+            方向参数
+                法线方向n:normalize(tangentNormal*TBN)
+                反射方向l:normalize(lightPos-worldPos)
+                视线方向v:normalize(cameraPos-worldPos)
+                半角向量h:normalize(l+v)
+            直接光漫反射
+                1.公式为 brdf_d*Li*dot(n,l) brdf_d=kd*albedo/π Li=light.color*shadow kd=lerp(0.96,0,metallic)
+            直接光镜面反射
+                1.公式为 brdf_s*Li*dot(n,l) brdf_s=DFG/4*nl*nv Li=light.color*shadow ks=F0=lerp(0.04,albedo,metallic)
+                2.D项为法线分布(微表面法线朝向等于H的比例)           TR-GGX公式:D=m²/π*[dot(n,h)²*(m²-1)+1]²
+                3.F项为菲涅尔反射率(反射光线比例随角度变化) Fresnel-Schlick公式:F0+(1-F0)(1-dot(h,v))⁵
+                4.G项为几何遮蔽因子(反射光线被遮挡比例)         Schlick-GGX公式:G=Gs(n,v,k)*Gs(n,l,k) Gs=nv/[nv*(1-k)+k]  k=(rough+1)²/8(直接光) k=rough²/2(间接光) 粗糙度越大,k值越大,G值越小
+            间接光漫反射(lightmap&lightprobe * ao)
+                1.静态物体间接漫反射光计算并存储到Lightmap中,动态物体一般在场景中布置大量探针使用球谐系数存储环境光         
+                球谐光照(PRT)
+                    球谐函数
+                        球面光照函数可以分解为无限个球谐基函数*球谐系数之和
+                        半球光照L和传输函数F的乘积积分等于对应的球谐系数点积
+                    球谐系数积分
+                        Ci=1/(NP)*∑Li*Yi Ci是球谐基系数的积分值(所有方向入射光Li与球谐基底点乘之和)
+                    球谐光照重建
+                        L'=∑Ci*Yi L'是采样点的入射光函数,Yi是球谐基底函数,Ci是投影系数之和
+                    球谐基函数公式
+                        l表示阶数,l越高信号频率越高,m表示每一阶内的某个基底函数,每个基底函数都是正交的,n阶球谐函数有n*n个基底函数
+                        具体公式计算公式参考杂项球谐公式图片(根据采样点的0,φ计算该点对应的球谐函数Yi) l,m转换为连续序列i=l(l+1)+m
+                    球谐函数应用
+                        预计算得出球谐基函数系数Ci,运行时可以近似重建原光照,光照探针记录了所在位置的球谐基函数系数
+                        计算时首先根据模型位置找出附近的探针,探针之间根据位置做权重加和,根据像素点的法线方向计算球谐光照
+            间接光镜面反射(reflectprobe * ao)
+                1.静态物体间接镜面反射光计算并存储到方向图中,动态物体一般在场景中布置反射探针使用cubemap存储,boxprojection
+                2.预过滤环境贴图
+                    采样贴图生成:拍摄反射探针六个方向的环境生成HDRCubemap
+                    采样方向生成:低差异序列和重要性采样(根据N=V=R和roughness=mipmap/totalmips计算H,根据H和R计算L,把NdotL作为权重采样HDRCubemap,越接近法线的权重越高)
+                3.BRDF积分LUT图
+                    横轴表示nl点乘结果,数值在[0,1]之间,纵轴表示粗糙度,数值在[0,1]之间
+                    BRDF积分的F被分成了F0*a+b的形式,a和b分别做积分存储到LUT的R和G通道
+                4.反射探针计算
+                    prefilterColor = texCube(prefilterMap,V,roughness * MAX_LOD)
+                    brdf = tex2D(brdfLUT,(NdotV,roughness)).xy
+                    specular = prefilterColor * (F * brdf.x + brdf.y)
+毛发模型
+    Kajiya-Kay
+        将头发视为一个直径很小长度很长的圆柱,宏观上头发某一点的光照是微观圆柱上一圈点的光照的总和
+        漫反射
+            积分公式为 diffuse=kd*Li*∫dot(l,n0)d0 = kd*Li*sin<T,L>
+            积分计算:
+                已知切线向量T,入射向量L,投影向量L'=normalize(L-dot(T,L)*T),边界向量B=cross(T,L')
+                积分向量n0=Bcos(0)+L'sin(0) kd是一个常量,因此该积分是一个定积分
+                美术需要沿着发丝生长的方向展开UV,使得U方向正好是切线方向
+            优化版本
+                diffuse = lerp(0.25,1,dot(n,l)) 考虑了毛发的自阴影,也就是AO效果
+        高光反射
+            计算原理
+                光照击中头发后,反射方向是沿着切线在圆柱上以镜面反射角度射出的,反射光线均位于切线为轴线一定角度的圆锥体上
+                已知视线向量为V,视线在反射光线的圆锥体上的投影为V',V与T夹角为0,V'与T夹角为0',高光计算结果为ks*pow(cos(0'-0),s)
+                化简之后为ks*(dot(T,L)*dot(T,V)+,sin<T,L>sin<T,E>,s)
+            两层高光-Marschner-Model
+                由于头发的透明产生了多次反射和折射,因此高光反射有两条反射线(只考虑一次折射),两条高光反射一个有颜色,一个没有颜色,相互错开
+                沿着法线方向去偏移切线,Ts=T+shift*N,需要一张切线扰动图计算shift=constShift+tex2D(_ShiftTexture,uv)-0.5
+            散射分布
+                横向散射N描述水平方向反射光的分布情况,用一张2DLUT来表示
+                纵向散射M描述垂直方向反射光的分布情况,用一张2DLUT来表示
+        渲染排序
+            毛发一般是边缘半透明而内部是不透明的,因此不能简单的使用AlphaTest来渲染,这样会导致边缘锯齿很严重
+            1.渲染不透明部分,写入深度
+                ZWrite On ZTest Less Cull Off ColorMask RGB AlphaTest 1
+            2.渲染不透明部分,写入颜色
+                Zwrite Off ZTest Equal Cull Off
+            3.渲染背面透明部分
+                ZWrite Off ZTest Less Cull Front Blend SrcAlpha OneMinusSrcAlpha
+            4.渲染正面透明部分
+                ZWrite Off ZTest Less Cull Back Blend  SrcAlpha OneMinusSrcAlpha

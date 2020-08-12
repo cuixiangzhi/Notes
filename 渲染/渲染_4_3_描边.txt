@@ -1,0 +1,31 @@
+遮挡
+    1.完全遮挡
+        改变渲染顺序,利用深度测试
+    2.完全半透
+        配置地图格子,在指定格子里是半透的
+    3.遮挡半透
+        角色最后渲染2次,第一次正常渲染并且ZTest Less,第二次半透渲染并且ZTest GEqual
+描边
+    边缘发光
+        利用视线和法线的点乘计算边缘,模型越边缘的地方点乘越接近0,用1减去点乘结果作为边缘光的强度
+        对边缘光的强度做一个菲涅尔处理,再乘上边缘光颜色,作为自发光叠加到原始颜色上
+            1.rimValue = 1-saturate(dot(N,V));
+            2.rimValue = pow(rimValue,rimPow);
+            3.emission = rimColor * rimValue;
+    法线外扩
+        第一次渲染背面,Cull Front & ZWrite Off,在裁剪空间对XY沿着法线方向增大一圈
+            1.clipPos = mul(MVP,v.vertex); 
+            2.viewNormal = mul(IT_MV,v.normal);
+            3.clipNormal = mul(P,viewNormal.xy);
+            4.clipPos.xy += clipNormal.xy * outline;
+        第二次正常渲染,Cull Back,正常计算颜色即可
+    边缘检测(深度或亮度)
+        利用Sobel(水平和垂直方向)或者Roberts(斜对角)计算方向偏导数Gx,Gy作为梯度向量,然后计算其长度并根据指定阈值得出边缘
+            水平|-1 0 1| 垂直|-1 -2 -1|  |-1 0| |0 -1|
+                |-2 0 2|     | 0  0  0|  |0  1| |1  0|
+                |-1 0 1|     | 1  2  1|  
+        顶点shader
+            计算sobel算子所需要的9个uv坐标
+        像素shader
+            计算出亮度偏导值Gx、Gy和梯度向量的长度或者计算出两个像素的深度差
+            和指定阈值比较得出边缘程度
