@@ -51,8 +51,9 @@ HTTP协议
 				accept:客户端支持的内容类型
 				language:客户端支持的语言
 				encoding:客户端支持的编码
-				connection:返回响应报文之后连接是否断开
 				host:请求地址,也就是域名
+				range:bytes=0-100请求下载分段
+				connection:返回响应报文之后连接是否断开
 				cookie:响应报文返回的缓存信息,用来记录状态,HTTP是无状态协议
 				content-type:请求体信息,表示请求体是什么文件类型
 				content-length:请求体长度
@@ -67,6 +68,7 @@ HTTP协议
 				server:处理该请求的服务器软件信息,nginx、apache
 				set-cookie:设置缓存数据
 				content-type:返回内容类型
+				content-range:bytes 0-100
 			空行
 			响应体
 TCP/IP协议栈
