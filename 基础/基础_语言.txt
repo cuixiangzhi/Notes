@@ -211,64 +211,30 @@ C#
 
 Lua
 	常量定义 luaconf.h       平台相关 搜索路径 堆栈大小 
-	基础函数定义lua.h        以lua_为前缀,版本、REGISTERINDEX、GLOBALSINDEX、T* lua_Alloc lua_CFunction lua_is* lua_to* lua_push* lua_get* lua_set*
-	辅助函数定义luaxlib.h    以luaL_为前缀
-	基础库注册定义lualib.h   lua_open基础库相关函数定义,实现在各个库对应的.c内
-	库实现
-		 以lua_open为前缀,具体实现分散在不同的.cc文件内  
-		 lauxlib.c  辅助库实现 luaL_loadfile luaL_loadbuffer luaL_reg/luaL_register luaL_check* luaL_opt* luaL_ref/unref luaL_newstate
-		 lbaselib.c base库实现 g/setfenv g/setmetatable x/pcall tonumber/string rawg/set pack/unpack dofile/loadstring
-		 liolib.c  io库实现 read write flush close open input output type
-		 lmath.c   math库实现 abs ceil floor random randomseed cos sin acos asin tan atan exp log sqrt
-		 lstrlib.c string库实现 lower upper len format reverse sub gsub find gmatch byte char dump match rep
-		 ltablib.c table库实现 insert concat maxn remove sort
-		 loslib.c  os库实现
-		 loadlib.c 文件解释入口 require module seeall path cpath loaded preload loaders loadlib seeall
-		 ldblib.c  debug库实现 traceback getenv gethook sethook getmetatable
-		 linit.c  库注册入口函数整合
-	常用API:  
+	基础函数定义lua.h        以lua_为前缀,lapi.c内实现,lua_is* lua_to* lua_push* lua_get* lua_set*
+	辅助函数定义luaxlib.h    以luaL_为前缀,lauxlib.c内实现,luaL_ref/unref luaL_newstate luaL_reg luaL_loadbuffer
+	基础库注册定义lualib.h   lua_open基础库相关函数定义,实现在各个库对应的.c内,统一在init.c内注册到注册表
+	常用API
 		函数注册luaL_Reg注册函数结构体 luaL_Reg[] = { {"func_name",func},{"func_name1",func1} } luaL_register
 		函数调用lua_call(L,narg,nresult) lua_pcall(L,nargs,nresults,err_func)
-		table字段获取lua_getfield(L,stackid,k) lua_getmetatable lua_gettable lua_gettop lua_getglobal
-		table字段创建lua_newtable lua_newuserdata
-		lua_raw/get会在指定位置读取指定key的数据并压入栈顶
+		lua_new/pushvalue*会创建或复制一个lua变量并压入栈顶
+		lua_raw/get*会在指定位置读取指定key的数据并压入栈顶
 		lua_raw/set会移除栈顶数据(value和key),并设置指定table的key对应value
 		lua_pop会移除栈顶指定个数的数据
 		lua_push复制指定位置并压入栈顶
 		lua_to系列不会移除栈数据 lua_toboolean lua_tocfunction lua_tointeger lua_tolstring lua_tonumber lua_tostring
 		lua_is系列也不会移除栈数据 lua_isnil lua_isnumber lua_istable lua_isstring
 		lua_ref会在注册表创建栈顶对象引用并返回索引 lua_unref解除引用 lua_getref获取引用对象并放到栈顶
-	常用库函数
-		coroutine 
-			协同程序,非抢占式多线程,需要自己主动在不同的协程之间切换,同时只有一个协程在运行
-			协程状态
-				suspended 挂起状态,创建create或者yield之后处于这个状态
-				running 运行状态,resume之后处于这个状态
-				dead 死亡状态,没有遇到yield或者yield结束了,表示协程执行结束了
-				normal 正常状态,协程套协程,执行到另一个协程去了
-			协程操作
-				status 获取协程状态
-				create 传入一个执行函数,类似于UNITY的StartCoroutine
-				resume 协程需要自己主动调用才可以开始或者继续执行
-					   yield之后回到了主线程,主线程主动调用进入协程
-					   resume可以在第一次启动时传递参数
-					   resume可以传递参数作为初始化参数或者yield的返回值
-				yield 只会出现在协程函数内部,yield可以传参数作为resume的返回值
-				running 当前正在执行的协同程序
 	变量定义位置
+		注册表 	      	LuaState.l_G.l_registry package.loaded(记录require过的模块) package.loaders(文件加载器)
+		字符串          LuaState.l_G.strt
 		全局表	      	LuaState.l_gt
-		注册表 	      	LuaState.l_G.l_registry
 		环境表          LuaState.env
-		基础类型元表    LuaState.l_G.mt
-		基础元函数名字 	LuaState.l_G.tmnames
-		字符串哈希表    LuaState.l_G.strt
 		GC对象          LuaState.gclist
 		函数Env         Closure.env
 		函数LocVar 		Proto.localvars
 		函数UpVar       LClosure.upvals LuaState.openupval upval一定在外层函数的localvars或者upvals中,外层函数的local是通过openupval间接引用的
-		package.loaded  LuaState.l_G.l_registry._LOADED require会先到该表查找对应模块是否已加载,加载出来之后有返回值则为返回值,否则为true
-		package.loaders LuaState.env
-		module          push_module->mod_init->setenv
+		函数栈帧        全局堆栈L->stack|L->top,函数栈帧L->base.L->ci->base|L->ci->top 保留现场L->ci->savedpc 新指令L->savedpc
 
 Python
 	基本类型
