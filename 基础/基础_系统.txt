@@ -33,28 +33,27 @@
 			小端模式: 正好相反
 			字符集
 				许多字符的集合,每个字符有一个编号,例如Unicode字符集
+				zh_cn.utf-8 是本地系统语言及字符集,国家_语言.字符编码
 			字符编码
-				字符集编号的存储表示方式,也就是存储格式,例如UTF8 UTF16 UTF32
+				字符集编号的存储表示方式,也就是存储格式,例如UTF8 UTF16 UTF32 ANSI(各个国家的标准不一样,例如中国是GB2312)
 				UNICODE与UTF8编码转换 中文UNICODE编码范围是0x4E00到0x9FA5
 			        0000 0000 - 0000 007F | 0xxxxxxx
 			        0000 0080 - 0000 07FF | 110xxxxx 10xxxxxx 
 			        0000 0800 - 0000 FFFF | 1110xxxx 10xxxxxx 10xxxxxx 
 			        0001 0000  -0010 FFFF | 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx 
-			系统编码
-				zh_cn.utf-8 是本地系统语言及字符集,国家_语言.字符编码
-				ASCII、GB2312既是字符集也是字符编码,表示的不是UNICODE编号,是自己字符集的编号
 			语言编码
 				C# 
 					string是unicode对象,静态字符串初始化会根据cs文件编码解码,一个char是一个字符
 				C++
-					string是char数组,一个char不一定是一个有效字符,需要自己根据编码来解析真实的字符个数
-			   		wstring是wchar_t数组,一个wchar_t占用两个字节,代表一个字符
+					string是char数组,一个char占用一个字节,需要自己根据编码来解析真实的字符个数
+			   		wstring是wchar_t数组,一个wchar_t占用两个字节(UTF-16),gcc占用四个字节
 				python 
 					分为str和unicode两种对象,decode解码为unicode对象,encode编码为str对象,encode方式有gbk、utf8等等
 					获取控制台编码 sys.stdin.encoding sys.stdout.encoding
 					获取字符串编码 chardet.detect
-				terminal 
-					会根据设置的编码来显示传输的字节
+				console
+					windows默认是GB2312编码,可以使用chcp切换编码
+					jenkins默认是utf-8编码
 			MSVC
 				BOM:字节序标记,表明了文件编码,不带BOM的话会按照系统编码来解码,不同的编码有不同的字节序标记 UTF-8是0xEFBBBF
 				源码编码: 源代码文件的编码,分为带BOM和不带BOM
@@ -138,15 +137,10 @@
 			USS 实际物理内存(进程内存)
 进程管理
 		进程关系
-			父子进程: fork创建进程,pid为0是子进程,大于0是父进程
+			父子进程: fork创建进程,pid为0是子进程,大于0是父进程,调用execl(path,name,args)覆盖进程空间执行新程序代码
 			僵尸进程: 子进程的退出状态,等待父进程调用waitpid(-1,NULL,0)回收;
 			孤儿进程: 子进程的状态,父进程退出但是子进程没有退出,子进程会由init进程收养
-		进程创建
-			fork创建进程,调用execl(path,name,args)覆盖进程空间执行新程序代码;
-		守护进程
-			孤儿进程循环或者周期检测目标程序,崩溃后重启,监视运行状态
-			该进程后台运行,没有终端与之关联
-			fork();setsid();fork();close(0);close(1);close(2);open("/dev/null",O_RDWR);dup(0);dup(0);
+			守护进程: 孤儿进程周期检测目标程序,监视运行状态并在目标崩溃后重启
 		进程外挂
 			ptrace提供控制另一个进程的能力,检测、修改代码、数据、寄存器、断点、注入、跟踪
 			调试 PTRACE_ATTACH PTRACE_DETACH PTRACE_CONT PTRACE_SINGLESTEP PTRACE_SYSCALL
@@ -175,21 +169,23 @@
 				阻塞: 等待事件,等待阻塞:event.wait(等待event.notify|pulse) 睡眠阻塞:sleep(等待timeout|interrupt)
 				死亡: 执行结束,等待主线程回收资源
 		线程同步
-			共享锁和互斥锁
-				pthread_mutex_init(&mid)
-				pthread_mutex_lock(&mid);
-				pthread_mutex_unlock(&mid);
-				pthread_rwlock_init(&rwid);
-				pthread_rwlock_rdlock(&rwid);
-				pthread_rwlock_rdunlock(&rwid);
-			信号量(头文件semaphore.h)
-				信号量的API操作均是原子操作,等待信号量时值为0会阻塞
-				创建 sem_init(sem_t, 0, 0)
+			共享锁和互斥锁属性
+				pthread_mutexattr_init(&attr)
+				pthread_mutexattr_setpshared(&attr,pshared)
+			共享锁和互斥锁(通过属性指定是进程锁还是线程锁,默认是线程锁)
+				pthread_mutex|rwlock_init(&handle,&attr)
+				pthread_mutex|rwlock_lock(&handle);
+				pthread_mutex|rwlock_unlock(&handle);
+				pthread_mutex|rwlock_destroy(&handle)
+			信号量(头文件semaphore.h,通过pshared指定是进程共享还是线程共享)
+				创建 sem_init(sem_t, pshared, value)
 				等待 sem_wait(sem_t)
 				释放 sem_post(sem_t)
 			自解锁(互斥锁)
 				对代码块的执行进行加锁,例如c#的lock,java的synchronized,c++的mutex(构造时lock,析构时unlock)
-				死锁:lock(A)内部调用外部代码时也执行了lock(A)
+			注意点
+				锁对象设为私有变量,外部不可访问,尽量使用trylock tryenter尝试加锁,避免长时间等待
+				注意循环锁定,lock(A)调用外部代码执行lock(A)
 		数据队列
 			环形缓冲区
 				一个size大小的buffer,head指向第一个可读的位置,tail指向第一个可写的位置
