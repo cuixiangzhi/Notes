@@ -166,7 +166,7 @@ IO模型
 					windows: ioctlsocket(sock,FIONBIO,0)
 					unix:    fcntl(sock,F_GETFL|F_SETFL,O_NONBLOCK)
 			   	SOCKET关闭行为
-					linger l; l.l_onoff = 1; l.l_linger = 0;
+					linger l; l.l_onoff = 1; l.l_linger = 0; off:尝试发送 on:0延迟直接发送RST关闭连接,非0延迟close返回WOULD_BLOCK表示发送失败
 					g/setsockopt(sock,SOL_SOCKET,SO_LINGER,&L,sizeof(linger)) 设置关闭时是否发送缓冲区数据和超时时间
 					g/setsockopt(sock,SOL_SOCKET,SO_REUSEADDR,1,sizeof(INT))  保证端口被释放后立即可用
 			   	SOCKET保持存活
