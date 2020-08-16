@@ -156,7 +156,8 @@ IO模型
 				sendto(sock,buff,size,0,(sockaddr*)&addr,sizeof(addr));
 				recvfrom(sock,buff,size,0,(sockaddr*)&addr,sizeof(addr));
 		断开连接
-				closesocket(sock);
+				close(sock);		关闭socket句柄并关闭socket连接(根据linger配置确定关闭方式)
+				shutdown(sock);     关闭socket读写通道(关闭写通道会等待发送缓冲区发送完毕,关闭读通道后有数据未读或接收到新数据会触发RST给对端)
 		连接状态
 				SOCKET收发缓冲区
 					g/setsockopt(sock,SOL_SOCKET,SO_RCVBUF,&size,sizeof(UINT))   设置接收缓冲区大小

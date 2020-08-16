@@ -1,41 +1,47 @@
 移动同步
-    摇杆移动
-        同步数据:当前时间戳、当前移动速度、预计加速跑时间戳、目标位置(取当前角色朝向正前方移动500毫秒的位置)
-        同步时机:开始拖拽和停止拖拽时同步一次,拖拽过程中间隔500毫秒同步一次,参考神都夜行录和天龙八部手游
-    目标移动:
-        同步数据:当前时间戳、当前移动速度、预计加速跑时间戳、移动路径
-        同步时机:开始移动和停止移动时同步一次,中间移动过程不需要同步
-    技能移动:
-        同步数据:目标位置、目标朝向
-        同步时机:跳跃、冲锋、击退、击飞
-    载具移动:
-        载具实现:载具和人属于不同的实体,载具提供接口支持其它实体上下,支持驾驶位的实体玩家控制载具
-        移动同步:载具没有单独的同步协议,玩家收到移动消息时转交给载具处理,载具移动并控制实体保持相对位置不变
-    队伍移动:
-        同步数据:队长的移动路径
-        队伍跟随:跟随状态下沿着队长移动路径移动(当前位置+队长位置+队长移动路径),足够近之后保持队型停止移动
-        多人载具:队员上载具之后退出跟随状态,靠载具移动
-    单帧模拟
-        移动时间:使用smoothDeltaTime替代deltaTime,否则在帧率抖动时角色会抖动
-        拐点处理:本次移动超出拐点,根据正弦定理a:sin<a>=b:sin<b>=c:sin<c>求出下一段路径上的目标点
-寻路建模
-    路点
-        需要手工配置路点,局限性较大,适合路点巡逻之类的需求
-    格子
-        容易实现,容易动态修改,动态阻挡容易实现
-        内存开销大,需要衡量精度、内存、计算量
-        走路不平滑,没有地形高度和角色高度信息
-    导航网格
-        实现复杂,有现成的库使用,但是想要做修改和定制,有点难度
-        建立网格的过程比较耗时耗内存,运行时动态阻挡算法复杂
+    技能移动: 跳跃、冲锋、击退、击飞
+    摇杆移动: 开始拖拽和停止拖拽时同步一次,拖拽过程中间隔500毫秒(FPS更低)同步一次,参考神都夜行录和天龙八部手游
+    目标移动: 开始移动和停止移动时同步一次,中间移动过程不需要同步,同步时把移动轨迹做转发
+    载具移动: 载具和人属于不同的实体,载具类提供接口支持其它实体上下并且可被玩家控制移动,类似摇杆移动(FPS需要添加加速度支持,同步间隔更短)
+    队伍移动: 只同步队长的移动轨迹,队员沿着队长的轨迹移动并保持队形(需要区分移动跟随和载具跟随)
+    单帧模拟: 移动时间(smoothDeltaTime) 移动速度(走.跑.加速度) 拐点处理(正弦定理) 制动距离(减速.刹车表现)
 导航网格
+    寻路相关算法
+        搜索最近落点
+            首先根据目标点和搜索范围得出一个AABB
+            然后根据AABB找出附近的Poly(先找出Tile,然后遍历Tile内的Poly检查是否和AABB相交)
+            遍历所有相交的Poly,使用pnpoly算法检查点是否在Poly内部
+            在内部:遍历Poly的DetailMesh,检查在哪个三角形内部,根据质心坐标计算出高度(具体计算见碰撞算法)
+            在外部:遍历每条边计算出最短距离,找出距离最近的边上的最近点
+        是否直接可达
+            1.遍历初始多边形每条边,判断与射线AB是否相交(判断AOP BOP是否同向,同向不相交)
+            2.通过穿出边找出下一个多边形,继续上述判断,直到碰到不可穿出区域或者到达目标区域
+            3.计算和多边形相交时会返回两条相交结果,如果是一个,那么这个多边形就是最终的多边形
+            4.需要记录与各个多边形的相交点,因为如果按照这个路径移动,需要多边形的area信息来处理移动行为
+        多层寻路高度
+            首先使用findPath找出起始点到目标点的多边形路径
+            然后使用findStraightPath找出起始点到目标点的拐点路径(此时记录了每个拐点属于哪个多边形,边界点属于下一个多边形)
+            然后在移动时通过getPolyHeight获取XZ单次移动之后在当前多边形上的高度
+            注意点:制作时确保多层之间有一定的距离,方便寻路时判断落点
+        静态阻挡实现
+            方法1,在生成NAVMESH的时候导出.gset,标记三角形网格的区域类型
+                area类型包括 POLYAREA_GROUND(地面) POLYAREA_GRASS(草地) POLYAREA_ROAD(公路) POLYAREA_WATER(水) POLYAREA_DOOR(门)
+                flag类型包括 POLYFLAGS_WALK(行走) POLYFLAGS_SWIM(游泳) POLYFLAGS_DOOR(门)
+                flag和area可以扩展,但是flag最多有16位(ushort类型)
+                在寻路时通过dtQueryFilter的includeFlag和excludeFlag来过滤掉不可行走的区域
+            方法2,对生成的NAVMESH进行裁剪
+        搜索最短路径
+            搜索最短路径(A*)
+                OPEN表    用小顶堆实现的队列,堆顶是距离目标最近的结点,出队和入队需要调整堆保证有序
+                CLOSED表  哈希表,用来存储已经访问过的结点
+                搜索过程  首先找出距离起点和终点最近的路点加入OPEN表,然后循环取OPEN表堆顶结点,检测是否到达目标或者遍历邻接结点修改消耗加入OPEN表
+            搜索路点路径(拐点法)
+                1.首先找到起始多边形和穿出边的两个端点,连线L、R
+                2.找出下一个穿出边左点,连线L',判断L'是否在L、R之间,如果在,则L更新为L',同理找出右点,连线R',判断R'是否在L、R之间,如果在,则R更新为R'
+                如果L'R'都在L左侧或者R右侧,则L或R为一个拐点,连接拐点需要判断当前拐点与新拐点之间的线段是否经过了两个不同的区域
+                3.继续找出下一个拐点,直到目标多边形
     生成导航网格
-        概念
-            Span                三维空间的像素
-            HeightField         根据cellSize在xyz三个方向切割,由体素构成的对象
-            CompactHeightfield  把垂直方向上的格子数据用起点+长度表示
-            Tile                根据tileSize对整个体素场景分割,由NxN体素构成的正方形,和相邻的四个Tile通过有效边连接
-        实现
+        配置信息
             加载网格信息
                 .gset类型文件是区域标记文件
                     f
@@ -64,7 +70,14 @@
                     输入网格信息
                     ntris&tris          三角形个数&三角形数组(三个点构成一个三角形,存储了顶点起始下标)
                     nverts&verts        顶点个数&顶点数组(三个表示一个顶点)
-            
+        
+        体素生成:
+            rcHeightField                   Recast.h
+            rcCreateHeightField             Recast.cpp
+            rcMarkWalkableTriangles         Recast.cpp
+            rcRasterizeTriangles            RecastRasterization.cpp
+            rcFilterLedgeSpans              RecastFilter.cpp
+            rcFilterWalkableLowHeightSpans  RecastFilter.cpp
             创建体素高度场 ********************Recast.cpp********************
                 rcHeightField
                     bmin&bmax           从配置里读取的AABB边界
@@ -75,7 +88,6 @@
                     m_triareas          输入的三角面的区域类型,初始化为RC_NULL_AREA(不可行走)
                     normal              每个三角面的法线,单位化之后Y值正好等于三角面倾斜角的cos值
                     倾斜角小于最大行走倾斜角度时标记为可行走区域 RC_WALKABLE_AREA(可行走)
-
             光栅体素化网格 ********************RecastRasterlization.cpp********************
                 遍历每个三角面,计算其AABB包围盒tmin,tmax(也就是三个顶点的最小xyz,最大xyz)
                 根据包围盒计算zmin=[(tmin[2]-bmin[2])*(1/cs)],zmax=[(tmax[2]-bmin[2])*(1/cs)]
@@ -106,8 +118,7 @@
                 根据climbHeight计算Y方向相邻体素之间的空隙,如果小于agentHeight,说明该体素不可行走
                 for span in yspan do
                     span->smax和span->next->smin的差是否大于agentHeight,否则标记span不可行走
-                end
-            
+                end       
             创建压缩高度场 ********************Recast.cpp********************
                 创建CompactHeightfield,只记录上表面即行走面及其与上表面距离的高度场,并记录了与四周的连通性
                     rcCompactHeightfield
@@ -125,11 +136,15 @@
                     遍历spans,如果一个Span为不可行走或者相邻的Span有一个不可行走,则标记该Span到达边界的距离为0
                     检查与周围8个Span的最小距离,XZ轴向距离为2,斜对面距离为3
                     最终距离小于角色半径的全部标记为不可行走
-
             可行走区域类型 ********************RecastArea.cpp********************
                 Volume是由顶点集合和area标记构成的
                 会检测每个Span在哪个Volume区域内(这里检测的是y方向范围),并修改其区域ID
-            
+        
+        区域生成:
+            rcCompactHeightField            Recast.h
+            rcBuildCompactHeightField       Recast.cpp
+            rcBuildDistanceField            RecastRegion.cpp
+            rcBuildRegions                  RecastRegion.cpp
             区域生成 ********************RecastRegion********************
                 Watershed partitioning
                     经典算法,有比较好的曲面细分效果,把compactHeightField划分成没有孔洞和重叠的区域,预计算的最好选择
@@ -180,7 +195,12 @@
                                 connections非空则表示轮廓已找到,不再处理,否则找出与reg相邻的区域信息
                                 某个region的span数量低于minRegionArea并且不是边界区域则删除该区域,边界tile
                                 合并太小的region,重新生成区域ID 
-                          
+
+        轮廓生成:
+            rcContourSet                    Recast.h
+            rcBuildContours                 RecastContour.cpp
+            walkContour
+            simplifyContour                       
             轮廓生成 ********************RecastContour********************
                 轮廓是指由体素构成的Span的边界信息,边界分为内边界和外边界,外边界是区域边界
                 轮廓是由折线(XZ平面)构成的封闭的多边形
@@ -210,7 +230,12 @@
                     2.遍历每个孔洞,执行合并算法
                         找出最优的分割点(距离最小与其他洞不相交),把外围多边形分割为N个小多边形
                     合并没看到,写的不对 TODO
-            
+
+        网格生成:
+            rcPolyMesh                      Recast.h
+            rcBuildPolyMesh                 RecastMesh.cpp
+            rcPolyMeshDetail                Recast.h
+            rcBuildPolyMeshDetail           RecastMeshDetail.cpp         
             导航网格 ********************RecastMesh********************
                 1.轮廓的顶点数据是在voxel空间的,坐标点是整数格式,表示距离地面的体素距离,这一步要把它转换到向量空间,坐标转换为原始格式
                 2.每个轮廓都是不相关的,这里要把它们合并为一个MESH
@@ -256,14 +281,13 @@
                 邻接信息
                     第一次遍历,记录下每条边的起始点和所属多边形,邻接多边形默认等于自己,邻接边为空(顶点从小到大,环绕方向一致,肯定无共享边)
                     第二次遍历,顶点从大到小,环绕方向一致,此时边的方向是反的,会遇到共享边,记录在edge内
-                    遍历每条边,检查正向和反向的两个多边形是否不相等,是则记录邻接多边形(哪条边,哪个多边形)p[vertsPerPoly+e.polyEdge[0]] = e.poly[1]
-            
+                    遍历每条边,检查正向和反向的两个多边形是否不相等,是则记录邻接多边形(哪条边,哪个多边形)p[vertsPerPoly+e.polyEdge[0]] = e.poly[1] 
             高度细节 ********************RecastMeshDetail**************
                 1.如果原始网格是投影到2D平面的,那么生成的MESH和原始MESH是重合在一起的
                 2.如果原始网格是3D网格,就需要生成高度信息
                     完成这一步需要遍历每一个多边形(PolyMesh),在和原始MESH高度偏差较大的边上新增顶点
                 3.从路径搜索的角度来说,高度细节不是必要的,凸多边形是寻路算法的唯一输入,PolyMesh已经有足够的信息用于搜索
-                  高度细节一般用在需要把角色放在NAVMESH上,实际上Detour库只使用PolyMesh用于寻路
+                高度细节一般用在需要把角色放在NAVMESH上,实际上Detour库只使用PolyMesh用于寻路
                     高度细节太多会占用较多的搜索时间和内存
                 5.主要步骤有3          
                     rcPolyMeshDetail
@@ -300,183 +324,79 @@
                         把verts从临时数组拷贝到dmesh.verts;把tris从临时数组拷贝到dmesh.tris
                         dmesh.meshes存储了每个多边形的顶点数和三角形个数
                 6.遍历多边形,检查area标记,修改area和flag类型,area可行走则标记为GROUND;公路草地等flag改为WALK,水的flag改为SWIM,门的flag改为DOOR|WALK
-            
-            寻路图生成************************DetourNavMeshBuilder*****************************************
-                1.参数信息填充
-                    dtNavMeshCreateParams
-                    verts&vertCount&polys&polyAreas&polyFlags&polyCount&nvp 2D顶点和多边形信息
-                    detailVerts&detailVertsCount&detailTris&detailPolys     高度细节顶点和多边形信息
-                    offMeshConVerts&&offMeshConRad&&offMeshConDir&&offMeshConAreas&&offMeshConFlags&&offMeshConUserID&&offMeshConCount
-                    walkableHeight&&walkableRadius&&walkableClimb&&cs&&ch&&AABB 角色宽高步长及NAVMESHAABB信息
-                2.填充BUFFER,写入文件
-                    1.计算数据大小(每一部分都是四字节对齐)
-                        headerSize  文件头大小           dtAlign4(sizeof(dtMeshHeader))
-                        vertsSize   原始顶点数据大小     dtAlign4(sizeof(float)*3*totVertCount) params.vertCount
-                        polysSize   原始多边形数据大小   dtAlign4(sizeof(dtPoly)*totPolyCount)  params.polyCount
-                        linksSize   原始多边形链接信息   dtAlign4(sizeof(dtLink)*maxLinkCount)
-                        detailMeshesSize 细节多边形信息  dtAlign4(sizeof(dtPolyDetail)*params->polyCount)
-                        detailVertsSize  细节多边形非重复顶点 dtAlign4(sizeof(float)*3*uniqueDetailVertCount) 每个细节多边形独立顶点的总数
-                        detailTrisSize   细节多边形三角形     dtAlign4(sizeof(unsigned char)*4*detailTriCount)
-                        bvTreeSize       AABB包围盒树         dtAlign4(sizeof(dtBVNode)*params->polyCount*2)
-                        offMeshConsSize
-                    2.文件头填充
-                        当前tile的坐标和层级以及用户自定义ID
-                        magic&version&tileX&tileY&tileLayer&userId 
-                        当前tile的各项数据大下信息
-                        vertCount&polyCount&maxLinkCount&bmin&bmax&detailMeshCount&detailVertCount&detailTriCount
-                        当前tile的OffMesh信息
-                        offMeshBase&offMeshConCount
-                        当前tile的AABB信息
-                        bvQuantFactor&bvNodeCount
-                        当前tile的角色参考信息
-                        walkableHeight&walkableRadius&walkableClimb
-                    3.数据填充
-                        把原始顶点的体素坐标转换为世界坐标 bmin+pos*cs|ch
-                        把原始多边形的area和flag设置好,遍历每个顶点,检查邻接信息,设置neis信息
-                        把OffMesh信息转换为poly,每个OffMesh由两个顶点组成
-                        把细节多边形的顶点和三角形填充到大数组尾部
-                        构建AABB包围盒
-                        把OffMesh的连接信息加入
-                3.创建NavMesh运行时数据
-                    dtNavMesh
-                        m_tileWidth&m_tileHeight&m_maxTiles tile宽高和数量
-                        m_posLookup&m_tileLutSize&m_tileLutMask tile哈希查询表
-                        m_nextFree&m_tiles tile链表和空闲链表
-                    dtMeshTile
-                        header&polys&verts&links            原始简单多边形及其顶点和链接信息
-                        detailMeshes&detailVerts&detailTris 细节高度多边形及其顶点信息
-                        bvTree&offMeshCons                  AABB包围盒及OffMesh信息
-                        next                                tile是一个链表保存的最后一个tile指向free(NULL)
-                    dtTileRef&&dtPolyRef
-                        tile通过x,y计算哈希值保存在lookup表中,相同xy的tile以链表保存
-                        tileRef是一个id,有三个位段,salt+it+ip it占用m_tileBits位,ip占用m_polyBits位,salt占用剩余位
-                        如果id使用64位,这几个位段长度固定,否则根据tile数量和多边形数量来计算
-                    addTile操作
-                        1.检查版本号和坐标是否合法,分配一个新的tile或者修复已有的某个tile(这个会在tile形式的生成中用到)
-                        2.除去链接信息之外的顶点和多边形直接引用数据内的
-                        3.生成链接信息(每条边的链接多边形ID)
-                            dtLink ref(邻接多边形ID) egde(第几条边) side(哪个方向) bmin&bmax(与邻接tile的链接边大小(百分比))
-                            内部链接:tile内的多边形链接,polyID从1开始,0表示tile本身
-                            外部链接:tile之间的链接,首先生成xy相同layer不同的链接,再生成四周的链接
-                                首先对每个多边形找出链接标记为DT_EXT_LINK的边(dir标记了链接的五个方向)
-                                然后赋值链接多边形和链接边及方向,然后计算和邻接tile链接的边的大小
-                                tile之间是互相链接a<->b,tile之间的链接包含8邻域和上下邻域
-                                buildPolyMesh的时候如果是以tile形式生成,则poly会有DT_EXT_LINK标记的边界,判断边顶点在哪个边界上可以得出链接方向
-                                connectExtLink建立过程:
-                                    首先遍历tile的多边形,检测出边界的链接方向与目标一致的边
-                                    然后检查这条边与目标tile内部哪些多边形相连接
-                                        计算出边的AABB,遍历目标tile的多边形,找出链接方向正好相反的EXT_LINK边(以相反顺序遍历边,确保边的起始点方向一致)
-                                        边不在tile相同边界上不是目标边,计算两条边的最小起点和最大终点以及斜率,然后计算最小最大点的Y值,相交的线段被认为是overlap
-                                        平行线段检测Y值距离是否小于指定阈值
-                                        链接的边有上限限制
-                            OffMesh链接:手动添加的远程链接,可以是tile内部也可以是tile和tile之间
 
-            包围盒树**************************DetourNavMeshBuilder*****************************************
-                1.首先对每一个多边形生成BVItem,即AABB信息(以体素为单位),然后开始创建BVNode
-                2.对多边形数组执行二分法排序,首先计算数组AABB哪个轴最长,对数组item执行快排算法(按照最长的轴数值从小到大)
-                3.分别对排序后的数组左右两部分执行二分法排序(左闭右开),结束条件:剩余两个元素,分别赋值node.bmin&bmax&i  
-                4.叶字结点i记录了是哪个多边形,非叶子结点记录了子结点数量和子结点最大的AABB
-        代码
-            体素生成:
-                rcHeightField                   Recast.h
-                rcCreateHeightField             Recast.cpp
-                rcMarkWalkableTriangles         Recast.cpp
-                rcRasterizeTriangles            RecastRasterization.cpp
-                rcFilterLedgeSpans              RecastFilter.cpp
-                rcFilterWalkableLowHeightSpans  RecastFilter.cpp
-            区域生成:
-                rcCompactHeightField            Recast.h
-                rcBuildCompactHeightField       Recast.cpp
-                rcBuildDistanceField            RecastRegion.cpp
-                rcBuildRegions                  RecastRegion.cpp
-            轮廓生成:
-                rcContourSet                    Recast.h
-                rcBuildContours                 RecastContour.cpp
-                walkContour
-                simplifyContour
-            网格生成:
-                rcPolyMesh                      Recast.h
-                rcBuildPolyMesh                 RecastMesh.cpp
-                rcPolyMeshDetail                Recast.h
-                rcBuildPolyMeshDetail           RecastMeshDetail.cpp
-    寻路相关算法
-        搜索最近落点
-            首先根据目标点和搜索范围得出一个AABB
-            然后根据AABB找出附近的Poly(先找出Tile,然后遍历Tile内的Poly检查是否和AABB相交)
-            遍历所有相交的Poly,使用pnpoly算法检查点是否在Poly内部
-            在内部:遍历Poly的DetailMesh,检查在哪个三角形内部,根据质心坐标计算出高度(具体计算见碰撞算法)
-            在外部:遍历每条边计算出最短距离,找出距离最近的边上的最近点
-        搜索最短路径
-            A*搜索最短多边形路径
-                数据结构
-                    open
-                        node指针构成的数组(以堆排序算法有序),node数据通过指针来引用,open表不存储数据
-                    堆排序算法:
-                        向上调整:因为二叉有序堆父结点一定小于子结点(左右子结点大小无序),因此向上调整只需要判断i和(i-1)/2大小后父结点数据下调即可
-                        向下调整:检查左右子结点2i+1和2i+2,选择较小的交换
-                    node:
-                        pos cost total 坐标点 当前消耗 总消耗
-                        pidx 父结点idx state结点状态 flags结点标志 id所属多边形ID
-                    pool:
-                        nodes数组 next链表(存储每个哈希位置处的结点链表next) first(哈希表,存储一个bucket内的链表头结点)
-                        getNode:首先对polyID进行hash得出bucket,然后在bucket内查找对应的结点,如果没有那么就新增一个结点
-                    query:
-                        startPoly endPoly startPos endPos 起始点和多边形
-                        filter过滤器通过area和flag来检测多边形是否合法
-                        bestNode bestNodeCost 搜索过程中的当前最优结点
-                1.建立OPEN表(有序队列),和CLOSE表,OPEN表插入初始结点
-                2.循环.
-                    弹出OPEN表头结点,插入CLOSED表
-                    当前结点是目标结点?结束循环
-                    遍历当前结点的链接结点(首先根据当前结点的polyID找出poly和tile以及它的父结点)
-                        检查当前链接多边形是否是目标类型的多边形,不是则跳过
-                        从结点数组内找出对应的结点并计算链接边出口点坐标
-                            入口点坐标计算
-                                首先找出两个多边形的链接信息
-                                如果是OFFMESHLINK,那么链接边左右点相同
-                                否则检查链接是否是内部链接,是则返回边的左右两端点,否则返回外部链接计算的conarea范围的左右两个端点
-                                计算两个端点构成的边的中点作为入口点赋值给node.pos
-                        计算到目标点消耗
-                            如果当前多边形是目标多边形
-                                g=curNode.cost+distance(curNode.pos,neiboNode.pos)*filter.getCost(curPoly.area)+distance(neiboNode.pos,dstPos)*filter.getCost(neiboPoly.area);
-                                h=0 f=g+h
-                            如果不是目标多边形
-                                g=curNode.cost+distance(curNode.pos,neiboNode.pos)*filter.getCost(curPoly.area)
-                                因为没到目标多边形,所以朝向当前多边形链接边的中点移动,检测消耗
-                                h=distance(neiboNode.pos,dstPos)*H_SCALE
-                        如果当前邻接点已在OPEN表或者CLOSED表
-                            新计算消耗大于当前消耗
-                                跳过处理下一个链接点
-                        修改当前链接点的消耗和父结点
-                            在OPEN表内
-                                修改消耗并排序
-                            在CLOSED表内
-                                从closed表移除,插入open表
-                        根据h值修改当前最近结点,可以根据该结点检查是不是直接到达了目标点,否则是只走了一部分路径
-                3.根据查找出的路径点的父结点标记反向找出路径多边形列表
-                4.根据查找出的多边形列表和每个多边形的入口点查找路点
-                1.把起始点加入结果数组
-                2.如果路径内多边形数量大于1,则遍历多边形数组,根据拐点法查找直线路径
-                3.把结束点加入结果数组
-            拐点法搜索最优路点路径
-                1.首先找到起始多边形和穿出边的两个端点,连线L、R
-                2.找出下一个穿出边左点,连线L',判断L'是否在L、R之间,如果在,则L更新为L',同理找出右点,连线R',判断R'是否在L、R之间,如果在,则R更新为R'
-                如果L'R'都在L左侧或者R右侧,则L或R为一个拐点,连接拐点需要判断当前拐点与新拐点之间的线段是否经过了两个不同的区域
-                3.继续找出下一个拐点,直到目标多边形
-        是否直接可达
-            1.遍历初始多边形每条边,判断与射线AB是否相交(判断AOP BOP是否同向,同向不相交)
-            2.通过穿出边找出下一个多边形,继续上述判断,直到碰到不可穿出区域或者到达目标区域
-            3.计算和多边形相交时会返回两条相交结果,如果是一个,那么这个多边形就是最终的多边形
-            4.需要记录与各个多边形的相交点,因为如果按照这个路径移动,需要多边形的area信息来处理移动行为
-        多层寻路高度
-            首先使用findPath找出起始点到目标点的多边形路径
-            然后使用findStraightPath找出起始点到目标点的拐点路径(此时记录了每个拐点属于哪个多边形,边界点属于下一个多边形)
-            然后在移动时通过getPolyHeight获取XZ单次移动之后在当前多边形上的高度
-            注意点:制作时确保多层之间有一定的距离,方便寻路时判断落点
-        静态阻挡实现
-            方法1,在生成NAVMESH的时候导出.gset,标记三角形网格的区域类型
-                area类型包括 POLYAREA_GROUND(地面) POLYAREA_GRASS(草地) POLYAREA_ROAD(公路) POLYAREA_WATER(水) POLYAREA_DOOR(门)
-                flag类型包括 POLYFLAGS_WALK(行走) POLYFLAGS_SWIM(游泳) POLYFLAGS_DOOR(门)
-                flag和area可以扩展,但是flag最多有16位(ushort类型)
-                在寻路时通过dtQueryFilter的includeFlag和excludeFlag来过滤掉不可行走的区域
-            方法2,对生成的NAVMESH进行裁剪
+        数据生成:       
+                寻路图生成************************DetourNavMeshBuilder*****************************************
+                    1.参数信息填充
+                        dtNavMeshCreateParams
+                        verts&vertCount&polys&polyAreas&polyFlags&polyCount&nvp 2D顶点和多边形信息
+                        detailVerts&detailVertsCount&detailTris&detailPolys     高度细节顶点和多边形信息
+                        offMeshConVerts&&offMeshConRad&&offMeshConDir&&offMeshConAreas&&offMeshConFlags&&offMeshConUserID&&offMeshConCount
+                        walkableHeight&&walkableRadius&&walkableClimb&&cs&&ch&&AABB 角色宽高步长及NAVMESHAABB信息
+                    2.填充BUFFER,写入文件
+                        1.计算数据大小(每一部分都是四字节对齐)
+                            headerSize  文件头大小           dtAlign4(sizeof(dtMeshHeader))
+                            vertsSize   原始顶点数据大小     dtAlign4(sizeof(float)*3*totVertCount) params.vertCount
+                            polysSize   原始多边形数据大小   dtAlign4(sizeof(dtPoly)*totPolyCount)  params.polyCount
+                            linksSize   原始多边形链接信息   dtAlign4(sizeof(dtLink)*maxLinkCount)
+                            detailMeshesSize 细节多边形信息  dtAlign4(sizeof(dtPolyDetail)*params->polyCount)
+                            detailVertsSize  细节多边形非重复顶点 dtAlign4(sizeof(float)*3*uniqueDetailVertCount) 每个细节多边形独立顶点的总数
+                            detailTrisSize   细节多边形三角形     dtAlign4(sizeof(unsigned char)*4*detailTriCount)
+                            bvTreeSize       AABB包围盒树         dtAlign4(sizeof(dtBVNode)*params->polyCount*2)
+                            offMeshConsSize
+                        2.文件头填充
+                            当前tile的坐标和层级以及用户自定义ID
+                            magic&version&tileX&tileY&tileLayer&userId 
+                            当前tile的各项数据大下信息
+                            vertCount&polyCount&maxLinkCount&bmin&bmax&detailMeshCount&detailVertCount&detailTriCount
+                            当前tile的OffMesh信息
+                            offMeshBase&offMeshConCount
+                            当前tile的AABB信息
+                            bvQuantFactor&bvNodeCount
+                            当前tile的角色参考信息
+                            walkableHeight&walkableRadius&walkableClimb
+                        3.数据填充
+                            把原始顶点的体素坐标转换为世界坐标 bmin+pos*cs|ch
+                            把原始多边形的area和flag设置好,遍历每个顶点,检查邻接信息,设置neis信息
+                            把OffMesh信息转换为poly,每个OffMesh由两个顶点组成
+                            把细节多边形的顶点和三角形填充到大数组尾部
+                            构建AABB包围盒
+                            把OffMesh的连接信息加入
+                    3.创建NavMesh运行时数据
+                        dtNavMesh
+                            m_tileWidth&m_tileHeight&m_maxTiles tile宽高和数量
+                            m_posLookup&m_tileLutSize&m_tileLutMask tile哈希查询表
+                            m_nextFree&m_tiles tile链表和空闲链表
+                        dtMeshTile
+                            header&polys&verts&links            原始简单多边形及其顶点和链接信息
+                            detailMeshes&detailVerts&detailTris 细节高度多边形及其顶点信息
+                            bvTree&offMeshCons                  AABB包围盒及OffMesh信息
+                            next                                tile是一个链表保存的最后一个tile指向free(NULL)
+                        dtTileRef&&dtPolyRef
+                            tile通过x,y计算哈希值保存在lookup表中,相同xy的tile以链表保存
+                            tileRef是一个id,有三个位段,salt+it+ip it占用m_tileBits位,ip占用m_polyBits位,salt占用剩余位
+                            如果id使用64位,这几个位段长度固定,否则根据tile数量和多边形数量来计算
+                        addTile操作
+                            1.检查版本号和坐标是否合法,分配一个新的tile或者修复已有的某个tile(这个会在tile形式的生成中用到)
+                            2.除去链接信息之外的顶点和多边形直接引用数据内的
+                            3.生成链接信息(每条边的链接多边形ID)
+                                dtLink ref(邻接多边形ID) egde(第几条边) side(哪个方向) bmin&bmax(与邻接tile的链接边大小(百分比))
+                                内部链接:tile内的多边形链接,polyID从1开始,0表示tile本身
+                                外部链接:tile之间的链接,首先生成xy相同layer不同的链接,再生成四周的链接
+                                    首先对每个多边形找出链接标记为DT_EXT_LINK的边(dir标记了链接的五个方向)
+                                    然后赋值链接多边形和链接边及方向,然后计算和邻接tile链接的边的大小
+                                    tile之间是互相链接a<->b,tile之间的链接包含8邻域和上下邻域
+                                    buildPolyMesh的时候如果是以tile形式生成,则poly会有DT_EXT_LINK标记的边界,判断边顶点在哪个边界上可以得出链接方向
+                                    connectExtLink建立过程:
+                                        首先遍历tile的多边形,检测出边界的链接方向与目标一致的边
+                                        然后检查这条边与目标tile内部哪些多边形相连接
+                                            计算出边的AABB,遍历目标tile的多边形,找出链接方向正好相反的EXT_LINK边(以相反顺序遍历边,确保边的起始点方向一致)
+                                            边不在tile相同边界上不是目标边,计算两条边的最小起点和最大终点以及斜率,然后计算最小最大点的Y值,相交的线段被认为是overlap
+                                            平行线段检测Y值距离是否小于指定阈值
+                                            链接的边有上限限制
+                                OffMesh链接:手动添加的远程链接,可以是tile内部也可以是tile和tile之间
+                包围盒树**************************DetourNavMeshBuilder*****************************************
+                    1.首先对每一个多边形生成BVItem,即AABB信息(以体素为单位),然后开始创建BVNode
+                    2.对多边形数组执行二分法排序,首先计算数组AABB哪个轴最长,对数组item执行快排算法(按照最长的轴数值从小到大)
+                    3.分别对排序后的数组左右两部分执行二分法排序(左闭右开),结束条件:剩余两个元素,分别赋值node.bmin&bmax&i  
+                    4.叶字结点i记录了是哪个多边形,非叶子结点记录了子结点数量和子结点最大的AABB
