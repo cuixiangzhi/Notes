@@ -12,6 +12,7 @@
                 v7(最低支持android2.1,和appcompat-v7一起使用 api7)
                 v13(最低支持android3.2 api13)
     ndk         安卓C/C++编译类库、工具包,可用于编写直接调用JNI的C库
+    gradle      gradle:安卓自动化构建工具 gradletools:在AndroidStudio中使用gradle的插件
     llvm        编译器框架,NDK和XCODE采用LLVM作为默认的编译器
                 前端语言->BITCODE->Optimizer->CodeGenerator
                 类似C#,先编译为中间语言,然后通过虚拟机执行或者生成机器码
