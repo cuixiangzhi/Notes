@@ -1,49 +1,22 @@
 基础知识
     appID:      应用的唯一标识id
-    appKey:     应用的账号和秘钥成对出现
-                appID和appKey可以一致(针对不需要设置账号权限的服务)
+    appKey:     应用的账号和秘钥成对出现,appID和appKey可以一致(针对不需要设置账号权限的服务)
     appSecret:  应用的公钥密码
-    token:      应用敏感数据获取时用于验证
-                使用appID、appKey、appSecret进行初始化后,会生成一个acces_token,用于后续的API调用
-    jdk         基础运行环境、基础类库 
-    sdk         应用开发类库、工具包 
-                android_support_v?.jar库有三个版本
-                v4(最低支持android1.6 api4)
-                v7(最低支持android2.1,和appcompat-v7一起使用 api7)
-                v13(最低支持android3.2 api13)
-    ndk         安卓C/C++编译类库、工具包,可用于编写直接调用JNI的C库
-    gradle      gradle:安卓自动化构建工具 gradletools:在AndroidStudio中使用gradle的插件
-    llvm        编译器框架,NDK和XCODE采用LLVM作为默认的编译器
-                前端语言->BITCODE->Optimizer->CodeGenerator
-                类似C#,先编译为中间语言,然后通过虚拟机执行或者生成机器码
-    project     一个项目,可独立存在,也可以包含在workspace内
-    target      项目的一个编译目标,继承project的编译配置
-    scheme      编译任务,指定编译哪几个目标
-    .xcarchive  中间文件(包含了.app和dSYM符号表文件)
-                xcodebuild archive -scheme * -configuration * -archivepath *.xcarchive
-    .ipa        安装包
-                xcodebuild -exportArchive -archivePath *.xcarchive -configuration D|R -exportPath *.ipa -exportOptionsPlist
-    .app        执行程序
-    .provisioning profiles && certificates
-                描述文件包含了AppID、BundleID、证书、设备的关联信息,对ipa签名需要用到证书
-                自动签名只需要设置好TeamID和BundleID,会自动筛选对应的证书和描述文件信息,这种必须使用开发证书
-                主动签名需要指定TeamID、BundelID、描述文件ID,根据证书类型选择是开发还是发布
+    token:      应用敏感数据获取时用于验证,使用appID、appKey、appSecret进行初始化后,会生成一个acces_token,用于后续的API调用
 安卓SDK
-    .so:
-        c/c++动态库,使用NDK编译,包括armeavbi-v7a x64 x86三种架构,具体见系统_编译.txt NDK部分
-        ndk库ndk-build用于构建动态库,-j选项用于多线程编译,platforms目录下是安卓平台标准库(包含JNI库)
-        注意放入之后CPU架构要选择好对应的类型 ARMV7 X86
-        直接放入对应的libs/x86|armeabi-v7a文件夹下
-    obb:
-        googleplay对apk大小做了限制,需要把apk的一部分资源拆分出来打成obb包(main|patch.版本号.包名.obb)
-        googlesdk包含了对应的下载和读取功能(功能有BUG,需要做一些调整)
-    jar: 
-        java文件集合,包含一个META-INF/MANIFEST.MF清单文件和一组.class文件
-            jar -cu *.class -f .jar 创建/更新jar包
-    aar:
-        aar是一个包含自定义UI和字体等资源和代码的类库,例如调用API之后弹出一个窗口,窗口的UI和字体都是库内的
-    assets:
-        有些jar库使用了外部的资源或者配置文件,需要放在assets(对应于apk/assets目录)文件夹下
+    jre:    基础运行环境(java命令)
+    jdk:    基础开发类库、工具包
+    sdk:    应用开发类库、工具包(buildtool platform com.*)
+    ndk:    安卓C/C++(so文件)编译工具包,Application.mk配置平台相关(stl.abi.optim.platform) Android.mk配置编译相关(模块名字.编译选项.文件路径.编译目标)
+    gradle: 安卓自动化构建工具(caches目录下包含各种依赖库com.*)
+    jar:    java字节码集合,包含一个META-INF/MANIFEST.MF清单文件和一组.class文件
+    aar:    aar是一个包含自定义UI和字体等资源和代码的类库,例如调用API之后弹出一个窗口,窗口的UI和字体都是库内的
+    dex:    apk的java字节码会转换成dex字节码,由android系统的dvm(dalvik)虚拟机执行
+    assets: 有些jar库使用了外部的资源或者配置文件,需要放在assets(对应于apk/assets目录)文件夹下
+    obb:    googleplay对apk大小做了限制,需要把apk的一部分资源拆分出来打成obb包(main|patch.版本号.包名.obb)
+    keystoreName keyaliasName
+        安卓应用打包签名所需要的文件,用于标识一个应用,相同签名的应用会覆盖安装
+        这个文件一般是渠道给的,用于发布APK使用
     AndroidMainfest:
         安卓apk配置文件
             首先是一个xml文件头 <?xml version="1.0" encoding="utf-8"?>
@@ -77,11 +50,12 @@
 
                         <!-- provider是一个应用之间共享数据的方式,继承自ContentProvider,默认有一个文件实现FileProvider-->
                         <provider
-                            android:name="com.xx.xx.XXProvider" 类名
+                            android:name="com.xx.xx.XXProvider" 类名,一般使用supportv4库的FileProvider(android.support.v4.FileProvider)
                             android:authorities="com.xx.xx"     唯一标识
                             android:exported=""                 是否可被其它应用启动
                             android:grantUriPermission=""       授权文件访问权限
-                            >
+                            >                                   
+                            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:value=@xml/file_paths/>
                         </provider>
 
                         <!-- service是一个在后台运行的服务,start/stopService启动/关闭和应用无关的服务,bind/unbindService启动/关闭和应用绑定的服务 -->
@@ -102,23 +76,21 @@
                             </intent-filter>
                         </receiver>
                     </application>
-    keystoreName keyaliasName
-        安卓应用打包签名所需要的文件,用于标识一个应用,相同签名的应用会覆盖安装
-        这个文件一般是渠道给的,用于发布APK使用
 苹果SDK
-    .h&.m&.mm
-        oc语言的源代码文件,放入iOS/模块名字/ 目录下
-    .a:
-        静态库,使用DllImport("__Internal")特性标记,xcode编译时会链接该静态库
-        gcc .. -o *.o | ar rcs libxx.a *.OnPostProcessBuild
-    .framework
-        系统的.framework文件属于动态库,个人创建的属于静态库 .framework包含资源文件
-    .dylib
-        动态库,一般都是系统库,在xcode内以*.tbd形式存在,iOS不支持自己实现动态库
-    常见的工程配置
-        OTHER_LDFLAGS -ObjC
-        ENABLE_BITCODE NO
-    导出xcode工程时,依赖库配置
+    .mm         oc语言的源代码文件,放入iOS/模块名字/ 目录下
+    .a:         静态库,生成方式(gcc编译*.o ar&rcs打包成*.a),查看CPU架构lipo -info 
+    .framework  系统的.framework文件属于动态库,个人创建的属于静态库 .framework包含资源文件
+    .dylib      动态库,一般都是系统库,在xcode内以*.tbd形式存在,iOS不支持自己实现动态库
+    target      编译目标,继承project的编译配置
+    scheme      编译任务,指定编译哪几个目标
+    .xcarchive  中间文件(包含了.app和dSYM符号表文件),生成命令 xcodebuild archive -scheme * -configuration * -archivepath *.xcarchive
+    .ipa        安装包,生成命令 xcodebuild -exportArchive -archivePath *.xcarchive -configuration D|R -exportPath *.ipa -exportOptionsPlist
+    .app        执行程序
+    .provisioning profiles && certificates
+                描述文件包含了AppID、BundleID、证书、设备的关联信息,对ipa签名需要用到证书
+                自动签名只需要设置好TeamID和BundleID,会自动筛选对应的证书和描述文件信息,这种必须使用开发证书
+                主动签名需要指定TeamID、BundelID、描述文件ID,根据证书类型选择是开发还是发布
+    UnityXCode依赖库配置
         xcode工程文件是*.xcodeproj文件夹,具体配置文件是*.xcodeproj/*.pbxproj文件
         xcode工程配置包含两种类型,一种是库的依赖、搜索路径;另一种是k/v形式的编译配置
         unity支持导出xcode之后修改pbxproj配置文件 OnPostProcessBuild(BuildTarget buildTarget, string buildPath)
