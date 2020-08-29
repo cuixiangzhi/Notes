@@ -79,8 +79,7 @@ TCP/IP协议栈
 			    传递之前会有分组和合并的操作,确保消息完整
 			    TCP流量控制  
 			       TCP有一个接收缓冲区和发送缓冲区,三次握手时会通知其大小
-				   TCP不能发送超出该缓冲的数据,缓冲区满了以后会返回给发送方一个WINDOW大小,代表可以接收的数据大小
-				   TCP发送数据时,一次能够发送的数据有限
+				   TCP发送数据时,一次能够发送的数据有限,每次收发数据包都携带了缓冲区可用大小(抓包可以看)
 			    TCP超时重传 
 			   	   socket发送数据后,收到接收方反馈确认数据被接收,否则超过一定时间重新发送,被接收之前数据会一直存放在缓冲区内
 			       心跳包,定时发送心跳数据包,用来确定连接是否断开				   
@@ -108,10 +107,10 @@ TCP流程
 		3.client  发送ack确认
 		  server  收到ack确认,进入establistened
 	四次挥手
-	  	1.client  发送fin请求,进入FIN_WAIT_1
+	  	1.client  发送fin请求,进入FIN_WAIT_1(只收不发)
 		  server  收到fin请求,进入CLOSE_WAIT
 		2.server  发送ack确认
-		  client  收到ack确认,进入FIN_WAIT_2
+		  client  收到ack确认,进入FIN_WAIT_2(对方已确认,等待对方缓冲区数据处理)
 	  	3.server  发送fin请求,进入LAST_ACK
 	  	  client  返回ack确认,进入TIME_WAIT,等待2MSL之后进入CLOSED,2MSL是报文最大生存时间
 		4.server  收到ack确认,进入CLOSED
@@ -198,8 +197,7 @@ IO模型
 								epoll_event events[size];
 								epoll_wait(ed,events,max_events,timeout);
 		半开连接
-				网线断开、电源断电、进程崩溃等异常情况下,select和epoll收不到断开或错误事件
-				这种情况下服务器连接会被一直占用,可以通过心跳检测来处理
+				网线断开、电源断电、进程崩溃等异常情况下,select和epoll收不到断开或错误事件,需要应用层做心跳检测
 		HTTP KEEP-ALIVE
 				HTTP建立TCP连接之后不会立即断开,而是通过TCP-KEEP-ALIVE机制保持一段时间
 网络同步
