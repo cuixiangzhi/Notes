@@ -161,7 +161,7 @@ C/C++
 		stdlib 内存分配 malloc free 数值与字符串转换 atoi itoa 随机数 srand(seed) rand 系统操作 system exit abort 环境变量 getenv putenv
 		stdarg 不定长参数  __VA_ARGS__ va_list ap; va_start(ap,format); char buffer[512]; len = vsprintf(buffer,format,ap); va_end(ap);
 		string 字符串处理 strcat(dst,src) strcpy(dst,src) strstr(src,content) strlen(src) strcmp(src,dst) c_str
-		ctime  低精度时间 time_t time(NULL)秒级系统时间 clock_t clock()毫秒级运行时间 tm localtime(time_t t)具体日期 
+		ctime  低精度时间 clock()毫秒级运行时间 time(NULL)秒级系统时间(本地时间戳) localtime(&time_t)本地日期(带时区偏移) gmtime(&time_t)UTC日期 isdst夏令时
 		chrono 高精度时间 steady_clock::now精度为100ns high_resolution_clock::now()
 		stdio  C文件读写 fopen("path","wrab+") fclose(fp) fread(buffer,size,count,fp) fseek(fp,offset,seek_cur) ftell(fp) r模式遇到不可显示字符时读取结束
 		fstream C++文件读写 OO方式读写文件
@@ -192,9 +192,9 @@ C/C++
 
 C#
 	程序域
-		AppDomain类记录了当前应用(exe)的所有引用和定义的程序集信息
+		AppDomain类记录了当前应用(solution exe)的所有引用和定义的程序集信息
 	程序集
-		Assembly类记录了当前程序集(dll)的所有信息,包括包含的模块(封装为Module)、引用和定义的类型信息(封装为Type类)
+		Assembly类记录了当前程序集(project dll)的所有信息,包括模块(封装为Module)、类型(封装为Type类)
 	类型系统
 		Type类包含一个类型的的所有信息,包括BaseType ConstructInfo FieldInfo PropertyInfo MethodInfo ParameterInfo等等,Attribute给类型提供了额外的元数据
   	托管交互
