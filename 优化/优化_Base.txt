@@ -64,6 +64,13 @@
                                 开启后会额外创建一个缓冲区存储HDR计算结果
         反射
             BoxProjection    视线向量的起点不在Cubemap中心,因此需要经过计算转换为正确的采样向量
+LOD
+    场景 shaderLOD waterLOD grassLOD treeLOD terrainLOD thingsLOD npcLOD effectLOD lightModelLOD shadowLOD postLOD(bloom colorgrading hdr dof tod fog weather)
+    角色 shaderLOD modelLOD shadowLOD animLOD visibleLOD dynamicBone lightProbes ReflectionProbes
+    特效 countLOD(priority quality costlevel)
+    音效 countLimit
+    物理 fixedDeltaTime
+    DPI  resolution
 画质
     低画质 DisableShadow
     中画质 ShadowMask MediumResolution HardShadowOnly StableFit
