@@ -44,6 +44,9 @@
 			指定对齐:#pragma pack(n)
 			有效值:  min{自身对齐,指定对齐}
 	函数栈帧
+		寄存器分类
+			ARM寄存器: R0~R3.参数传递 R4~R11.局部变量 IP-R12  SP-R13.栈顶指针 LR~R14.返回地址 PC-R15.指令地址 CPSR.程序状态
+			SSE指令集: _mm_load|set_ss|ps _mm_store_ss|ps _mm_add|mul_ss|ps
 		函数调用约定
 			cdecl    参数从右至左入栈,调用参数之后生成add esp指令清理函数参数栈
 			stdcall  参数从右至左入栈,被调用函数最终生成ret ?指令清理函数参数栈
@@ -54,51 +57,24 @@
 			_cdecl    C语言编译后为_funcname         C++编译后为?funcname@YA******@Z
 			_fastcall C语言编译后为@funcname@nnumber C++编译后为?funcname@YI******@Z
 		函数栈帧指针
-			ebp指向栈底,esp指向栈顶,栈指针从高地址向低地址移动
+			esp指向栈帧栈顶,ebp指向栈帧栈底
 		函数调用和返回指令
-			函数调用开始
+			主调函数
 				push param
 				call func     call指令会保存返回地址(下一条指令地址),ret会返回到该地址继续执行
 				调用约定
 				add esp ?     cdecl调用约定会生成该指令
-			函数代码开始
+			被调函数
 				保护现场
-				push ebp      ebp指向调用函数栈底(调用函数的栈帧起始点)
-				move ebp esp  esp指向当前函数栈底(被调函数的栈帧起始点)
-				执行逻辑
+				push ebp      ebp压栈记录前一个栈帧的栈底
+				move ebp esp  ebp赋值记录前一个栈帧的栈顶,同时表示当前栈帧的栈底
+				执行逻辑	  
 				func code     临时变量、操作指令等等
 				恢复现场
-				move esp ebp  esp恢复为调用函数栈顶(esp指向调用函数栈帧的栈顶)
-				pop ebp       ebp恢复为调用函数栈底(ebp指向调用函数栈帧的栈底)
+				move esp ebp  esp恢复为调用函数栈顶
+				pop ebp       ebp恢复为调用函数栈底
 				调用约定
 				ret ?         stdcall调用约定会生成该指令
-	脚本语言 
-		https://www.cnblogs.com/murongxiaopifu/p/4557365.html
-	逆波兰式  
-		后缀表达式,方便堆栈操作实现任意复杂度的表达式,一次扫描即可得出结果,遇到操作数压栈,遇到运算符弹出操作数并运算
-
-ASM
-	寄存器
-		R0-R3  参数传递
-		R4-R11 局部变量
-		IP-R12 
-		SP-R13 栈顶指针
-		LR-R14 返回地址
-		PC-R15 指令地址
-		CPSR   程序状态
-	指令集
-		MOV A B 赋值指令,把B值赋给A
-		CMP A B 比较指令
-		JNE     跳转指令,条件跳转
-		JMP     跳转指令,无条件跳转
-		PUSH    压栈指令
-		POP     出栈指令
-		CALL PC 调用指令
-		RET     返回指令
-	SSE指令
-		加载数据 _mm_load_ss|ps _mm_set_ss|ps
-		存储数据 _mm_store_ss|ps
-		逻辑运算 __mm_add|mul_ss|ps
 
 C/C++
 	关键字
