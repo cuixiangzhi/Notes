@@ -86,10 +86,10 @@
     .xcarchive  中间文件(包含了.app和dSYM符号表文件),生成命令 xcodebuild archive -scheme * -configuration * -archivepath *.xcarchive
     .ipa        安装包,生成命令 xcodebuild -exportArchive -archivePath *.xcarchive -configuration D|R -exportPath *.ipa -exportOptionsPlist
     .app        执行程序
-    .provisioning profiles && certificates
-                描述文件包含了AppID、BundleID、证书、设备的关联信息,对ipa签名需要用到证书
-                自动签名只需要设置好TeamID和BundleID,会自动筛选对应的证书和描述文件信息,这种必须使用开发证书
-                主动签名需要指定TeamID、BundelID、描述文件ID,根据证书类型选择是开发还是发布
+    .appid      分为个人、公司、企业三种,企业账号只能用来测试(不能发布到appstore)
+    .autosign   给当前APPID生成开发证书和描述文件,描述文件包含了AppID、BundleID、证书、设备的关联信息
+    .certificates 分为开发证书和发布证书,通过钥匙串生成CSR文件用来申请证书并生成描述文件,导出p12文件给项目用
+    .provisioning 分为开发、临时发布(ad-hoc企业版,限制设备数量)、正式发布(in-house企业版,不限制设备数量)
     UnityXCode依赖库配置
         xcode工程文件是*.xcodeproj文件夹,具体配置文件是*.xcodeproj/*.pbxproj文件
         xcode工程配置包含两种类型,一种是库的依赖、搜索路径;另一种是k/v形式的编译配置
