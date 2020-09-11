@@ -4,7 +4,9 @@
     目标移动: 开始移动和停止移动时同步一次,中间移动过程不需要同步,同步时把移动轨迹做转发
     载具移动: 载具和人属于不同的实体,载具类提供接口支持其它实体上下并且可被玩家控制移动,类似摇杆移动(FPS需要添加加速度支持,同步间隔更短)
     队伍移动: 只同步队长的移动轨迹,队员沿着队长的轨迹移动并保持队形(需要区分移动跟随和载具跟随)
-    单帧模拟: 移动时间(smoothDeltaTime) 移动速度(走.跑.加速度) 拐点处理(正弦定理) 制动距离(减速.刹车表现)
+    移动状态: Walking Falling Swiming Flying
+    移动过程: CalcAcceleration->CalcVelocity->MoveAlongFloor->HitThenMoveAlongSurface->HitThenStepup->HitThenHandlePhysicsImpact||HitThenSlideAlongSurface->
+            TwoWallAdjust->FindFloor->UpdateTargetComponent->UpdateMoveState
 导航网格
     寻路相关算法
         搜索最近落点

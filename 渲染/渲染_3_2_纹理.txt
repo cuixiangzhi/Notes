@@ -11,7 +11,7 @@ NormalMap
         1.法线贴图存储的法线是切线空间下的一个向量
             1.根据UV和POS计算出的切线和法线可能不是垂直的 T=normalize(T-dot(T,N)*N) T减去T在N上的投影
             2.已知世界坐标系下的切线T和法线N(顶点属性),叉乘可得B
-            3.TBN行矩阵等价于WorldToTangent(正交矩阵的转置等价于逆矩阵)
+            3.TBN行矩阵等价于WorldToTangent(TBN是世界坐标系下的单位向量)
         2.法线贴图存储的RGB范围是[0,1],而法线范围是[-1,1]
             rgb=normal*0.5+0.5 normal=rgb*2-1 对应CGINC内的UnpackNormal函数
             法线贴图法线不会偏移Z轴太远,因此法线贴图都是偏蓝色的

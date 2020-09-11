@@ -71,6 +71,18 @@ LOD
     音效 countLimit
     物理 fixedDeltaTime
     DPI  resolution
+    GenerateLightmapUV
+        HardAngle 三角面之间的角度大于该角度会被切割,在光照图上不连续,88度针对机械 180度针对有机体
+        AngleError 提高表面的光照连续性
+        AreaError
+        Margin    UVChart添加间隔,避免重叠,避免双线性采样导致的错误
+        ScaleInLightmap 在光照图中的缩放比例,降低像素占用
+        MinLightmapResolution 默认使用LightSetting中的分辨率设置,低于该设定值时使用该分辨率
+    UCChart
+        MaxAngle    同HardAngle
+        MaxDistance UVChart之间的距离低于指定值会被合并成一个
+        IgnoreNormals 降低邻接面接缝问题(光照不连续),也可以用SeamStiching技术降低接缝问题
+        MinChartSize  删除细节可忽略的三角面,降低光照图占用
 画质
     低画质 DisableShadow
     中画质 ShadowMask MediumResolution HardShadowOnly StableFit

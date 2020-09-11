@@ -10,6 +10,7 @@
     ndk:    安卓C/C++(so文件)编译工具包,Application.mk配置平台相关(stl.abi.optim.platform) Android.mk配置编译相关(模块名字.编译选项.文件路径.编译目标)
     gradle: 安卓自动化构建工具(caches目录下包含各种依赖库com.*)
     jar:    java字节码集合,包含一个META-INF/MANIFEST.MF清单文件和一组.class文件
+    war:    web应用程序,里边包含了应用运行所需的所有脚本和配置以及资源(class、config、html、image等等)
     aar:    aar是一个包含自定义UI和字体等资源和代码的类库,例如调用API之后弹出一个窗口,窗口的UI和字体都是库内的
     dex:    apk的java字节码会转换成dex字节码,由android系统的dvm(dalvik)虚拟机执行
     assets: 有些jar库使用了外部的资源或者配置文件,需要放在assets(对应于apk/assets目录)文件夹下

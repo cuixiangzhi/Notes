@@ -225,18 +225,16 @@ Python
 		成员函数 def funcname():
 	函数库
 		path
-				绝对路径 os.path.abspath()
+				绝对路径:os.path.abspath() 
+				脚本路径:sys.path[0] 
+				启动参数:sys.argv
 		dir
 				是否为目录 os.path.isdir() 
 				目录列表 os.listdir()
 				删除空目录 os.rmdir()
 				路径是否存在 os.path.exists()
 				分解为文件名和路径 os.path.split()
-				删除目录 shutil.rmtree()
-							shutil copy()文件夹
-							shutil copyfile 文件
-							shutil move 移动
-							shutil remove 删除文件
+				目录和文件拷贝删除 shutil.rmtree() shutil.copy() shutil.copyfile shutil.move shutil.remove
 		file
 				打开文件 f = open(path,"rwab+") codecs.open(path,"rwab+","utf-8-sig")
 				文件读写 f.readlines() f.readline() f.write(str_obj)
@@ -256,15 +254,7 @@ Python
 				导入类库 import xml.etree.ElementTree as ET
 				打开文件 root_node = ET.parse(".xml")
 				结点属性 node.attrib node.tag node.text
-				结点遍历 for child_node in root_node   
-	常用操作
-		主动执行 __name__ == "__main__"
-		执行路径 os.path.abspath(sys.path[0])
-		启动参数 sys.argv
-		等待输入 raw_input
-		文件编码 #coding:utf-8 import sys reload(sys) sys.setdefaultencoding("utf-8")
-		数组遍历 for k in values|range(1,n)
-		打印堆栈 traceback.print_exc()
+				结点遍历 for child_node in root_node
 	
 OC
 	类声明
