@@ -291,9 +291,8 @@ Java:
 		javac 编译工具,把.java编译为.class字节码
 		jar 打包工具,把.class文件打包在一起
 		java 运行工具,运行.class后缀的java程序
-		javap 反编译
 	类库
-		java.lang 系统基础库,不引入就可以使用的包
+		java.lang 系统基础库,包含基本类型、数学函数等等
 		java.io   IO相关类库
 		java.nio  非阻塞IO相关类库
 		java.net  网络相关类库
