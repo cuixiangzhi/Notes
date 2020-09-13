@@ -17,6 +17,7 @@ SQL语言
 			多表查询 INNER|LEFT|RIGHT|FULL JOIN name ON
 事务
 	原子性、一致性、隔离性、持久化
+	事务分为ReadUnCommited(可读脏数据) ReadCommited(只读提交数据) RepeatableRead(并发读) Serializable(事务顺序执行)
 	开始事务Begin
 	回滚事务Rollback
 	提交事务Commit
