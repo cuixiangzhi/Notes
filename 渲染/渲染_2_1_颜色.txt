@@ -44,6 +44,9 @@
 	对比度
 		对比度是指图像颜色亮度的对比,提升对比度是指亮的更亮,暗的更暗
 		对比度调整的trick公式lerp(graycolor, realcolor, t) 其中graycolor为0.5
+	LUT滤镜
+		1DLUT RGB使用相同的曲线做颜色转换,只能用来调整图像颜色亮度
+		3DLUT 使用n^3(n一般在16到64之间)的纹理来做映射,LUT制作一般是先对原图做调色处理,然后对原图的LUT做相同的处理得到调色LUT
 颜色混合
 	透明度混合
 		Blend SrcAlpha OneMinusSrcAlpha
