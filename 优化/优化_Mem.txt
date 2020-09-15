@@ -1,5 +1,3 @@
-内存峰值
-    PSS 500~700M
 代码内存
     component_memory
         Animator
@@ -16,11 +14,8 @@
         UNITY底层按照类型(MemoryLabel)划分内存池,释放之后会及时返还给操作系统
     managed_memory
         UNITY底层采用的是不分代不紧缩的算法,释放的内存在一定条件下会返回给操作系统(连续6次没有被访问到)
-        内存碎片化
-            频繁分配回收小内存,然后申请大内存会导致内存不断上升
-            先申请大块内存,然后对小内存做缓存池处理
     table_memory
-        数据表会占用很大内存,要分模块甚至分行,并且要支持卸载
+        数据表需要自定义数据格式,支持分行读取,支持LRU缓存
 资源内存
     shader_memory
         shader_feature
@@ -61,13 +56,30 @@
         read/write
             开启之后内存中会保留一份
         mipmap
+            开启之后内存占用会增加30%,但是可以提高渲染效率(降低显存带宽、提高缓存命中率)
+        streaming
+            根据poolsize和sceneview情况动态加载/卸载纹理的mipmap,poolsize需要根据机器内存指定或者动态调整
     audio_memory
         dsp_buffer
             FMOD播放声音会先写入到一个BUFFER内,BUFFER填充满了才会播放,太大会导致声音延迟,太小CPU消耗上升
         speaker_mode
             FMOD使用双声道内存会占用两份,最好选用mono模式(默认是stereo)
+        fmod_bank
+            master.string.bank存储了所有event的路径信息,可以通过getStringInfo获取资源信息(event:* bank:* vca:* bus:*)
+            name.bank文件是由metadata|sampledata|streamingdata三部分组成,loadBank时可以指定只加载metadata,sampledata自己控制加载
+        audio_format
+            音乐:Streaming+Vorbis 音效:DeCompressOnLoad+ADPCM 录音频率:8KHZ
+        audio_cache
+            2D:1 2D_ONE:1 3D:5 BG:1 CG:2
+    video_memory
+        video_format
+            720P:低码率1Mbps,中码率2Mbps,高码率4Mbps 1080P:低码率2Mbps,中码率4Mbps,高码率8Mbps
+            MP4格式:H264视频编码和AAC音频编码 WEBM格式:VP8视频编码和VORBIS音频编码
     animation_memory
-
+        animation_cache&io
+            游戏内角色会有很多休闲动作,需要支持动态加载和卸载,支持LRU缓存
+        animation_frame
+            动捕的关键帧几乎是满帧,需要简化(删除缩放曲线、简化直线帧)
     bundle_memory
         typetree
             为了做不同版本的类型兼容,开启之后会写入变量类型的信息
