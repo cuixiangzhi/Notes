@@ -283,26 +283,15 @@ OC
 		字符串:NSString
 
 Java:
-	JDK分类
-		J2ME J2SE J2EE分别是针对移动平台和嵌入式、PC平台、企业版设计的JDK
-		JDK是Java开发工具包,包括了专用开发环境JRE、Java编译运行工具
-		JRE是Java的公共运行环境,包括了JVM虚拟机和核心类库
-	JDK工具
-		javac 编译工具,把.java编译为.class字节码
-		jar 打包工具,把.class文件打包在一起
+	编译
+		javac 编译工具,把.java编译为.class字节码,然后用jar打包
 		java 运行工具,运行.class后缀的java程序
 	类库
-		java.lang 系统基础库,包含基本类型、数学函数等等
-		java.io   IO相关类库
-		java.nio  非阻塞IO相关类库
-		java.net  网络相关类库
-		java.util STL相关类库
-		java.sql  数据库操作类库
+		JAVA类库	基础库(java.lang) 网络IO库(java.io|java.nio|java.net) STL库(java.util) 数据库(java.sql|android.database)
+		ANDROID类库 应用框架(android.app) 用户界面(android.opengl|android.text|android.view|android.widget) 内容交互(android.content) 系统服务(android.os) 浏览器(android.webkit)
 	包
 		package x; 类似命名空间,包名是当前java文件的目录结构
 		import x;  导入java类库,类似引用命名空间
-	线程
-		ASyncTask 包:android.os,使用方式:执行execute或executeOnExecutor
 
 Html:
 	版本: <!DOCTYPE HTML>
