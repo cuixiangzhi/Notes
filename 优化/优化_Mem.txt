@@ -28,9 +28,9 @@
             使用Shader.EnableKeywords和Material.EnableKeywords开启全局或单个材质的宏定义
         variants
             宏定义太多导致shader变体很多,不仅增加了build时间,运行时由于变体太多增加加载和编译时间并增加内存占用
-            shader_variant_collection: shader变体集合(指定包含哪些shader和对应variant),可以用来在启动或空闲时预编译(执行wramup)
+            shader_fallback:      关闭fallback可以减少变体数量(keyword变少)
             i_preprocess_shaders: 打包后处理阶段,可以实现shader变体的剔除
-            shader_variant_bundle: shader打包时默认只生成bundle内的材质使用到的变体
+            shader_variant_collection: shader变体集合(指定包含哪些shader和对应variant),可以用来在启动或空闲时预编译(执行wramup)
     mesh_memory
         MeshCompression
             使用压缩算法减少硬盘空间占用,不影响运行时数据,默认关闭,开启会影响下面两种压缩
@@ -43,7 +43,7 @@
         DynamicBatching
             开启之后300顶点以下的网格会强制开启R/W
         StaticBatching
-            TODO
+            开启之后引用同一份网格的对象变成多个实例(引用一个StaticMesh的不同部分)
         SkinnedMesh
             由于骨骼动画需要在CPU端每帧计算顶点位置,会强制开启R/W
         ParticleMesh

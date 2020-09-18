@@ -299,7 +299,11 @@ Html:
 		编码: <meta charset="utf-8">
 		标题: <title></title>
 	内容: <body></body>
-		换行: <br/>
+		段落: <p halign=left valign=bottom></p>
+		换行: <br> <div></div>
 		空格: <&nbsp>英文半角空格 <&emsp>中文全角空格
-		字体: <font size="6" color="ffffff"></font> <b></b> <i></i> <sub></sub> <sup></sup>
+		字体: <font size="6" color="ffffff" effect="shadow"></font> <b></b> <i></i> <sub></sub> <sup></sup>
 		链接: <a href=url>链接内容描述</a>
+		图片: <img src=path width=64 height=64 />
+		脚本: <script type="text/javascript">JS代码</script>
+		对象: <gameobj attrkey=attrvalue />
