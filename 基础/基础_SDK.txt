@@ -73,7 +73,7 @@
                             android:name="com.xx.xx.XXReceiver" 类名
                             android:process="">                 进程
                             <intent-filter>
-                                <action android:name="android.intent.action.CAMERA_BUTTON"> 系统事件广播或者应用自定义广播
+                                <action android:name="android.intent.action.CAMERA_BUTTON"> 事件来源
                             </intent-filter>
                         </receiver>
                     </application>
