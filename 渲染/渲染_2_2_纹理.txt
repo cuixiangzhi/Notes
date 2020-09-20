@@ -58,7 +58,7 @@ LightMap
         ddx&ddy通过pixel quad内的4个像素的纹理坐标变化率来得出mipmap等级
         首先根据纹理宽高计算出uv=i.uv*texture.wh
         然后求出UV方向的偏导数和最大变化率 dx=ddx(uv) dy=ddy(uv) L=max(sqrt(dot(dx,dx)), sqrt(dot(dy,dy)))
-        最后利用对数函数求解D = log2(L)
+        最后利用对数函数求解D=log2(L)+lodbias 对D做下取整和上取整得出相邻的MIPMAP
 纹理压缩
     文件存储压缩格式
         基于整幅图片进行压缩,不支持分块解压,无法利用GPU并行功能
