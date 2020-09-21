@@ -1,21 +1,22 @@
 代码内存
-    component_memory
-        Animator
-            FBX导入时Rig不要生成Avatar(除非需要动作混合),动画类型选择None
-        Others
-            避免在GameObject挂一些无意义的组件,会占用少许内存,有一定初始化和更新消耗
-    code_memory
-        泛型乱用,导致代码编译速度慢、代码占用
-    delegate_memory
-        闭包和匿名函数,最终都是一个class,每次只需都生成一个新对象
-    coroutine_memory
-        协程内的所有变量都会以class的成员变量形式存在直到协程执行结束
-    native_memory
-        UNITY底层按照类型(MemoryLabel)划分内存池,释放之后会及时返还给操作系统
-    managed_memory
-        UNITY底层采用的是不分代不紧缩的算法,释放的内存在一定条件下会返回给操作系统(连续6次没有被访问到)
     table_memory
         数据表需要自定义数据格式,支持分行读取,支持LRU缓存
+    gcalloc_memory
+        closure_memory
+            委托、协程、Lambda函数等最终都会生成一个class对象,传递函数给委托类型时会创建委托对象,每次开启协程都会创建协程对象
+        array_memory
+            调用某些API返回数组时有内存分配,例如GetComponents Mesh.vertices Physics.RaycastAll ParticleSystem.Start|Stop|Clear
+        proto_memory
+            协议的收发会分配很多小内存,序列化发送时最好直接写到缓冲区,反序列化尽量支持消息池
+        boxing_memory
+            params_memory
+                禁止使用可变参数,重载多个函数来替代可变参数
+            comparer_memory
+                对值类型做Key相等比较时如果没有实现IEquatable接口,会在比较时进行装箱(默认使用ObjectEqualityComparer来获取HashCode并进行Equals比较,60BGC)
+        string_memory
+            统一日志接口,区分发布和调试接口,禁止使用..拼接日志
+    component_memory
+        减少没有意义的Actor、Component的创建,可以稍微降低内存和实例化开销
 资源内存
     shader_memory
         shader_feature
@@ -31,6 +32,15 @@
             shader_fallback:      关闭fallback可以减少变体数量(keyword变少)
             i_preprocess_shaders: 打包后处理阶段,可以实现shader变体的剔除
             shader_variant_collection: shader变体集合(指定包含哪些shader和对应variant),可以用来在启动或空闲时预编译(执行wramup)
+    texture_memory
+        upload_buffer
+            从内存中往显存上传的时候,会先放到一个缓冲区内,缓冲区满了才会上传
+        read/write
+            开启之后内存中会保留一份
+        mipmap
+            开启之后内存占用会增加30%,但是可以提高渲染效率(降低显存带宽、提高缓存命中率)
+        streaming
+            根据poolsize和sceneview情况动态加载/卸载纹理的mipmap,poolsize需要根据机器内存指定或者动态调整
     mesh_memory
         MeshCompression
             使用压缩算法减少硬盘空间占用,不影响运行时数据,默认关闭,开启会影响下面两种压缩
@@ -50,15 +60,11 @@
             粒子和骨骼动画类似,因为要做位置计算,会强制开启R/W
         MeshCollider
             添加了MeshCollider并且缩放带负数,会强制开启R/W
-    texture_memory
-        upload_buffer
-            从内存中往显存上传的时候,会先放到一个缓冲区内,缓冲区满了才会上传
-        read/write
-            开启之后内存中会保留一份
-        mipmap
-            开启之后内存占用会增加30%,但是可以提高渲染效率(降低显存带宽、提高缓存命中率)
-        streaming
-            根据poolsize和sceneview情况动态加载/卸载纹理的mipmap,poolsize需要根据机器内存指定或者动态调整
+    animation_memory
+        animation_cache&io
+            游戏内角色会有很多休闲动作,需要支持动态加载和卸载,支持LRU缓存
+        animation_frame
+            动捕的关键帧几乎是满帧,需要简化(删除缩放曲线、简化直线帧)
     audio_memory
         dsp_buffer
             FMOD播放声音会先写入到一个BUFFER内,BUFFER填充满了才会播放,太大会导致声音延迟,太小CPU消耗上升
@@ -75,11 +81,6 @@
         video_format
             720P:低码率1Mbps,中码率2Mbps,高码率4Mbps 1080P:低码率2Mbps,中码率4Mbps,高码率8Mbps
             MP4格式:H264视频编码和AAC音频编码 WEBM格式:VP8视频编码和VORBIS音频编码
-    animation_memory
-        animation_cache&io
-            游戏内角色会有很多休闲动作,需要支持动态加载和卸载,支持LRU缓存
-        animation_frame
-            动捕的关键帧几乎是满帧,需要简化(删除缩放曲线、简化直线帧)
     bundle_memory
         typetree
             为了做不同版本的类型兼容,开启之后会写入变量类型的信息
