@@ -17,6 +17,8 @@
             统一日志接口,区分发布和调试接口,禁止使用..拼接日志
     component_memory
         减少没有意义的Actor、Component的创建,可以稍微降低内存和实例化开销
+    rendertexture_memory
+        RT绑定的是FB所以无法压缩,对每个RT指定名字以方便跟踪,能干掉的都干掉
 资源内存
     shader_memory
         shader_feature
