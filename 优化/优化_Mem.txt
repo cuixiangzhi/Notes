@@ -45,23 +45,21 @@
             根据poolsize和sceneview情况动态加载/卸载纹理的mipmap,poolsize需要根据机器内存指定或者动态调整
     mesh_memory
         MeshCompression
-            使用压缩算法减少硬盘空间占用,不影响运行时数据,默认关闭,开启会影响下面两种压缩
+            降低硬盘占用,开启之后会影响下面两个选项,一般关闭
         OptimizeMeshData
-            打bundle时剔除shader没有使用到的顶点属性,可以减小包体
+            减小打包包体,打bundle时会剔除shader没有使用到的顶点属性
         VertexCompression
-            降低顶点属性的精度(float->half),针对300顶点以上、未开启R/W的网格生效
+            降低内存占用,降低顶点属性的精度(float->half),针对300顶点以上、未开启R/W的网格生效
         Read/Write Enabled
-            开启该选项的纹理、网格会在内存中存在两份(显存+内存)
+            开启该选项的网格顶点属性会在内存中存在两份(显存+内存)
         DynamicBatching
-            开启之后300顶点以下的网格会强制开启R/W
+            开启之后在打包时会把支持动态批处理的网格的R/W选项开启
         StaticBatching
             开启之后引用同一份网格的对象变成多个实例(引用一个StaticMesh的不同部分)
         SkinnedMesh
             由于骨骼动画需要在CPU端每帧计算顶点位置,会强制开启R/W
         ParticleMesh
             粒子和骨骼动画类似,因为要做位置计算,会强制开启R/W
-        MeshCollider
-            添加了MeshCollider并且缩放带负数,会强制开启R/W
     animation_memory
         animation_cache&io
             游戏内角色会有很多休闲动作,需要支持动态加载和卸载,支持LRU缓存

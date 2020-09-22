@@ -1,5 +1,5 @@
 JobSystem
-DrawCall
+DrawCall StaticBatch DynamicBatch
 Physics
 Animator
 UIUpdate

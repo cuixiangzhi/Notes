@@ -1,11 +1,7 @@
 Albedo
     对于金属部分Albedo表示反射率,对于非金属表示BaseColor
-Metalness
-    金属度单通道贴图,值一般都是0或1
-Smoothness
-    光滑度单通道贴图,用来计算BRDF中的DFG
-AmbientOcclusion
-    环境光遮挡贴图,用于计算表面接收到的光的遮挡情况
+MSAO
+    PBR的金属度、粗糙度、AO数据
 NormalMap
     原理
         1.法线贴图存储的法线是切线空间下的一个向量
