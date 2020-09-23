@@ -1,9 +1,8 @@
 图形
-	图形 线框图 真实感图形 图像 图形方程 几何属性 非几何属性
 	渲染指令调用顺序
 		应用程序->操作系统->驱动程序->显卡
 	多线程渲染
-		逻辑线程和渲染线程分离,使用RingCommandBuffer产生和消耗渲染命令
+		逻辑线程和渲染线程分离,使用CommandBuffer产生和消耗渲染命令
 		逻辑线程更新帧N,渲染线程渲染帧N-1,逻辑帧N结束后等待渲染帧结束再开始下一帧计算
 	渲染状态
 		基本状态 Cull AlphaTest Offset Ztest ZWrite Blend ColorMask
@@ -15,60 +14,14 @@
 	渲染流水线
 		顶点着色器(MVP变换)->曲面细分着色器->几何着色器->图元装配->CVV裁剪->透视除法->视口变换->光栅化->Early-Z优化
 		片段着色器->归属测试->裁剪测试->Alpha测试->深度测试->模板测试->颜色混合
+	垂直同步
+		开启之后SF等待硬件的VSYNC信号,检测BACK_BUFFER的状态,如果没有或者正在传输数据,则使用上一帧的数据显示
 硬件
-	显卡分类
-		独立显卡 集成显卡 核心显卡
-	显卡型号
-		ADM RadeOn HD 美国AMD
-		NVIDA Geforce GTX 美国英伟达
-		POWERVRSGX 英国Imagination
-		MAIL 英国ARM
-		Andreno 美国高通
-	显示器接口
-		VGA接口输入是模拟信号,通过显卡的RAMDAC转换
-		HDMI接口输入是数字信号,显卡直接传输
-		DVI接口输入是数字信号,显卡直接传输
-	显示器刷新
-		https://blog.csdn.net/a740169405/article/details/70548443
+	显卡相关
+		独立显卡 集成显卡(主板) 核心显卡(CPU)
 	GPU架构
 		gpc     : GPU包含多个GPC单元,GPC包含多个SM单元,每个GPC都具备完整的渲染流水线执行能力
-		sm      : SM是执行着色器程序的单元,包含加载存储单元、特殊数学计算单元、寄存器、L1缓存、纹理读取单元、纹理缓存等等
+		sm      : SM是执行着色器程序的单元,包含加载存储单元、数学计算单元、寄存器、L1缓存、纹理读取单元、纹理缓存等等
 		thread  : 执行shader的基本单元,每个thread都有自己独占的寄存器,多个thread打包为wrap由sm调度执行
 		wrap    : 执行相同shader的一组thread,wrap会记录该组thread执行到了那条指令,wrap有固定的thread数量
 		register: 寄存器的数量是固定的,GPU按照wrap执行的shader所需寄存器数量来分配,shader占用寄存器越多,wrap就越少
-		swap    : gpu的一个核心执行一个wrap,核心数越多同时执行的wrap数量越多,wrap遇到阻塞操作时会被换出
-	TBDR架构
-		TBR
-			由于GPU的缓存很小,而FrameBuffer一般都很大(手机分辨率高),直接访问FrameBuffer缓存命中率低,效率低
-			把FrameBuffer分成很多小块,每一块渲染完了在把它搬回大的Framebuffer
-			FragmentProcessor->TiledFrameBuffer->FrameBuffer
-		FrameData
-			DrawCall传给GPU之后并不是立即执行,因为会导致TiledFrameBuffer频繁刷新,而是先执行vertex,等一定时机在执行光栅和pixel
-			GeometryProcesser->FrameData->FragmentProcessor->TiledFrameBuffer->FrameBuffer
-		Early-Z
-			ios有一个isr硬件专门针对FrameData内的数据做过滤,把一些不透明物体的drawcall过滤掉
-			android没有这个东西,所以需要应用层按照距离从近到远排序,执行ez优化
-		FrameBuffer
-			不使用的时候主动执行discard忽略其中的内容,否则在unbind时会触发刷新操作
-			后处理会导致频繁的framebuffer数据拷贝操作
-	驱动程序
-		驱动程序不同平台有不同的规范以及扩展
-		硬件加速部分渲染指令由硬件执行,例如光栅、矩阵变换、着色、采样、光照计算等等
-接口
-	opengl和directx都属于操作系统层面的编程接口
-	directx是windows平台的专属API
-	metal是苹果系列设备的API
-	opengles是android设备的的API
-	vlukan是跨平台的API,不是所有手机都支持
-版本
-    DX版本 OGL版本 ES版本   SM版本  特点    						
-    8.0    1.0	   1.0		1.0   	固定管线
-	9.0    2.0	   2.0		2.0 	可编程管线
-	9.0c   3.0	   3.0		3.0 	
-	10.0   3.3				4.0     统一渲染架构
-	10.1  					4.1
-	11.0   4.2				5.0            
-	12     4.5              5.1     
-	SM3.0版本特性
-		32位浮点运算 MSAA抗锯齿 65535条指令上限 HDR支持
-		GPUInstance
