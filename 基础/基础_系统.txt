@@ -1,15 +1,3 @@
-系统组成
-	   单内核系统核心模块在一起,模块之间交互使用函数调用
-	   微内核系统模块独立,模块之间交互使用进程通信
-	   模块实现 模块编译 模块管理
-	   系统启动
-			  通电->CPU执行BIOS固定地址跳转指令->
-			  BIOS程序启动->POST加电自检->
-			  必要硬件BIOS初始化->次要硬件初始化->磁盘读取MBR
-			  加载kernel,启动init进程,启动登录tty,
-			  tty调用open打开终端等待用户输入用户名,
-			  启动login进程等待输入密码,
-			  登录成功,切换到当前用户主目录chdir,修改终端拥有者chown,修改终端权限chmod,设置进程组ID
 文件管理
 		文件系统
 			磁盘文件系统,定义了磁盘分区的存储、读写方式,例如FAT32 NTFS NFS EXT等等,文件存储的是INODE数据(偏移大小日期等等)
@@ -44,10 +32,12 @@
 				__attribute__(constructor()|destructor())
 		文件权限
 			文件拥有者-拥有者同组用户-管理员 rwx-rwx-rwx
-			groupadd -g id name 添加用户组并指定ID和组名
-			useradd -g groupname -d dir -m username 添加用户并指定用户组、主目录、用户名
+			groupadd -r -g id name 添加用户组并指定ID和组名(r选项表示系统用户组)
+			useradd -r -u uid -g gid -d dir -m username 添加用户并指定用户组、主目录、用户名
 			userdel -r username 删除用户及其主目录
 			passwd username 修改用户密码
+		文件加锁
+			flock -xn lockfile -c 'command to run' x表示互斥锁 n表示非阻塞
 内存管理
 	    内存访问
 			MMU:接收CPU的内存访问请求,把虚拟地址转换为物理地址(L1 L2 主存)
@@ -85,26 +75,14 @@
 				关闭共享内存 CloseHandle(handle)
 			VirtualAlloc
 				ntdll的API,windows虚拟内存
-			DLL映射
-				映射到内存,内存修改不会写入文件
 		内存权限
 			mprotect(ADDR,LEN,PROT_READ | PROT_WRITE | PROT_EXEC)
-		内存占用
-			VSS 虚拟内存占用(进程申请的所有内存)
-			RSS 实际物理内存(进程内存+共享库内存)
-			PSS 实际物理内存(进程内存+共享库内存平均值)
-			USS 实际物理内存(进程内存)
 进程管理
 		进程关系
 			父子进程: fork创建进程,pid为0是子进程,大于0是父进程,调用execl(path,name,args)覆盖进程空间执行新程序代码
 			僵尸进程: 子进程的退出状态,等待父进程调用waitpid(-1,NULL,0)回收;
 			孤儿进程: 子进程的状态,父进程退出但是子进程没有退出,子进程会由init进程收养
 			守护进程: 孤儿进程周期检测目标程序,监视运行状态并在目标崩溃后重启
-		进程外挂
-			ptrace提供控制另一个进程的能力,检测、修改代码、数据、寄存器、断点、注入、跟踪
-			调试 PTRACE_ATTACH PTRACE_DETACH PTRACE_CONT PTRACE_SINGLESTEP PTRACE_SYSCALL
-			读取 PTRACE_PEEKTEXT PTRACE_PEEKDATA PTRACE_PEEKUSR
-			写入 PTRACE_POKETEXT PTRACE_POKEDATA PTRACE_POKEUSR
 线程管理
 		线程进程
 			进程的创建需要分配独立的地址空间,代码段、数据段、堆栈段
@@ -120,13 +98,11 @@
 			默认创建的线程处于joinable(可以通过设置pthread_attr来改变)状态,需要调用pthread_join(pid)之后才会回收已退出的线程的资源
 			调用pthread_detach后线程处于游离状态,由操作系统来回收资源
 		线程状态
-			不同的操作系统有不同的线程模型,同时对于了不同的线程状态
-			通用状态
-				新建: 已经创建,等待start
-				就绪: 可以执行,等待cpu
-				运行: 正在执行,执行code
-				阻塞: 等待事件,等待阻塞:event.wait(等待event.notify|pulse) 睡眠阻塞:sleep(等待timeout|interrupt)
-				死亡: 执行结束,等待主线程回收资源
+			新建: 已经创建,等待start
+			就绪: 可以执行,等待cpu
+			运行: 正在执行,执行code
+			阻塞: 等待事件,等待阻塞:event.wait(等待event.notify|pulse) 睡眠阻塞:sleep(等待timeout|interrupt)
+			死亡: 执行结束,等待主线程回收资源
 		线程同步
 			共享锁和互斥锁属性
 				pthread_mutex|rwlockattr_init(&attr)
@@ -140,11 +116,10 @@
 				创建 sem_init(sem_t, pshared, value)
 				等待 sem_wait(sem_t)
 				释放 sem_post(sem_t)
-			自解锁(互斥锁)
-				对代码块的执行进行加锁,例如c#的lock,java的synchronized,c++的mutex(构造时lock,析构时unlock)
 			注意点
-				锁对象设为私有变量,外部不可访问,尽量使用trylock tryenter尝试加锁,避免长时间等待
-				注意循环锁定,lock(A)调用外部代码执行lock(A)
+				原子性: 语句编译之后只有一条指令(i++有三条 读 加 赋值)
+				有序性: java编译器会对指令进行重排序优化,volatile修饰符可以保证变量的读写操作的前后语句不会交换顺序
+				互斥锁: lock(需要指定锁对象) synchronized(包含对象锁和类锁且支持重入)
 		数据队列
 			环形缓冲区
 				一个size大小的buffer,head指向第一个可读的位置,tail指向第一个可写的位置
@@ -154,23 +129,3 @@
 			无锁逻辑
 				读操作只修改head的值,读取之前先把tail值缓存下来,避免读的过程中被修改,读完之后在修改head的值
 				写操作只修改tail的值,写入之前先把tail值缓存下来,写完之后在修改
-进程通信
-		本地通信
-				mmap shm filemap
-		网络通信
-基本命令
-		超级用户:系统管理员,拥有所有权限,UID默认为0
-		系统用户:创建时用-r来指定,一般用来维持某个服务的运行,不会用来登录,有一定权限,UID范围一般是1-499或999
-		普通用户:默认新建账号都是普通用户,只能执行/bin /usr/bin /usr/local/bin home目录下的命令
-		添加系统用户组
-			linux groupadd gname -r -g gid
-			macos dscl . -create /Groups/gname
-		添加系统用户
-			linux useradd uname -r -u uid -g gid -d homedir
-			linux passwd uname
-			macos dscl . -create /Users/uname UniqueID uid
-			macos dscl . -passwd /Users/uname password
-			macos dscl . -delete /Users/uname
-			macos dscl . -append /Groups/gname GroupMembership uname
-		执行文件加锁
-			flock -xn path.lock -c 'sh cmd' -n表示加锁失败不等待 -c后边是sh文件
