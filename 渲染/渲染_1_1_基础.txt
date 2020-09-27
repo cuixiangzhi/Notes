@@ -15,15 +15,7 @@
 		顶点着色器(MVP变换)->曲面细分着色器->几何着色器->图元装配->CVV裁剪->透视除法->视口变换->光栅化->Early-Z优化
 		片段着色器->归属测试->裁剪测试->Alpha测试->深度测试->模板测试->颜色混合
 	垂直同步
-		生产者:渲染线程,执行SwapBuffer时先进行glFlush等待渲染结束,然后把Buffer加入到SF的队列中并申请新的Buffer
-		三缓冲:SF包含一个长度为2的Buffer队列和一个历史帧Buffer,无可用Buffer或者未到达VSYNC时间渲染线程就会阻塞等待
-		消费者:显示器,刷新完一帧会从SF队列获取新的Buffer作为历史帧,如果Buffer队列被锁定或者无可用Buffer,则使用历史帧Buffer重绘
-硬件
-	显卡相关
-		独立显卡 集成显卡(主板) 核心显卡(CPU)
-	GPU架构
-		gpc     : GPU包含多个GPC单元,GPC包含多个SM单元,每个GPC都具备完整的渲染流水线执行能力
-		sm      : SM是执行着色器程序的单元,包含加载存储单元、数学计算单元、寄存器、L1缓存、纹理读取单元、纹理缓存等等
-		thread  : 执行shader的基本单元,每个thread都有自己独占的寄存器,多个thread打包为wrap由sm调度执行
-		wrap    : 执行相同shader的一组thread,wrap会记录该组thread执行到了那条指令,wrap有固定的thread数量
-		register: 寄存器的数量是固定的,GPU按照wrap执行的shader所需寄存器数量来分配,shader占用寄存器越多,wrap就越少
+		生产者:渲染线程,执行SwapBuffer时先等待渲染结束(glFlush)然后交换前后缓冲区,开启垂直同步之后不在VBLANK时间内会被阻塞
+		消费者:显示系统,显示硬件(LCD控制器？)按照固定帧率读取前缓冲区,通过DP|VGA|DVI等接口输出到显示器,输出包含HSYNC VSYNC DATA等等
+		三缓冲:一个Buffer队列和一个历史帧Buffer,SwapBuffer填充Buffer队列并申请新的Buffer(通过SwapInterval控制填充间隔),Display消耗Buffer队列并更新历史帧Buffer
+		长短帧:开启垂直同步之后由于渲染线程SwapBuffer的时机不稳定,导致类似AABCCCD的卡顿感(类似移动时每帧移动距离不稳定导致抽搐)
