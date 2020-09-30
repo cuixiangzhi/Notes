@@ -136,7 +136,7 @@ IO模型
 				地址
 					sockaddr_in addr;
 					addr.sin_family = AF_INET;
-					addr.sin_addr.s_addr = inet_addr(host); ntoa(); htonl();
+					addr.sin_addr.s_addr = inet_addr(host); pton(); ntop();
 					addr.sin_port = htons(port); ntohs();
 				连接
 					connect(sock,(sockaddr*)&addr,sizeof(sockaddr));
