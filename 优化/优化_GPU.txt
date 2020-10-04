@@ -28,3 +28,5 @@ overdraw重复绘制
 tbdr优化
     FrameData拷贝
         尽量减少触发FrameData和FrameBuffer之间互相拷贝的操作
+viewmode
+    gameview和sceneview镜头同步 使用overdraw模式查看性能消耗
