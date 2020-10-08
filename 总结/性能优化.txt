@@ -62,6 +62,26 @@
             尽量减少触发FrameData和FrameBuffer之间互相拷贝的操作
     viewmode
         gameview和sceneview镜头同步 使用overdraw模式查看性能消耗
+动画
+    骨骼动画
+	关键帧    AnimationClip,记录了每根骨骼相对于父骨骼的位置、旋转、缩放
+	绑定骨骼  SkinnedMeshRenderer.bones,记录了当前SkinMesh的动画绑定的骨骼
+	绑定姿势  Mesh.bindposes,记录了顶点变换到骨骼坐标系下的变换矩阵(bone.worldToLocal * renderer.localToWorld)
+	绑定权重  Mesh.boneWeights,记录了每个顶点绑定的骨骼和权重
+	蒙皮公式  worldPos = bindWeight * bindBone.localToWorld * bindBone.bindPose * vertex,每一帧先计算动画得出骨骼的变换矩阵,然后根据绑定骨骼和权重计算
+	动画融合  连续播放的两个动画衔接的过程
+	动画混合  同时播放的两个动画衔接的过程
+	IK动画
+		子骨骼带动父骨骼运动,给定子骨骼的目标位置和上一级父骨骼的朝向,可以根据余弦定理计算出父骨骼的位置
+		IKBone:需要移动到指定位置的骨骼 JointBone:IK骨骼的父骨骼 RootBone:JointBone的父骨骼
+	RootMotion
+		ApplyRootMotion开启之后会把根骨骼的位移加到模型根结点上(UE4会在移动组件里添加RootMotion的计算)
+	GPUInstance
+		烘焙 预先把骨骼动画数据烘焙到纹理中,纹理存储动作每一帧的变换矩阵(root.worldToLocal * bone.localToWorld * bone.bindPose)
+		数据 静态网格(T-POSE) 绑定权重(顶点属性4*2,boneIndex|boneWeight) 动画贴图(变换矩阵4*4*boneCount*frameCount) 实例变换(变换矩阵,localToWorldArray)
+    变形动画
+        顶点数据  需要多套数量相同的顶点数据,只能是静态网格
+        插值计算  可以在GPU上用额外的顶点属性保存顶点数据来插值
 内存
     代码内存
         table_memory
