@@ -12,8 +12,147 @@
         背景使用 只能使用公共背景和对应系统的功能背景
         图标使用 预设上不保留对图标的引用,通过代码动态加载
 角色
+    身体 LODS:10000面_7000顶点 LOD0:5000面_3000顶点_1.0_1.0 LOD1:2500面_1600顶点_0.7_0.5 LOD2:600面_500顶点_0.35_0.125 48+27+1=76
+    衣服 
 场景
 特效
+    GM命令连续播放特效 检测overdraw或者fps测试性能消耗
+代码
+    JobSystem
+    DrawCall StaticBatch DynamicBatch
+    Physics
+    Animator
+    UIUpdate
+    GPUSkin
+    GPUAnim
+    GCAlloc
+    CacheMiss
+    ShaderWarmup
+    GameObject.SetPos
+渲染
+    bandwidth数据带宽
+        开启遮挡剔除
+            尽可能的把不需要渲染的物体裁剪掉,减少数据传输同时减少计算量
+        使用LOD和GPUInstance
+            远处的物体用低模和实例化渲染都可以减少数据量,降低shader计算量
+        开启MIPMAP
+            远处的物体使用更小的纹理,降低纹理带宽
+    shader计算复杂度
+        使用向量运算
+            GPU执行的都是向量运算,float和float4的计算耗时是一样的,尽量合并成向量去做计算和赋值
+        减少分支语句
+            GPU以wrap来执行shader指令,一个wrap包含N个thread,它们的指令完全相同并且同步执行,遇到分支之后会产生新的wrap
+        降低变量精度
+            精度越低越好,保证范围的情况下使用最低的精度
+        减少采样次数
+            访问周期:寄存器(1)->共享内存(1~32)->L1缓存(1~32)->L2缓存(32~64)->纹理/常量缓存(400~600)->全局内存
+        降低分辨率
+            降低屏幕分辨率可以减少需要计算的像素数,从而降低GPU计算量
+    overdraw重复绘制
+        像素块
+            GPU会以2x2的像素块为单位分配给一个core去执行,每个core包含4个thread,每个thread只负责一个像素
+        减少AlphaTest和AlphaBlend
+            这两个操作都在ZTest之后执行,开启之后无法进行Early-Z
+        开启背面裁剪
+            不开启两个面都会渲染
+        控制粒子数量
+            大量的小物体(粒子、植被、沙石、毛发等待)由于像素块的划分机制会造成严重的overdraw
+    tbdr优化
+        FrameData拷贝
+            尽量减少触发FrameData和FrameBuffer之间互相拷贝的操作
+    viewmode
+        gameview和sceneview镜头同步 使用overdraw模式查看性能消耗
+内存
+    代码内存
+        table_memory
+            数据表需要自定义数据格式,支持分行读取,支持LRU缓存
+        gcalloc_memory
+            closure_memory
+                委托、协程、Lambda函数等最终都会生成一个class对象,传递函数给委托类型时会创建委托对象,每次开启协程都会创建协程对象
+            array_memory
+                调用某些API返回数组时有内存分配,例如GetComponents Mesh.vertices Physics.RaycastAll ParticleSystem.Start|Stop|Clear
+            proto_memory
+                协议的收发会分配很多小内存,序列化发送时最好直接写到缓冲区,反序列化尽量支持消息池
+            boxing_memory
+                params_memory
+                    禁止使用可变参数,重载多个函数来替代可变参数
+                comparer_memory
+                    对值类型做Key相等比较时如果没有实现IEquatable接口,会在比较时进行装箱(默认使用ObjectEqualityComparer来获取HashCode并进行Equals比较,60BGC)
+            string_memory
+                统一日志接口,区分发布和调试接口,禁止使用..拼接日志
+        component_memory
+            减少没有意义的Actor、Component的创建,可以稍微降低内存和实例化开销
+        rendertexture_memory
+            RT绑定的是FB所以无法压缩,对每个RT指定名字以方便跟踪,能干掉的都干掉
+    资源内存
+        shader_memory
+            shader_feature
+                只生成bundle内引用到keyword的变体
+                使用#pragma shader_feature keyword来定义
+                使用[Toggle(feature) ..]在材质上显示该选项
+            multi_compile
+                生成所有keyword对应的变体
+                使用#pragma multi_compile keyword来定义(keyword最多256个,超过这个值会报错)
+                使用Shader.EnableKeywords和Material.EnableKeywords开启全局或单个材质的宏定义
+            variants
+                宏定义太多导致shader变体很多,不仅增加了build时间,运行时由于变体太多增加加载和编译时间并增加内存占用
+                shader_fallback:      关闭fallback可以减少变体数量(keyword变少)
+                i_preprocess_shaders: 打包后处理阶段,可以实现shader变体的剔除
+                shader_variant_collection: shader变体集合(指定包含哪些shader和对应variant),可以用来在启动或空闲时预编译(执行wramup)
+        texture_memory
+            upload_buffer
+                从内存中往显存上传的时候,会先放到一个缓冲区内,缓冲区满了才会上传
+            read/write
+                开启之后内存中会保留一份
+            mipmap
+                开启之后内存占用会增加30%,但是可以提高渲染效率(降低显存带宽、提高缓存命中率)
+            streaming
+                根据poolsize和sceneview情况动态加载/卸载纹理的mipmap,poolsize需要根据机器内存指定或者动态调整
+        mesh_memory
+            MeshCompression
+                降低硬盘占用,开启之后会影响下面两个选项,一般关闭
+            OptimizeMeshData
+                减小打包包体,打bundle时会剔除shader没有使用到的顶点属性
+            VertexCompression
+                降低内存占用,降低顶点属性的精度(float->half),针对300顶点以上、未开启R/W的网格生效
+            Read/Write Enabled
+                开启该选项的网格顶点属性会在内存中存在两份(显存+内存)
+            DynamicBatching
+                开启之后在打包时会把支持动态批处理的网格的R/W选项开启
+            StaticBatching
+                开启之后引用同一份网格的对象变成多个实例(引用一个StaticMesh的不同部分)
+            SkinnedMesh
+                由于骨骼动画需要在CPU端每帧计算顶点位置,会强制开启R/W
+            ParticleMesh
+                粒子和骨骼动画类似,因为要做位置计算,会强制开启R/W
+        animation_memory
+            animation_cache&io
+                游戏内角色会有很多休闲动作,需要支持动态加载和卸载,支持LRU缓存
+            animation_frame
+                动捕的关键帧几乎是满帧,需要简化(删除缩放曲线、简化直线帧)
+        audio_memory
+            dsp_buffer
+                FMOD播放声音会先写入到一个BUFFER内,BUFFER填充满了才会播放,太大会导致声音延迟,太小CPU消耗上升
+            speaker_mode
+                FMOD使用双声道内存会占用两份,最好选用mono模式(默认是stereo)
+            fmod_bank
+                master.string.bank存储了所有event的路径信息,可以通过getStringInfo获取资源信息(event:* bank:* vca:* bus:*)
+                name.bank文件是由metadata|sampledata|streamingdata三部分组成,loadBank时可以指定只加载metadata,sampledata自己控制加载
+            audio_format
+                音乐:Streaming+Vorbis 音效:DeCompressOnLoad+ADPCM 录音频率:8KHZ
+            audio_cache
+                2D:1 2D_ONE:1 3D:5 BG:1 CG:2
+        video_memory
+            video_format
+                720P:低码率1Mbps,中码率2Mbps,高码率4Mbps 1080P:低码率2Mbps,中码率4Mbps,高码率8Mbps
+                MP4格式:H264视频编码和AAC音频编码 WEBM格式:VP8视频编码和VORBIS音频编码
+        bundle_memory
+            typetree
+                为了做不同版本的类型兼容,开启之后会写入变量类型的信息
+            lz4&lzma
+                lz4分块解压,lzma是整体压缩,lz4占内存小,解压速度快
+            size&count
+                每个包多大,什么资源打一个,文件头占用内存是否远小于资源内存
 音频
     音频采样 8kHZ:人声 22kHZ:广播 44kHZ:音频 声道:Mono&Stereo 编码:PCM无损1411kbps,AAC有损256kbps,OGG有损128kbps
     音频格式 中长音乐:Streaming+Vorbis 短音效:DeCompressOnLoad+ADPCM
