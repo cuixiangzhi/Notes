@@ -1,20 +1,17 @@
-图形
-	渲染指令调用顺序
-		应用程序->操作系统->驱动程序->显卡
-	多线程渲染
-		逻辑线程和渲染线程分离,使用CommandBuffer产生和消耗渲染命令
-		逻辑线程更新帧N,渲染线程渲染帧N-1,逻辑帧N结束后等待渲染帧结束再开始下一帧计算
-	渲染状态
-		基本状态 Cull AlphaTest Offset Ztest ZWrite Blend ColorMask
-		状态分组 queue->lightmap->distance->shader->material->pass->objects
-		状态切换 根据当前分组的数据检查需要切换哪些状态
-	渲染顺序
-		不透明物体从前往后渲染,利用EarlyZ技术减少OverDraw
-		半透明物体从后向前渲染,半透明物体不写入深度,执行AlphaBlend操作,EZ在这里也可以用
-	渲染流水线
-		顶点着色器(MVP变换)->曲面细分着色器->几何着色器->图元装配->CVV裁剪->透视除法->视口变换->光栅化->Early-Z优化
-		片段着色器->归属测试->裁剪测试->Alpha测试->深度测试->模板测试->颜色混合
-	垂直同步
-		生产者:渲染线程,执行SwapBuffer时先等待渲染结束(glFlush)然后交换前后缓冲区,开启垂直同步之后不在VBLANK时间内会被阻塞
-		消费者:显示系统,显示硬件(LCD控制器？)按照固定帧率读取前缓冲区,通过DP|VGA|DVI等接口输出到显示器,输出包含HSYNC VSYNC DATA等等
-		三缓冲:一个Buffer队列和一个历史帧Buffer,SwapBuffer填充Buffer队列并申请新的Buffer(通过SwapInterval控制填充间隔),Display消耗Buffer队列并更新历史帧Buffer
+多线程渲染
+	逻辑线程和渲染线程分离,使用CommandBuffer产生和消耗渲染命令,逻辑帧比渲染帧最多快一帧
+垂直同步
+	生产者:渲染线程,执行SwapBuffer时先等待渲染结束(glFlush)然后交换前后缓冲区,开启垂直同步之后不在VBLANK时间内会被阻塞
+	消费者:显示系统,显示硬件按照固定帧率读取前缓冲区,通过DP|VGA|DVI等接口输出到显示器,输出包含HSYNC VSYNC DATA等等
+	三缓冲:一个Buffer队列和一个历史帧Buffer,SwapBuffer填充Buffer队列并申请新的Buffer(通过SwapInterval控制填充间隔),Display消耗Buffer队列并更新历史帧Buffer
+逐边裁剪
+	1.已知多边形顶点数组s,定义新多边形顶点数组f
+	2.遍历多边形每条边,检测边的两个顶点
+		都在外侧,不输出
+		都在内侧,输出起点
+		起点在外终点在内,求出交点并输出交点和终点
+		起点在内终点在外,求出交点并输出交点
+	3.把当前输出f作为输入s,对下一条裁剪线执行算法1、2
+光栅化
+	1.把三角形分成上下两部分,沿着左右两条边从下到上从左到右扫描,每次y递增1,x递增1/k
+	2.像素片段的插值使用透视矫正插值算法bt/zt=lerp(b0/z0,b1/z1,t)
