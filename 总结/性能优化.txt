@@ -76,6 +76,7 @@
 	IK动画
 		子骨骼带动父骨骼运动,给定子骨骼的目标位置和上一级父骨骼的朝向,可以根据余弦定理计算出父骨骼的位置
 		IKBone:需要移动到指定位置的骨骼 JointBone:IK骨骼的父骨骼 RootBone:JointBone的父骨骼
+    捏脸动画 表情用内骨骼 捏脸用外骨骼 额头(左中右) 眼睛(左右) 脸颊(左右) 耳朵(左右) 鼻子 鼻翼(左右) 嘴巴 嘴唇(上下) 下巴
 	RootMotion
 		ApplyRootMotion开启之后会把根骨骼的位移加到模型根结点上(UE4会在移动组件里添加RootMotion的计算)
 	GPUInstance
