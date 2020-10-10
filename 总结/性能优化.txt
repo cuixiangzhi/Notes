@@ -72,7 +72,7 @@
 	绑定权重  Mesh.boneWeights,记录了每个顶点绑定的骨骼和权重
 	蒙皮公式  worldPos = bindWeight * bindBone.localToWorld * bindBone.bindPose * vertex,每一帧先计算动画得出骨骼的变换矩阵,然后根据绑定骨骼和权重计算
 	动画融合  连续播放的两个动画衔接的过程
-	动画混合  同时播放的两个动画衔接的过程
+	动画混合  同时播放的两个动画衔接的过程 Pelvis混合下半身 Spine混合上半身 LayerBlendPerBone按照骨骼递归按照比例混合,SlotNode控制输入和Slot蒙太奇的混合
 	IK动画
 		子骨骼带动父骨骼运动,给定子骨骼的目标位置和上一级父骨骼的朝向,可以根据余弦定理计算出父骨骼的位置
 		IKBone:需要移动到指定位置的骨骼 JointBone:IK骨骼的父骨骼 RootBone:JointBone的父骨骼
