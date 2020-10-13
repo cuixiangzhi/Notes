@@ -122,7 +122,10 @@
 			注意点
 				原子性: 语句编译之后只有一条指令(i++有三条 读 加 赋值) CAS指令(compareAndSwap)
 				有序性: java编译器会对指令进行重排序优化,volatile修饰符可以保证变量的读写操作的前后语句不会交换顺序
-				互斥锁: lock(需要指定锁对象) synchronized(包含对象锁和类锁且支持重入)
+				互斥锁: java.reentrantlock(可重入锁)  cs.lock(语法糖) cs.monitor ue4.fcriticalsection
+				读写锁: java.reentrantreadwritelock  ue4.frwlock
+				区域锁: java.synchronized(可重入锁)  ue4.fscopedlock 
+				自旋锁: 循环等待,降低线程切换开销 ue4.fspinlock
 		数据队列
 			环形缓冲区
 				一个size大小的buffer,head指向第一个可读的位置,tail指向第一个可写的位置
