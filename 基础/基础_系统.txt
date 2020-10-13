@@ -117,7 +117,7 @@
 				等待 sem_wait(sem_t)
 				释放 sem_post(sem_t)
 			注意点
-				原子性: 语句编译之后只有一条指令(i++有三条 读 加 赋值) CAS指令(compareAndSet会出现ABA问题)
+				原子性: 语句编译之后只有一条指令(i++有三条 读 加 赋值) CAS指令(compareAndSwap)
 				有序性: java编译器会对指令进行重排序优化,volatile修饰符可以保证变量的读写操作的前后语句不会交换顺序
 				互斥锁: lock(需要指定锁对象) synchronized(包含对象锁和类锁且支持重入)
 		数据队列
