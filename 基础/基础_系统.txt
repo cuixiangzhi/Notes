@@ -5,9 +5,12 @@
 			机械硬盘由盘片、磁道、扇区、磁头构成,硬盘读写数据需要经过磁头寻道、盘片旋转、读写数据三个阶段
 			硬链接: 文件名不同,INODE相同,文件内容改变之后互相不影响
 			软连接: 文件名不同,快捷方式 ls -s
+			系统目录: /bin /sbin /lib /etc /sys /proc /var
+			系统应用: /usr/bin /usr/sbin /usr/lib /usr/etc    
+			用户目录: /home /usr/local
+			外部设备: /dev /media /mnt
 		文件编码
-			大端模式: 把字节按顺序存储,即低地址存储高字节,高地址存储低字节
-			小端模式: 正好相反
+			大端小端: 大端模式低地址存储高字节,高地址存储低字节
 			字符集
 				许多字符的集合,每个字符有一个编号,例如UNICODE字符集 ANSI字符集
 				本地系统语言及字符集,国家_语言.字符编码(zh_cn.utf-8) locale/setlocal查询修改本地系统编码 mbstowcs/wcstombs本地编码和Unicode编码转换
