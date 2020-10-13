@@ -6,7 +6,7 @@
 			硬链接: 文件名不同,INODE相同,文件内容改变之后互相不影响
 			软连接: 文件名不同,快捷方式 ls -s
 			系统目录: /bin /sbin /lib /etc /sys /proc /var
-			系统应用: /usr/bin /usr/sbin /usr/lib /usr/etc    
+			系统软件: /usr/bin /usr/sbin /usr/lib /usr/etc    
 			用户目录: /home /usr/local
 			外部设备: /dev /media /mnt
 		文件编码
