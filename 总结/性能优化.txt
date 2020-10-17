@@ -87,6 +87,10 @@ UGUI ReBuild是UI元素重建会导致SendWillRenderCanvases Canvas.ReBatch是�
     变形动画
         顶点数据  需要多套数量相同的顶点数据,只能是静态网格
         插值计算  可以在GPU上用额外的顶点属性保存顶点数据来插值
+    动画状态机 曲线动画 分层分块 地面状态.直立.蹲下.趴下 空中状态    逐骨骼分层混合 动画后处理(AimOffset 脚部IK 手部IK)
+    动画LOD LOD0:IK、LookAt、表情、脚印、全身动画   LOD1:全身动画简化   LOD2:空动画 
+    IK设置 Unity:Layer->IKPass->OnAnimatorIK(layer)->SetIKPosition&&Weight(IKBone,position&&weight)->SetIKRotation&&Weight(IKBone,rotation&&weight)
+    SetLookAtIK(weight,bodyweight,headweight,eyeweight) 
 内存
     代码内存
         table_memory
