@@ -15,3 +15,205 @@
 光栅化
 	1.把三角形分成上下两部分,沿着左右两条边从下到上从左到右扫描,每次y递增1,x递增1/k
 	2.像素片段的插值使用透视矫正插值算法bt/zt=lerp(b0/z0,b1/z1,t)
+矩阵基础
+    单位矩阵  对角线全1,其他元素全0
+    转置正交  逆矩阵:相乘结果为单位矩阵 转置矩阵:行列互换 正交矩阵:逆矩阵互为转置矩阵
+    向量叉乘  AxB = (AyBz-AzBy,AzBx-AxBz,AxBy-AyBx)
+    变换矩阵  在目标坐标系下定义的三个正交基向量构成的矩阵*在这个坐标系下定义的向量
+    基变换    点乘求投影从世界空间转切线空间(X*V,Y*V,Z*V),加法求和从切线空间转世界空间(X*V.x+Y*V.y+Z*V.z)
+    法线变换  法线经过非等比缩放的M矩阵和MV矩阵变换之后和表面不垂直,需要用M或者MV的逆转置矩阵计算
+    变换顺序  缩放->旋转->平移 T矩阵*R矩阵*S矩阵*列向量
+坐标系
+    左手坐标系 x右y上z里
+    右手坐标系 x右y上z内
+    旋转正向   从坐标轴的正向看向原点,左手坐标系下,顺时针旋转为正向 右手坐标系下,逆时针旋转为正向
+    切线坐标系 表面UV和法线构成的TBN坐标系,根据世界空间下的顶点切线和法线求出副切线,得到TBN矩阵
+    模型坐标系 局部坐标系,是指模型本身的坐标系,以物体中心为原点,局部点经过M矩阵变换到世界空间,M矩阵是模型在世界空间下的T*R*S(模型在世界坐标系下的局部偏移旋转和缩放)
+    世界坐标系 参考坐标系,经过V矩阵变换转换到视图坐标系,V是摄像机M矩阵的逆矩阵(S逆*R逆*T逆)
+    视图坐标系 局部坐标系,经过P矩阵转换到裁剪坐标系
+    裁剪坐标系 齐次坐标系,经过透视除法转换到设备坐标系
+    设备坐标系 OGL范围是[-1,1],DX和METAL范围是[0,1],XY都是[-1,1],经过视口变换转换为屏幕坐标[w,h]
+    屏幕坐标系 
+    窗口坐标系
+    视口坐标系
+矩阵变换
+    平移变换              
+        |1 0 0 tx|   |1 0 0 -tx|  
+        |0 1 0 ty|   |0 1 0 -ty|
+        |0 0 1 tz|   |0 0 1 -tz|
+        |0 0 0  1|   |0 0 0  1|    
+    缩放变换
+        |s 0 0 0|   |1/s 0   0    0|  
+        |0 s 0 0|   |0   1/s 0    0|
+        |0 0 s 0|   |0   0   1/s  0|
+        |0 0 0 1|   |0   0   0    1|    
+    旋转变换
+        欧拉角
+            旋转都是从(0,0,0)开始按ZXY顺序旋转,跟当前状态没有任何关系,因此插值是不可能平滑的
+        四元数
+            复数
+                z = a + bi a是实部,b是虚部,i是虚数单位,乘法是普通的乘法
+            四元数
+                q = w + xi + yj + zk
+                q*= w - xi - yj - zk 共轭四元数是虚部取反
+                q^= q*/|q|           逆四元数是共轭四元数除以模长,单位四元数共轭等于逆
+                q = cos0 + xsin0 + ysin0 + zsin0 绕旋转轴U=(x,y,z)旋转20角度,根据旋转轴正交分解和虚数乘法原理得出v'= qvq*
+            欧拉角->四元数
+                欧拉角首先拆分为3个坐标轴为基础的四元数,然后按照旋转顺序ZXY进行乘法化简,得出最终的四元数,或者直接对乘法化简得出最终公式
+    投影变换
+        透视投影
+            投影矩阵
+                m00: 已知x'/x=n/z x'=nx/z m00=n 变换到[-1,1]时m00=n/r
+                m11: 已知y'/y=n/z y'=ny/z m11=n 变换到[-1,1]时m11=n/t
+                m22&m23: 已知z'始终为n,为了保证屏幕空间线性插值令z'=a+b/z从[n,f]变换到[-1,1] 联立方程解得a=(f+n)/(f-n) b=2nf/(f-n)
+                m32: 为了执行裁剪操作w=z m23=1
+                |n/r  0     0            0          ||x|
+                |0    n/t   0            0          ||y|
+                |0    0     (f+n)/(f-n)  (2fn)/(f-n)||z|
+                |0    0     1            0          ||1|
+            齐次裁剪
+                投影后齐次坐标x'满足-w<x'<w,y'满足-w<y'<w,z'满足-w<z'<w
+            透视除法
+                投影变换得到的齐次坐标除以w得出NDC坐标,w为0会发生除0异常,因此近裁面限制大于0,UNITY最小为0.01
+            深度精度
+                深度值Zndc与Zcamera成反比,距离近平面越远,Zcamera越大Zndc值变化越小,深度的精度也就越低
+                glPolygonOffset(factor,units)可以解决z-fighting闪烁问题,(-1,-1)用来渲染前景,(1,1)表示距离摄像机更远,用来渲染背景
+            NDC转VIEW
+                zbuffer存储的是[0,1]的非线性数值,Zcamera=1/(aZndc+b) a=(f-n)/nf b=-1/n
+        正交投影
+            投影矩阵
+                m00: 已知x'=x 变换到[-1,1]时m00=1/r
+                m00: 已知y'=y 变换到[-1,1]时m00=1/t
+                m22&m23: 已知z'=z,为了执行裁剪操作z'
+                m33: 因为xyz之间没有关系,因此第一步就变换到了[-1,1],不需要归一化了 m33=1
+                |1/r 0      0       0          ||x|
+                |0   1/t    0       0          ||y|
+                |0   0      2/(n-f) (f+n)/(n-f)||z|
+                |0   0      0       1          ||1|
+    视口变换
+        变换矩阵(w,h是屏幕宽高)
+            |0.5w  0     0        0.5w||x|
+            |0     0.5h  0        0.5h||y|
+            |0     0     0.5      0.5 ||z|
+            |0     0     0        1   ||w|
+OpenGL Context
+    当前渲染状态,不同的渲染线程有不同的context
+OpenGL Object
+    vao vbo ubo ebo tbo fbo
+    显卡内的一块内存buffer,BO内存管理会根据用户选项,将缓存对象放在最佳地方(SystemMemory、AGPMemory、VideoMemory)
+Context与Object的关系
+    gen创建object bind绑定到context(此时object数据才能传输到显存里) glbufferdata传输数据
+    vao存储顶点属性的格式和地址 vbo存储顶点数据 ebo存储索引 ubo存储shader数据 tbo存储纹理数据 fbo存储帧数据
+缓冲对象
+    VBO
+        分配VBO句柄 glGenBuffers(1,vboID|eboID)
+        绑定VBO对象 glBindBuffer(GL_ARRAY_BUFFER|GL_ELEMENT_ARRAY_BUFFER,vboID|eboID)
+        传输VBO数据 glBufferData(GL_ELEMENT_ARRAY_BUFFER,sizeof(indices),indices,GL_STATIC_DRAW)
+    VAO
+        分配VAO句柄 glGenVertexArrays(1,vaoID)
+        绑定VAO对象 glBindVertexArray(vaoID)
+            顶点、颜色、UV、法线、切线、索引
+            绑定VBO-传输数据-启用属性-设置格式
+            启用VBO属性 glEnableVertexAttribArray(shaderLocation)
+            指定VBO格式 glVertexAttribPointer(shaderLocation,3,GL_FLOAT,GL_FALSE,0,NULL)
+            指定VBO间隔 glVertexAttribDivisor(shaderLocation,1)
+        解除VAO绑定 glBindVertexArray(NULL)
+        解除VBO绑定 glBindBuffer(GL_ARRAY_BUFFER|GL_ELEMENT_ARRAY_BUFFER,NULL)
+        VAO渲染过程 glBindVertexArray(vaoID); glDrawElements(...); glBindVertexArray(0);
+    TBO
+        创建纹理 glGenTexture(1,&texID);
+        指定纹理 glActiveTexture(GL_TEXTURE0)
+        绑定纹理 glBindTexture(GL_TEXTURE_2D|GL_TEXTURE_2D_MULTISAMPLE,texID)
+        纹理过滤 glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINER);
+        纹理数据 glTexImage2D(GL_TEXTURE_2D,mipmapLevel,GL_RGBA,宽,高,0,0,GL_RGBA,GL_UNSIGNED_BYTE,PTR);
+        纹理数组 glTexImage3D(GL_TEXTURE_2D_ARRAY,mipmaps,internalFormat,宽,高,depth,0,inputFormat,dataType,data)
+        多重采样 glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE,sampleCount,GL_RGB,width,height,GL_TRUE);
+        删除纹理 glDeleteTextures(1,&texID);
+                 glGenerateMipmap(GL_TEXTURE_2D); GL_<FILTER>_MIPMAP_<SELECTOR> filter标记miplevel内如何采样 selector标记如何选择miplevel
+        MSAA拷贝 glBlitFrameBuffer(src,dst,GL_COLOR_BUFFER_BIT,GL_NEAREST)
+    FBO
+        创建缓冲区对象 glGenFrameBuffers(1,&fboID)
+        绑定缓冲区对象 glBindFrameBuffer(GL_FRAMEBUFFER,fboID)
+        离屏渲染
+            创建渲染目标 glGenRenderBuffer(1,&rboID)
+            绑定渲染目标 glBindRenderBuffer(GL_RENDERBUFFER,rboID)
+            分配显存空间 glRenderBufferStorage glRenderBufferStorageMultisample
+            关联绑定点   glFramebufferRenderbuffer(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_RENDERBUFFER,&rboID)
+        纹理渲染
+            创建纹理&绑定纹理&分配纹理内存
+            关联绑定点   glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D|GL_TEXTURE_2D_MULTISAMPLE,&tboID)
+        SRGB模式
+            glEnable(GL_FRAMEBUFFER_SRGB)
+            开启之后GL会认为shader写入的颜色值是线性空间的,先转换到gamma空间在写入
+            开启之后GL会先把framebuffer中的颜色转到线性空间和源颜色进行计算
+        渲染模式
+            glDrawBuffer 指定在当前Framebuffer的哪个颜色缓冲区进行绘制,不影响深度、模板缓冲区 GL_NONE表示不写入颜色
+            glReadBuffer 指定在当前Framebuffer的哪个颜色缓冲区进行读取
+    UBO
+        分配UBO句柄 glGenBuffers(1,&uboID)
+        绑定UBO对象 glBindBuffer(GL_UNIFORM_BUFFER,uboID)
+        传输UBO数据 glBufferData(GL_UNIFORM_BUFFER,sizeof(data),data,GL_STATIC_DRAW)
+        指定UBO偏移 glBindBufferBase(GL_UNIFORM_BUFFER,bindingPoint,uboID)
+着色器
+    变量类型(包含三种精度lowp&highp&mediump)
+        int float bool vec*float向量 bvec*bool向量 ivec*int向量 mat*矩阵 sampler*D纹理 struct结构体
+    变量修饰符
+        attribute
+            顶点属性,只能在顶点shader内使用,只读
+            获取变量位置 glGetAttribLocation(programID,name) 
+            设置变量数据 glVertexAttrib*
+        varying 
+            顶点和像素shader之间传递数据的变量,顶点shader可写输出,像素shader只读输入
+        uniform 
+            图元属性,顶点和像素shader都可用,只读
+            获取变量位置 glGetUniformLocation(programID,name); glGetUniformBlockIndex(programID,name)
+            设置变量属性 glUniform* glUniform1i(loc,texIndex); glUniformBlockBinding(programID,blockIndex,bindingPoint)
+    内置变量
+        gl_Layer        几何着色器内指定输出数据位于立方体纹理的哪个面(Framebuffer绑定立方体纹理时才有效)
+        gl_InstanceID   所有着色器内指定当前实例化渲染的是第几个实例
+        gl_FragDepth    主动写入,当前像素深度值
+        gl_FragColor    主动写入,当前像素颜色值
+    创建过程
+        创建shader对象 shaderID = glCreateShader(GL_VERTEX_SHADER); 
+        读取源代码     glShaderSource(shaderID,&shaderSource,NULL);
+        编译源代码     glCompileShader(shaderID);
+        检查编译状态   glGetShaderiv(shaderID,GL_COMPILE_STATUS,&status);
+        获取错误信息   glGetShaderiv(shaderID,GL_INFO_LOG_LENGTH,&length); glGetShaderInfoLog(shaderID,length,&length, &errLog);
+        创建program对象  programID = glCreateProgram();
+        添加shader对象   glAttachShader(programID,shaderID)
+        绑定变量位置     glBindAttribLocation(programID,pos,name)1·
+        链接program对象  glLinkProgram(programID)
+        检查链接状态     glGetProgramiv(programID,GL_LINK_STATUS, &status);
+        获取错误信息     glGetProgramiv(programID,GL_INFO_LOG_LENGTH, &length); glGetProgramInfoLog(programID,length,&length,&errLog);
+    启用过程
+        修改当前程序     glUseProgram(programID); glUseProgram(NULL);
+        传递程序参数 
+            uniform      glGetUniformLocation(programID,uniformName) 
+                         基本类型通过 glUniform*直接传递
+                         纹理数据首先 glActiveTexture->glBindTexture->glTexSubImage(内存中的纹理在创建时就传递过了,此处不需要)
+                                      glUniform1i(loc,0);
+                         uniform比较常用,一般为程序参数
+            attribute    glGetAttribLocation(programID,attrName)
+                         基本类型通过 glVertexAttrib*直接传递
+                         顶点属性数据
+    释放过程
+        移除shader对象   glDetachShader(programID,shaderID)
+        删除shader对象   glDeleteShader(shaderID)
+    绘制命令
+        glDrawElements(GL_TRIANGLES,count,GL_UNSIGNED_INT,0); 绘制整个mesh
+        glDrawElementsBaseVertex(); 绘制部分mesh
+        glDrawElementsInstanced(GL_TRIANGLES,count,GL_UNSIGNED_INT,0,instanceCount) 绘制多次同一个mesh
+批处理
+    实例ID定义
+        UNITY_VERTEX_INPUT_INSTANCE_ID int instanceID : SV_InstanceID
+        UNITY_SETUP_INSTANCE_ID(v) v.instanceID = gl_InstanceID
+        UNITY_TRANSFER_INSTANCE_ID(v,o) o.instanceID = v.instanceID
+    数据结构定义(定义一个struct数组)
+        UNITY_INSTANCE_BUFFER_START(StructName) struct Data {
+            UNITY_DEFINE_INSTANCED_PROP(propType,propName) propType propName;
+        UNITY_INSTANCE_BUFFER_END(UniformName) } DataArray[MAX_SIZE];
+        平台差异
+            D3D11需要在struct外面包一层cbuffer name {};
+            其它平台只需要定义struct数组即可
+    访问实例数据(根据InstanceID访问数组内某个结构的字段)
+        UNITY_ACCESS_INSTANCED_PROP(UniformName,propName) DataArray[gl_InstanceID].propName;
