@@ -32,6 +32,7 @@
     CacheMiss
     ShaderWarmup
     GameObject.SetPos
+    动态分辨率
 UGUI ReBuild是UI元素重建会导致SendWillRenderCanvases Canvas.ReBatch是多线程的(UI元素变化时整个Canvas要重建)
 渲染
     bandwidth数据带宽
