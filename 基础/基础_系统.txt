@@ -2,20 +2,13 @@
 		文件系统
 			磁盘文件系统,定义了磁盘分区的存储、读写方式,例如FAT32 NTFS NFS EXT等等,文件存储的是INODE数据(偏移大小日期等等)
 			虚拟文件系统,对文件系统的抽象,封装了不同文件系统之间的差异性
-			机械硬盘由盘片、磁道、扇区、磁头构成,硬盘读写数据需要经过磁头寻道、盘片旋转、读写数据三个阶段
-			硬链接: 文件名不同,INODE相同,文件内容改变之后互相不影响
-			软连接: 文件名不同,快捷方式 ls -s
-			系统目录: /bin /sbin /lib /etc /sys /proc /var
-			系统软件: /usr/bin /usr/sbin /usr/lib /usr/etc    
-			用户目录: /home /usr/local
-			外部设备: /dev /media /mnt
 		文件编码
-			大端小端: 大端模式低地址存储高字节,高地址存储低字节
+			字节序
+				大端模式低地址存储高字节,高地址存储低字节
 			字符集
 				许多字符的集合,每个字符有一个编号,例如UNICODE字符集 ANSI字符集
-				本地系统语言及字符集,国家_语言.字符编码(zh_cn.utf-8) locale/setlocal查询修改本地系统编码 mbstowcs/wcstombs本地编码和Unicode编码转换
 			字符编码
-				字符集编号的存储表示方式,也就是存储格式,例如UNICODE字符集的编码(UTF8 UTF16 UTF32等等) ANSI字符集的编码(GB2312 GBK BIG5等等)
+				字符集编号的存储格式,例如UNICODE字符集的编码(UTF8 UTF16 UTF32等等) ANSI字符集的编码(GB2312 GBK BIG5等等)
 			语言编码
 				C# 		string是unicode对象,静态字符串初始化会根据cs文件编码解码,一个char是一个字符
 				C++ 	string是char数组,wstring是wchar_t数组,_T():UNICODE字符集会添加L前缀,表示字符串类型为wchar_t
@@ -24,15 +17,17 @@
 			编译器编码
 				MSVC
 					源码编码: 源代码文件的编码,分为带BOM和不带BOM,UTF8的BOM是0xEFBBBF
-					程序编码: 编译之后的编码,可以选择多字节字符集(char类型,编码和系统一致)和UNICODE字符集(w_char类型,utf16)
+					程序编码: 编译之后的编码,可以选择多字节字符集(char类型,编码和系统一致)和UNICODE字符集(w_char类型mbstowc,utf16)
+					编码转换: wcstombs把char类型转换为wchar类型  mbstowcs把wchar类型转换为char类型
 				GCC
 					源码编码: -finput-charset=utf-8 不设置则默认UTF-8
 					程序编码: -fexec-charset=utf-8  不设置则默认UTF-8
 		文件格式
 			ELF格式 unix下二进制文件格式
 				包含一个ELF文件头、一个程序头表、一个分节表(可选)、和多个SEGMENT(每个SEGMENT包含多个权限相同的SECTION)
-				.text代码段 .data|.bss|.rodata数据段 .init代码段(main进入前) .fini代码段(main退出后) .dynsym导出符号表 .dynstr字符串表
-				__attribute__(constructor()|destructor())
+				.text代码段 .data|.bss|.rodata数据段 .dynsym导出符号表 .dynstr字符串表
+				.init代码段 main进入前,通过编译特性标记__attribute__(constructor())
+				.fini代码段 main退出后,通过编译特性标记__attribute__(destructor())
 		文件权限
 			文件拥有者-拥有者同组用户-管理员 rwx-rwx-rwx
 			groupadd -r -g id name 添加用户组并指定ID和组名(r选项表示系统用户组)
@@ -44,42 +39,29 @@
 内存管理
 	    内存访问
 			MMU:接收CPU的内存访问请求,把虚拟地址转换为物理地址(L1 L2 主存)
-			虚拟地址:页表索引(占用20位)+页内偏移(占用12位)
+			虚址:页表索引(占用20位)+页内偏移(占用12位)
 			页表:每一项占用32位,其中20位对应物理页基地址,12位对应物理内存状态(访问权限、是否缺页)
 			进程:每个进程都有自己的页表,切换进程会同时更新MMU内的页表地址
-			TLB:页表访问缓存,降低页表查找次数(页表也是存储在物理内存中的)
 		内存布局
-			stack-map-heap-bss-rwdata-rodata-code
+			stack-map-heap-bss-rwdata-rodata-text
 		内存分配
-			brk系统调用分配小于128KB内存,中间内存碎片无法释放,mmap系统调用分配大于128KB内存,自由释放
-			具体大小可由M_MMAP_THRESHOLD来调节 M_TRIM_THRESHOLD调节堆碎片紧缩值
-
-			new/delete new[]/delete[] 分配/释放内存,然后调用构造/析构函数
-			malloc/free 只负责分配/释放内存
-			mmap(NULL,size,PROT_READ|PROT_WRITE|PROT_EXEC,MMAP_PRIVATE,fd,offset);
-			munmap(PTR,size);
-				头文件 sys/mman
-				mmap有SHARED和PRIVATE两种方式,即共享内存和私有内存,前者会写入文件,后者不会
-				mmap共享模式下映射大小不大于文件大小,多余部分不会写入文件(页对齐)
-				fseek可以设置文件大小
-				msync同步共享内存写入到映射文件
-			shmget(key,size,IPC_CREAT)
-				头文件 sys/shm sys/ipc
-				SHM需要先创建共享内存,然后映射到进程地址空间内,shmat(&sid,NULL,0);
-				取消映射使用shmdt(PTR);
-				删除内存使用shmctl(sid,IPC_RMID,NULL);
-				shm映射内存不会写入文件,进程退出不删除则系统关机才会删除
-			FileMap
-				windows共享内存机制
-				创建共享内存 CreateFileMapping(INVALID_HANDLE_VALUE,NULL,PAGE_READWRITE,0,SIZE,KEY);
-				打开共享内存 OpenFileMapping(FILE_MAP_ALL_ACCESS,TRUE,KEY);
-				进程映射内存 MapViewOfFile(handle,FILE_MAP_ALL_ACCESS,0,0,0);
-				取消内存映射 UnmapViewOfFile(PTR);
-				关闭共享内存 CloseHandle(handle)
-			VirtualAlloc
-				ntdll的API,windows虚拟内存
-		内存权限
-			mprotect(ADDR,LEN,PROT_READ | PROT_WRITE | PROT_EXEC)
+			malloc
+				大于128KB内存用mmap(安卓4K对齐)或者vm_allocate(苹果16K对齐)分配
+				小于128KB的内存是在一个pool内分配(苹果系统16B对齐),pool是使用mmap或者vm_allocate分配的
+				苹果系统提供了malloczone用来分配不同类型的内存(避免对齐和碎片浪费大量内存),vm_allocate也是用malloczone来实现的
+				安卓系统提供了memalign用来分配指定对齐方式的内存(Unity是16位)
+			mmap 头文件 sys/mman
+				分配内存 mmap(NULL,size,PROT_READ|PROT_WRITE|PROT_EXEC,MMAP_PRIVATE|MMAP_ANON,fd,offset);
+				回收内存 munmap(PTR,size)
+				共享内存 SHARED用来映射共享内存(各种so、apk、dex等等)  
+				私有内存 PRIVATE是进程私有内存,配合ANON做匿名映射(安卓dumpsys meminfo时会统计到Unknown内)
+			shm 头文件 sys/shm sys/ipc windows.h
+				创建共享内存 shmget(key,size,IPC_CREAT) CreateFileMapping(INVALID_HANDLE_VALUE,NULL,PAGE_READWRITE,0,SIZE,KEY)
+				进程映射内存 shmat(sid,NULL,0) 			OpenFileMapping(FILE_MAP_ALL_ACCESS,TRUE,KEY) MapViewOfFile(handle,FILE_MAP_ALL_ACCESS,0,0,0)
+				取消进程映射 shmdt(PTR)        			UnmapViewOfFile(PTR)
+				回收共享内存 shmctl(sid,IPC_RMID,NULL)	CloseHandle(handle)
+				shm内存映射进程退出时不删除则系统关机时才会删除
+				shm和filemap分别是linux和windows系统下的进程共享内存实现
 进程管理
 		进程关系
 			父子进程: fork创建进程,pid为0是子进程,大于0是父进程,调用execl(path,name,args)覆盖进程空间执行新程序代码

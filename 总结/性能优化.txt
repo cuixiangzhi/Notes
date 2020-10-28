@@ -20,9 +20,11 @@
     植被 密度
 特效
     GM命令连续播放特效 检测overdraw或者fps测试性能消耗
-    LOD逐级减少视觉元素,禁用粒子发射器可以DrawCall
+    LOD逐级减少视觉元素,禁用粒子发射器可以DrawCall  区分主要元素和次要元素  减少次要元素的粒子数和存活时间
     LOD逐级减少粒子总数,减少存活数量可以降低CPU消耗
-    制作粒子LOD
+    例子贴图去掉没有必要的透明边缘 256x256 128x128
+    制作粒子LOD 减少叠加的层数 使用小片替代大范围的片,降低填充率
+    降低最大屏幕占比
     Fix bounds
     减小更新频率
     减小粒子LOD切换的侦测频率
@@ -125,7 +127,11 @@
     GameObject.SetPos
     UGUI ReBuild是UI元素重建会导致SendWillRenderCanvases Canvas.ReBatch是多线程的(UI元素变化时整个Canvas要重建)
 动态分辨率
-    设置分辨率缩放上下限 目标帧率耗时
+    设置分辨率缩放上下限 目标帧率耗时 
+    需要渲染API支持 
+    Unity通过ScalableBufferManager设置缩放比例 通过FrameTimingManager检测CPU和GPU的耗时
+    Unreal通过r.DynamicRes系列命令或者DynamicResolution的API设置缩放比例 目标帧率耗时 开关等等
+    根据Screen.resolution读取显示器支持哪些分辨率 可以运行时调整,只支持固定的几个分辨率
 渲染
     bandwidth数据带宽
         开启遮挡剔除
