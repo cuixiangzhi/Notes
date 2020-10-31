@@ -2,39 +2,13 @@
 	RGB颜色模型
 		RGB模型是显示器的物理模型,图像最终都是以RGB模型显示的
 	HSV颜色模型
-		色相H 	
-			某一种颜色,用角度来度量,范围是0-360
-			rgb -> hue
-				if max == min then h = 0
-				if max == r and g >= b then h = 60 * [(g-b)/(max-min)]
-				if max == r and g < b then h = 60 * [(g-b)/(max-min)] + 360
-				if max == g then h = 60 * [(b-r)/(max-min)] + 120
-				if max == b then h = 60 * [(r-g)/(max-min)] + 240
-			hsv -> rgb
-				hi=[h/60] % 6  f=h/60-hi p=v*(1-s) q=v*(1-f*s) t=v*(1-(1-f)*s)
-				if hi == 1 then rgb=vtp
-				if hi == 2 then rgb=qvp
-				if hi == 3 then rgb=pvt
-				if hi == 4 then rgb=pqv
-				if hi == 5 then rgb=tpv
-				if hi == 6 then rgb=vpq
-		饱和度S 
-			颜色接近光谱颜色的程度,用比例表示,范围是0~1
-			rgb -> s
-				if max == 0 then s = 0
-				else s = 1 - min/max 
-		明度V
-			颜色明暗程度,用数值表示,范围是0~1
-			rgb -> v
-				v = max
+		色相H 	 某一种颜色,范围是0-360
+		饱和度S  颜色接近光谱颜色的程度,范围是0~1
+		明度V    颜色明暗程度,范围是0~1
 	Gamma校正
 		显示器输入电压与亮度不是线性关系,输出的颜色会偏暗pow(2.2),需要对原始颜色做一次反向操作pow(0.45)
 		Texture的sRGB选项表示纹理颜色位于Gamma空间(进行过0.45的Gamma校正)
 		FrameBuffer开启sRGB之后读和写会自动进行Linear和Gamma空间的转换(写入时Linear转Gamma,读取时Gamma转Linear)
-	HDR原理
-		人眼瞳孔会根据光线射入量进行自适应调节,太亮时缩小瞳孔减少射入量,太暗放大增加射入量
-		RGB颜色分量是8位,最多存储0-255,大部分高亮的颜色都超过了255,光照计算时很可能会计算出大于255的值
-		Bloom效果会提取指定阈值内的亮度颜色进行模糊,不做HDR处理会使得白色物体也出现泛光效果
 颜色修正
 	亮度
 		直接对RGB颜色值乘上一个系数即可
