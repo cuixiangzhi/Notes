@@ -37,6 +37,8 @@
     简化复杂粒子
     减小Decal开销
 
+    优先降低材质复杂度 然后减少粒子数量  因为粒子远离摄像机时overdraw变小
+
     r.EmitterSpawnRateScale
     r.DetailMode
     r.RefractionQuality

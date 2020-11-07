@@ -4,26 +4,18 @@
     发光强度 单位是cd(坎德拉),表示光源在给定方向上的光通量
     光亮度   单位是nit(尼特),表示单位立体角单位面积的光通量
 基础知识
-    Li:入射光亮度 Lr:反射光亮度 dωi:微分立体角 θ:入射光与表面法线的夹角
+    dωi:微分立体角(一束光线) dA:微分面积(一个像素) Li:片元入射光亮度 Lr:片元反射总亮度
+    反射方程: Lr=∫fr*Li(p,ωi)dot(n,ωi)dωi
+    F0 基础反射率,垂直观察表面时的反射率
+    F  菲涅尔反射,半角h和视线v夹角越大,镜面反射比例越大,曲线拟合公式F=F0+(1-F0)(1-dot(h,v))⁵
+    vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}   
 光照模型
     直接光
     间接光
     公式原理以及输入参数
-        http://artisaverb.info/PBT.html 资源库
-        https://www.cnblogs.com/timlly/p/10631718.html 原理介绍
-        https://blog.csdn.net/i_dovelemon/article/details/79091105 IBL算法
-        终极公式
-            反射方程
-                辐射率:单位时间内通过单位面积单位立体角的辐射能量
-                辐照度:单位时间内通过单位面积的辐射能量
-                入射微分辐照度 dEi(p,ωi)=Li(p,ωi)*cosθi*dωi
-                反射微分辐射率 dLo(p,ωo)=fr(p,ωi,ωo)*dEi(p,ωi)
-                Lo(p,ωo) = ∫fr*Li(p,ωi)dot(n,ωi)dωi
-            方向参数
-                法线方向n:normalize(tangentNormal*TBN)
-                反射方向l:normalize(lightPos-worldPos)
-                视线方向v:normalize(cameraPos-worldPos)
-                半角向量h:normalize(l+v)
             直接光漫反射
                 1.公式为 brdf_d*Li*dot(n,l) brdf_d=kd*albedo/π Li=light.color*shadow kd=lerp(0.96,0,metallic)
             直接光镜面反射
