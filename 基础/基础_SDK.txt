@@ -3,6 +3,10 @@
     appKey:     应用的账号和秘钥成对出现,appID和appKey可以一致(针对不需要设置账号权限的服务)
     appSecret:  应用的公钥密码
     token:      应用敏感数据获取时用于验证,使用appID、appKey、appSecret进行初始化后,会生成一个acces_token,用于后续的API调用
+    dpi:        每英寸墨点数，用于描述打印密度
+    ppi:        每英寸像素数，用于描述屏幕密度(安卓设备的DPI等价于PPI)
+    dp:         安卓系统的逻辑单位dp=px*mppi/ppi,用于描述物理尺寸
+    dpichart:   ldpi_120_36px mdpi_160_48px hdpi_240_72px xhdpi_320_96px xxhdpi_480_144px
 安卓SDK
     jre:    基础运行环境(java命令)
     jdk:    基础开发类库、工具包
