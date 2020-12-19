@@ -32,6 +32,9 @@
 
 角色渲染
     头发
+        首先渲染不透明区域,AlphaTest; Cull Off; ZWrite On; ColorMask 0; clip(a-cutoff)
+        然后渲染半透明区域,AlphaBlend; Cull Off;ZWrite Off; a/=cutoff更柔和
+        这种方式适合头发尾部大量半透明的情况
     眉毛
     眼睛
     脸部

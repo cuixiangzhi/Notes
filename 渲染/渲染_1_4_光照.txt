@@ -2,16 +2,25 @@
     光通量   单位是lm(流明),表示人眼感受到的光源的辐射功率
     光照强度 单位是lx(勒克斯),表示光源在单位面积上的光通量
     发光强度 单位是cd(坎德拉),表示光源在给定方向上的光通量
-    光亮度   单位是nit(尼特),表示单位立体角单位面积的光通量
+    光亮度   单位是nit(尼特),表示单位面积的发光强度
 基础知识
-    dωi:微分立体角(一束光线) dA:微分面积(一个像素) Li:片元入射光亮度 Lr:片元反射总亮度
-    反射方程: Lr=∫fr*Li(p,ωi)dot(n,ωi)dωi
+    dωi:微分立体角(一束光线) dA:微分面积(一个像素) Li:片元入射光亮度 Lr:片元反射光总亮度
+    反射方程: Lr=SUM(fr*Li(p,ωi)dot(n,ωi)dωi)
     F0 基础反射率,垂直观察表面时的反射率
     F  菲涅尔反射,半角h和视线v夹角越大,镜面反射比例越大,曲线拟合公式F=F0+(1-F0)(1-dot(h,v))⁵
-    vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
-{
-    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
-}   
+    漫反射预计算  
+        辐照度图  
+            入射光积分:Li*dot(n,wi) 采样向量满足均匀分布
+            反射光计算Lo=kd*c/π*texCube(irradianceMap, boxprojection(normal))
+    镜面反射预计算
+        预过滤环境贴图
+            考虑了粗糙度的入射光积分不同的粗糙度对应了不同的mipmap
+            采样向量符合NDF(与粗糙度、半角向量有关的函数)分布,半角向量用法线近似N=V=R 也就是默认垂直观察表面 采样向量等于法线方向 等于视线反方向
+        BRDF积分贴图   dot(n,wi)作为横坐标 粗糙度作为纵坐标
+        local lod = getMipLevelFromRoughness(roughness)
+        local light = texCube(prefilterMap, lod)
+        local brdf = tex2D(brdfMap, uv(NdotV, roughness))
+        local color = light * (F * brdf.x + brdf.y)
 光照模型
     直接光
     间接光

@@ -22,13 +22,6 @@
 		1DLUT RGB使用相同的曲线做颜色转换,只能用来调整图像颜色亮度
 		3DLUT 使用n^3(n一般在16到64之间)的纹理来做映射,LUT制作一般是先对原图做调色处理,然后对原图的LUT做相同的处理得到调色LUT
 颜色混合
-	透明度混合
-		Blend SrcAlpha OneMinusSrcAlpha
-	透明度预乘
-		Blend One OneMinusSrcAlpha
-	正片叠底(变暗)
-		Blend DstColor Zero
-	叠加(线性减淡,变亮)
-		Blend One One
-	柔和叠加(滤色,变亮)
-		Blend OneMinusDstColor One
+	混合 Blend SrcAlpha OneMinusSrcAlpha
+	预乘 Blend One OneMinusSrcAlpha
+	叠加 Blend One One
