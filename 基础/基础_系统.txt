@@ -14,6 +14,8 @@
 				C++ 	string是char数组,wstring是wchar_t数组,_T():UNICODE字符集会添加L前缀,表示字符串类型为wchar_t
 				python  分为str和unicode两种对象,decode解码为unicode对象,encode编码为str对象,encode方式有gbk、utf8等等
 				console windows默认是GB2312编码,可以使用chcp切换编码 jenkins默认是utf-8编码
+			数据库编码
+				mysql 	utf8最多支持三个字节，手机上的emoji表情需要使用utf8mb4存储
 			编译器编码
 				MSVC
 					源码编码: 源代码文件的编码,分为带BOM和不带BOM,UTF8的BOM是0xEFBBBF
