@@ -1,28 +1,22 @@
 SQL语言
     数据类型   INT BIGINT TEXT FLOAT UNSIGNED CHAR定长 VARCHAR变长 
-    创建数据库  CREATE DATABASE name ENGINE=InooDB DEFAULT CHARSET=utf8
-	删除数据库  DROP DATABASE name
-	创建表   CREATE TABLE name (KEY TYPE,约束) ENGINE=InnoDB 
-	表索引   CREATE INDEX name ON table(key);
-	修改表   ALTER TABLE name ADD|DROP|MODIFY COLUMN
+    创建数据库 CREATE DATABASE name ENGINE=InooDB DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE utf8mb4_unicode_ci
+	删除数据库 DROP DATABASE name
+	数据库编码 console->client->connect->database->results
+	创建表   CREATE TABLE name (KEY TYPE,约束)
 	复制表   CREATE TABLE name SELECT * FROM name
-	        SELECT * INTO name in db from name
-	字段约束 主键(primary key) 外键(foreign key) 非空(not null) 非重复(unique)  条件判断(check) 设置默认值(default)
-	表约束	 存储引擎ENGINE=InnoDB 默认编码CHARSET=utf8 主键自增AUTO_INCREMENT=1 
-	插入数据 INSERT INTO name (keys) VALUES(...)
-	修改数据 UPDATE name SET key=val WHERE key=val
+	修改表   ALTER TABLE name ADD|DROP|MODIFY COLUMN
+	添加索引 CREATE INDEX name ON table(key);
+	添加数据 INSERT INTO name (keys) VALUES(...)
 	删除数据 DELETE FROM name WHERE key=val
-	
-	查询数据 SELECT * FROM name WHERE CONDITION AND|OR ORDERBY* DESC|ASC
-			多表查询 INNER|LEFT|RIGHT|FULL JOIN name ON
-事务
-	原子性、一致性、隔离性、持久化
-	事务分为ReadUnCommited(可读脏数据) ReadCommited(只读提交数据) RepeatableRead(并发读) Serializable(事务顺序执行)
-	开始事务Begin
-	回滚事务Rollback
-	提交事务Commit
+	修改数据 UPDATE name SET key=val WHERE key=val
+	查询数据 SELECT * FROM name WHERE CONDITION ORDERBY* DESC|ASC LIKE %string%
+	多表查询 INNER|LEFT|RIGHT|FULL JOIN name ON
+事务处理
+	事务性质 原子性、一致性、隔离性、持久化
+	事务类型 ReadUnCommited ReadCommited RepeatableRead Serializable
+	事务流程 开始事务Begin 回滚事务Rollback 提交事务Commit
 存储过程
-	把sql语句封装到一个函数内,内部有事务处理
 	delimiter //
 	drop procedure name//
 	create procedure name(var)
