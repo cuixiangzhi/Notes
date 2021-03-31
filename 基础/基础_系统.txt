@@ -1,128 +1,132 @@
+系统时间
+	UTC时间 os.time() time(NULL) os.time(loc_date) mktime(loc_tm)
+	UTC日期 os.date("!*t",utc) gmtime(utc)
+	LOC日期 os.date("*t",utc) localtime(utc)
 文件管理
-		文件系统
-			磁盘文件系统,定义了磁盘分区的存储、读写方式,例如FAT32 NTFS NFS EXT等等,文件存储的是INODE数据(偏移大小日期等等)
-			虚拟文件系统,对文件系统的抽象,封装了不同文件系统之间的差异性
-		文件编码
-			字节序
-				大端模式低地址存储高字节,高地址存储低字节
-			字符集
-				许多字符的集合,每个字符有一个编号,例如UNICODE字符集 ANSI字符集
-			字符编码
-				字符集编号的存储格式,例如UNICODE字符集的编码(UTF8 UTF16 UTF32等等) ANSI字符集的编码(GB2312 GBK BIG5等等)
-			语言编码
-				C# 		string是unicode对象,静态字符串初始化会根据cs文件编码解码,一个char是一个字符
-				C++ 	string是char数组,wstring是wchar_t数组,_T():UNICODE字符集会添加L前缀,表示字符串类型为wchar_t
-				python  分为str和unicode两种对象,decode解码为unicode对象,encode编码为str对象,encode方式有gbk、utf8等等
-				console windows默认是GB2312编码,可以使用chcp切换编码 jenkins默认是utf-8编码
-			数据库编码
-				mysql 	utf8最多支持三个字节，手机上的emoji表情需要使用utf8mb4存储
-			编译器编码
-				MSVC
-					源码编码: 源代码文件的编码,分为带BOM和不带BOM,UTF8的BOM是0xEFBBBF
-					程序编码: 编译之后的编码,可以选择多字节字符集(char类型,编码和系统一致)和UNICODE字符集(w_char类型mbstowc,utf16)
-					编码转换: wcstombs把char类型转换为wchar类型  mbstowcs把wchar类型转换为char类型
-				GCC
-					源码编码: -finput-charset=utf-8 不设置则默认UTF-8
-					程序编码: -fexec-charset=utf-8  不设置则默认UTF-8
-		文件格式
-			ELF格式 unix下二进制文件格式
-				包含一个ELF文件头、一个程序头表、一个分节表(可选)、和多个SEGMENT(每个SEGMENT包含多个权限相同的SECTION)
-				.text代码段 .data|.bss|.rodata数据段 .dynsym导出符号表 .dynstr字符串表
-				.init代码段 main进入前,通过编译特性标记__attribute__(constructor())
-				.fini代码段 main退出后,通过编译特性标记__attribute__(destructor())
-		文件权限
-			文件拥有者-拥有者同组用户-管理员 rwx-rwx-rwx
-			groupadd -r -g id name 添加用户组并指定ID和组名(r选项表示系统用户组)
-			useradd -r -u uid -g gid -d dir -m username 添加用户并指定用户组、主目录、用户名
-			userdel -r username 删除用户及其主目录
-			passwd username 修改用户密码
-		文件加锁
-			flock -xn lockfile -c 'command to run' x表示互斥锁 n表示非阻塞
+	文件系统
+		磁盘文件系统,定义了磁盘分区的存储、读写方式,例如FAT32 NTFS NFS EXT等等,文件存储的是INODE数据(偏移大小日期等等)
+		虚拟文件系统,对文件系统的抽象,封装了不同文件系统之间的差异性
+	文件编码
+		字节序
+			大端模式低地址存储高字节,高地址存储低字节
+		字符集
+			许多字符的集合,每个字符有一个编号,例如UNICODE字符集 ANSI字符集
+		字符编码
+			字符集编号的存储格式,例如UNICODE字符集的编码(UTF8 UTF16 UTF32等等) ANSI字符集的编码(GB2312 GBK BIG5等等)
+		语言编码
+			C# 		string是unicode对象,静态字符串初始化会根据cs文件编码解码,一个char是一个字符
+			C++ 	string是char数组,wstring是wchar_t数组,_T():UNICODE字符集会添加L前缀,表示字符串类型为wchar_t
+			python  分为str和unicode两种对象,decode解码为unicode对象,encode编码为str对象,encode方式有gbk、utf8等等
+			console windows默认是GB2312编码,可以使用chcp切换编码 jenkins默认是utf-8编码
+		数据库编码
+			mysql 	utf8最多支持三个字节，手机上的emoji表情需要使用utf8mb4存储
+		编译器编码
+			MSVC
+				源码编码: 源代码文件的编码,分为带BOM和不带BOM,UTF8的BOM是0xEFBBBF
+				程序编码: 编译之后的编码,可以选择多字节字符集(char类型,编码和系统一致)和UNICODE字符集(w_char类型mbstowc,utf16)
+				编码转换: wcstombs把char类型转换为wchar类型  mbstowcs把wchar类型转换为char类型
+			GCC
+				源码编码: -finput-charset=utf-8 不设置则默认UTF-8
+				程序编码: -fexec-charset=utf-8  不设置则默认UTF-8
+	文件格式
+		ELF格式 unix下二进制文件格式
+			包含一个ELF文件头、一个程序头表、一个分节表(可选)、和多个SEGMENT(每个SEGMENT包含多个权限相同的SECTION)
+			.text代码段 .data|.bss|.rodata数据段 .dynsym导出符号表 .dynstr字符串表
+			.init代码段 main进入前,通过编译特性标记__attribute__(constructor())
+			.fini代码段 main退出后,通过编译特性标记__attribute__(destructor())
+	文件权限
+		文件拥有者-拥有者同组用户-管理员 rwx-rwx-rwx
+		groupadd -r -g id name 添加用户组并指定ID和组名(r选项表示系统用户组)
+		useradd -r -u uid -g gid -d dir -m username 添加用户并指定用户组、主目录、用户名
+		userdel -r username 删除用户及其主目录
+		passwd username 修改用户密码
+	文件加锁
+		flock -xn lockfile -c 'command to run' x表示互斥锁 n表示非阻塞
 内存管理
-	    内存访问
-			MMU:接收CPU的内存访问请求,把虚拟地址转换为物理地址(L1 L2 主存)
-			虚址:页表索引(占用20位)+页内偏移(占用12位)
-			页表:每一项占用32位,其中20位对应物理页基地址,12位对应物理内存状态(访问权限、是否缺页)
-			进程:每个进程都有自己的页表,切换进程会同时更新MMU内的页表地址
-		内存布局
-			stack-map-heap-bss-rwdata-rodata-text
-		内存分配
-			malloc
-				大于128KB内存用mmap(安卓4K对齐)或者vm_allocate(苹果16K对齐)分配
-				小于128KB的内存是在一个pool内分配(苹果系统16B对齐),pool是使用mmap或者vm_allocate分配的
-				苹果系统提供了malloczone用来分配不同类型的内存(避免对齐和碎片浪费大量内存),vm_allocate也是用malloczone来实现的
-				安卓系统提供了memalign用来分配指定对齐方式的内存(Unity是16位)
-			mmap 头文件 sys/mman
-				分配内存 mmap(NULL,size,PROT_READ|PROT_WRITE|PROT_EXEC,MMAP_PRIVATE|MMAP_ANON,fd,offset);
-				回收内存 munmap(PTR,size)
-				共享内存 SHARED用来映射共享内存(各种so、apk、dex等等)  
-				私有内存 PRIVATE是进程私有内存,配合ANON做匿名映射(安卓dumpsys meminfo时会统计到Unknown内)
-			shm 头文件 sys/shm sys/ipc windows.h
-				创建共享内存 shmget(key,size,IPC_CREAT) CreateFileMapping(INVALID_HANDLE_VALUE,NULL,PAGE_READWRITE,0,SIZE,KEY)
-				进程映射内存 shmat(sid,NULL,0) 			OpenFileMapping(FILE_MAP_ALL_ACCESS,TRUE,KEY) MapViewOfFile(handle,FILE_MAP_ALL_ACCESS,0,0,0)
-				取消进程映射 shmdt(PTR)        			UnmapViewOfFile(PTR)
-				回收共享内存 shmctl(sid,IPC_RMID,NULL)	CloseHandle(handle)
-				shm内存映射进程退出时不删除则系统关机时才会删除
-				shm和filemap分别是linux和windows系统下的进程共享内存实现
-		内存对齐
-			存取效率
-				CPU是按照chunk来读取内存的,chunk大小可以是2字节、4字节、8字节等,chunk称为内存访问粒度
-				CPU每次都是从chunk对齐地址处读取内存数据,如果一个数据不是对齐的,而是分散在不同的chunk上,那么就会增加访问次数
-			对齐规则
-				变量的起始地址是有效对齐值的倍数,有效对齐值=min{自身对齐,指定对齐} 自身对齐=min{最大成员,指定对齐}
-				注意点:32位机器指定对齐默认为4,64位机器指定对齐默认为8
+	内存访问
+		MMU:接收CPU的内存访问请求,把虚拟地址转换为物理地址(L1 L2 主存)
+		虚址:页表索引(占用20位)+页内偏移(占用12位)
+		页表:每一项占用32位,其中20位对应物理页基地址,12位对应物理内存状态(访问权限、是否缺页)
+		进程:每个进程都有自己的页表,切换进程会同时更新MMU内的页表地址
+	内存布局
+		stack-map-heap-bss-rwdata-rodata-text
+	内存分配
+		malloc
+			大于128KB内存用mmap(安卓4K对齐)或者vm_allocate(苹果16K对齐)分配
+			小于128KB的内存是在一个pool内分配(苹果系统16B对齐),pool是使用mmap或者vm_allocate分配的
+			苹果系统提供了malloczone用来分配不同类型的内存(避免对齐和碎片浪费大量内存),vm_allocate也是用malloczone来实现的
+			安卓系统提供了memalign用来分配指定对齐方式的内存(Unity是16位)
+		mmap 头文件 sys/mman
+			分配内存 mmap(NULL,size,PROT_READ|PROT_WRITE|PROT_EXEC,MMAP_PRIVATE|MMAP_ANON,fd,offset);
+			回收内存 munmap(PTR,size)
+			共享内存 SHARED用来映射共享内存(各种so、apk、dex等等)  
+			私有内存 PRIVATE是进程私有内存,配合ANON做匿名映射(安卓dumpsys meminfo时会统计到Unknown内)
+		shm 头文件 sys/shm sys/ipc windows.h
+			创建共享内存 shmget(key,size,IPC_CREAT) CreateFileMapping(INVALID_HANDLE_VALUE,NULL,PAGE_READWRITE,0,SIZE,KEY)
+			进程映射内存 shmat(sid,NULL,0) 			OpenFileMapping(FILE_MAP_ALL_ACCESS,TRUE,KEY) MapViewOfFile(handle,FILE_MAP_ALL_ACCESS,0,0,0)
+			取消进程映射 shmdt(PTR)        			UnmapViewOfFile(PTR)
+			回收共享内存 shmctl(sid,IPC_RMID,NULL)	CloseHandle(handle)
+			shm内存映射进程退出时不删除则系统关机时才会删除
+			shm和filemap分别是linux和windows系统下的进程共享内存实现
+	内存对齐
+		存取效率
+			CPU是按照chunk来读取内存的,chunk大小可以是2字节、4字节、8字节等,chunk称为内存访问粒度
+			CPU每次都是从chunk对齐地址处读取内存数据,如果一个数据不是对齐的,而是分散在不同的chunk上,那么就会增加访问次数
+		对齐规则
+			变量的起始地址是有效对齐值的倍数,有效对齐值=min{自身对齐,指定对齐} 自身对齐=min{最大成员,指定对齐}
+			注意点:32位机器指定对齐默认为4,64位机器指定对齐默认为8
 进程管理
-		进程关系
-			父子进程: fork创建进程,pid为0是子进程,大于0是父进程,调用execl(path,name,args)覆盖进程空间执行新程序代码
-			僵尸进程: 子进程的退出状态,等待父进程调用waitpid(-1,NULL,0)回收;
-			孤儿进程: 子进程的状态,父进程退出但是子进程没有退出,子进程会由init进程收养
-			守护进程: 后台进程执行监测任务,使用deamon()函数实现即可
+	进程关系
+		父子进程: fork创建进程,pid为0是子进程,大于0是父进程,调用execl(path,name,args)覆盖进程空间执行新程序代码
+		僵尸进程: 子进程的退出状态,等待父进程调用waitpid(-1,NULL,0)回收;
+		孤儿进程: 子进程的状态,父进程退出但是子进程没有退出,子进程会由init进程收养
+		守护进程: 后台进程执行监测任务,使用deamon()函数实现即可
 线程管理
-		线程进程
-			进程的创建需要分配独立的地址空间,代码段、数据段、堆栈段
-			线程的创建只需要很小的空间,比进程消耗小很多,线程切换比进程切换速度快
-		线程创建   				  
-			pthread_create(pthread_t &pid,NULL,void* loopfunc,this);
-			CreateThread(NULL,0,DWORD WINAPI loopfunc,this,DWORD &pid)
-			pthread_self()获取线程ID
-		线程退出
-			pthread_cancel();
-			pthread_exit(NULL);
-		线程回收
-			默认创建的线程处于joinable(可以通过设置pthread_attr来改变)状态,需要调用pthread_join(pid)之后才会回收已退出的线程的资源
-			调用pthread_detach后线程处于游离状态,由操作系统来回收资源
-		线程状态
-			新建: 已经创建,等待start
-			就绪: 可以执行,等待cpu
-			运行: 正在执行,执行code
-			阻塞: 等待事件,等待阻塞:event.wait(等待event.notify|pulse) 睡眠阻塞:sleep(等待timeout|interrupt)
-			死亡: 执行结束,等待主线程回收资源
-		线程同步
-			共享锁和互斥锁属性
-				pthread_mutex|rwlockattr_init(&attr)
-				pthread_mutex|rwlockattr_setpshared(&attr,pshared)
-			共享锁和互斥锁(通过属性指定是进程锁还是线程锁,默认是线程锁)
-				pthread_mutex|rwlock_init(&handle,&attr)
-				pthread_mutex|rwlock_lock(&handle);
-				pthread_mutex|rwlock_unlock(&handle);
-				pthread_mutex|rwlock_destroy(&handle)
-			信号量(头文件semaphore.h,通过pshared指定是进程共享还是线程共享)
-				创建 sem_init(sem_t, pshared, value)
-				等待 sem_wait(sem_t)
-				释放 sem_post(sem_t)
-			注意点
-				原子性: 语句编译之后只有一条指令(i++有三条 读 加 赋值) CAS指令(compareAndSwap)
-				有序性: java编译器会对指令进行重排序优化,volatile修饰符可以保证变量的读写操作的前后语句不会交换顺序
-				互斥锁: java.reentrantlock(可重入锁)  cs.lock(语法糖) cs.monitor ue4.fcriticalsection
-				读写锁: java.reentrantreadwritelock  ue4.frwlock
-				区域锁: java.synchronized(可重入锁)  ue4.fscopedlock 
-				自旋锁: 循环等待,降低线程切换开销 ue4.fspinlock
-		数据队列
-			环形缓冲区
-				一个size大小的buffer,head指向第一个可读的位置,tail指向第一个可写的位置
-				buffer判空 head==tail
-				buffer空闲 head大于tail则left=head-tail-1 head小于tail则left=total-tail-1+head
-				buffer有效 head大于tail则left=total-head+tail head小于tail则left=tail-head
-			无锁逻辑
-				读操作只修改head的值,读取之前先把tail值缓存下来,避免读的过程中被修改,读完之后在修改head的值
-				写操作只修改tail的值,写入之前先把tail值缓存下来,写完之后在修改
+	线程进程
+		进程的创建需要分配独立的地址空间,代码段、数据段、堆栈段
+		线程的创建只需要很小的空间,比进程消耗小很多,线程切换比进程切换速度快
+	线程创建   				  
+		pthread_create(pthread_t &pid,NULL,void* loopfunc,this);
+		CreateThread(NULL,0,DWORD WINAPI loopfunc,this,DWORD &pid)
+		pthread_self()获取线程ID
+	线程退出
+		pthread_cancel();
+		pthread_exit(NULL);
+	线程回收
+		默认创建的线程处于joinable(可以通过设置pthread_attr来改变)状态,需要调用pthread_join(pid)之后才会回收已退出的线程的资源
+		调用pthread_detach后线程处于游离状态,由操作系统来回收资源
+	线程状态
+		新建: 已经创建,等待start
+		就绪: 可以执行,等待cpu
+		运行: 正在执行,执行code
+		阻塞: 等待事件,等待阻塞:event.wait(等待event.notify|pulse) 睡眠阻塞:sleep(等待timeout|interrupt)
+		死亡: 执行结束,等待主线程回收资源
+	线程同步
+		共享锁和互斥锁属性
+			pthread_mutex|rwlockattr_init(&attr)
+			pthread_mutex|rwlockattr_setpshared(&attr,pshared)
+		共享锁和互斥锁(通过属性指定是进程锁还是线程锁,默认是线程锁)
+			pthread_mutex|rwlock_init(&handle,&attr)
+			pthread_mutex|rwlock_lock(&handle);
+			pthread_mutex|rwlock_unlock(&handle);
+			pthread_mutex|rwlock_destroy(&handle)
+		信号量(头文件semaphore.h,通过pshared指定是进程共享还是线程共享)
+			创建 sem_init(sem_t, pshared, value)
+			等待 sem_wait(sem_t)
+			释放 sem_post(sem_t)
+		注意点
+			原子性: 语句编译之后只有一条指令(i++有三条 读 加 赋值) CAS指令(compareAndSwap)
+			有序性: java编译器会对指令进行重排序优化,volatile修饰符可以保证变量的读写操作的前后语句不会交换顺序
+			互斥锁: java.reentrantlock(可重入锁)  cs.lock(语法糖) cs.monitor ue4.fcriticalsection
+			读写锁: java.reentrantreadwritelock  ue4.frwlock
+			区域锁: java.synchronized(可重入锁)  ue4.fscopedlock 
+			自旋锁: 循环等待,降低线程切换开销 ue4.fspinlock
+	数据队列
+		环形缓冲区
+			一个size大小的buffer,head指向第一个可读的位置,tail指向第一个可写的位置
+			buffer判空 head==tail
+			buffer空闲 head大于tail则left=head-tail-1 head小于tail则left=total-tail-1+head
+			buffer有效 head大于tail则left=total-head+tail head小于tail则left=tail-head
+		无锁逻辑
+			读操作只修改head的值,读取之前先把tail值缓存下来,避免读的过程中被修改,读完之后在修改head的值
+			写操作只修改tail的值,写入之前先把tail值缓存下来,写完之后在修改

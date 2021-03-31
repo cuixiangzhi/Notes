@@ -29,9 +29,9 @@ SQL语言
 	end //;
 	delimiter ;
 主流数据库 
-	mysql   硬盘数据库,C/S模式
-	sqlite  轻量级硬盘数据库,适用于客户端保存临时数据
-	redis   内存数据库,RDB AOF 定时fork子进程写
+	mysql   硬盘数据库,服务器持久化存储
+	sqlite  硬盘数据库,适用于客户端保存临时数据
+	redis   内存数据库,服务器缓存提升性能
 	mongodb 内存数据库,利用mmap文件映射实现  
 	sharemem内存数据库,本地进程共享,利用shm库实现
 	nosql   非关系型数据库,关系型数据库以表格形式存储,非关系型以OBJ方式存储

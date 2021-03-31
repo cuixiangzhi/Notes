@@ -10,10 +10,10 @@ UHT生成结构
         CURRENT_FILE_ID  当前文件的唯一名字，是GENERATED_BODY的参数之一
         GENERATED_BODY   给当前类添加函数(用文件名和行号来区分不同的类)，包括FObjectInitializer构造函数、UClassConstruct友元函数、execNative蓝图函数
         DECLARE_CLASS    当前类的UClass类型声明，包含UPackage路径、StaticClass函数、GetPrivateStaticClass函数(UClass对象构造)、_DefaultConstructor(类默认构造函数)
-        DECLARE_FUNCTION 把成员函数包装为静态函数供蓝图调用，蓝图可重写的函数默认实现有两种(成员函数和蓝图函数)
+        DECLARE_FUNCTION 把成员函数包装为静态函数供蓝图调用(BlueprintCallable蓝图可调用 BlueprintNativeEvent蓝图可重载带默认实现 BlueprintImplementableEvent蓝图可重载)
+        STRUCT_OFFSET    根据类指针和成员变量地址计算成员变量偏移，使用系统宏offsetof(s,m)来实现(size_t)(&((Class*)0)->Property)
     源文件
         IMPLEMENT_CLASS  定义GetPrivateStaticClass函数，把参数传递给GetPrivateStaticClassBody生成UClass
-        StaticRegisterNatives*  注册DECLARE_FUNCTION定义的本地函数到蓝图虚拟机
         Z_Construct_UClass_*    构造UClass对象，先执行基类UClass和当前类UPackage的构造，在执行StaticClass
         Z_Construct_UPackage_*  构造UPackage对象，用来作为当前UClass对象的Outer
         Z_Construct_UFunction_* 构造UFunction对象
