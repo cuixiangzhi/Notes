@@ -47,3 +47,16 @@ UE4界面架构
     WidgetTree
 UE4性能优化
     降低屏幕分辨率 r.ScreenPercentage 10 
+UE4启动流程
+    LaunchWindows LaunchWindows LaunchIOS分别定义了对应平台的Main函数
+    Main函数内执行FEngineLoop的接口(PreInit Init Tick Exit)
+    Init函数内执行GEngine的创建、Init、Start接口
+    Tick函数内执行GEngine的Tick接口
+    UEngine.Init 
+    UGameEngine.Init
+        创建一个GameInstance,执行Init创建一个DummyWorld
+        创建一个GameViewportClient,设置World和GameInstance
+        创建一个GameWindow(SWindow),设置窗口各种属性(大小、缩放等)
+        创建一个GameViewport(SViewport),设置子控件SGameLayerManager->SDPIScaler
+        创建一个SceneViewport(FSceneViewport)
+        UUserWidget: SCanvasPanel->SObjectWidget(事件处理)->SCanvasPanel

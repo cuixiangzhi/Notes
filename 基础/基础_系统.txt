@@ -54,8 +54,6 @@
 		malloc
 			大于128KB内存用mmap(安卓4K对齐)或者vm_allocate(苹果16K对齐)分配
 			小于128KB的内存是在一个pool内分配(苹果系统16B对齐),pool是使用mmap或者vm_allocate分配的
-			苹果系统提供了malloczone用来分配不同类型的内存(避免对齐和碎片浪费大量内存),vm_allocate也是用malloczone来实现的
-			安卓系统提供了memalign用来分配指定对齐方式的内存(Unity是16位)
 		mmap 头文件 sys/mman
 			分配内存 mmap(NULL,size,PROT_READ|PROT_WRITE|PROT_EXEC,MMAP_PRIVATE|MMAP_ANON,fd,offset);
 			回收内存 munmap(PTR,size)
