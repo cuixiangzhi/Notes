@@ -5,8 +5,8 @@
     token:      应用敏感数据获取时用于验证,使用appID、appKey、appSecret进行初始化后,会生成一个acces_token,用于后续的API调用
     dpi:        每英寸墨点数，用于描述打印密度
     ppi:        每英寸像素数，用于描述屏幕密度(安卓设备的DPI等价于PPI)
-    dp:         安卓系统的逻辑单位dp=px*density,用于描述物理尺寸,其中density=mdpi/ppi
-    dpichart:   ldpi_120_36px mdpi_160_48px hdpi_240_72px xhdpi_320_96px xxhdpi_480_144px
+    dp:         安卓系统的物理尺寸dp=px/ppi*160
+    dpichart:   DPI_DENSITY_PIXEL ldpi_120_36px mdpi_160_48px hdpi_240_72px xhdpi_320_96px xxhdpi_480_144px
 安卓SDK
     jre:    基础运行环境(java命令)
     jdk:    基础开发类库、工具包
@@ -20,7 +20,7 @@
     assets: 有些jar库使用了外部的资源或者配置文件,需要放在assets(对应于apk/assets目录)文件夹下
     obb:    googleplay对apk大小做了限制,需要把apk的一部分资源拆分出来打成obb包(main|patch.版本号.包名.obb)
     keystore 安卓应用打包签名所需要的文件,用于标识一个应用,相同签名的应用会覆盖安装
-    AndroidMainfest:
+    AndroidManifest:
         安卓apk配置文件
             首先是一个xml文件头 <?xml version="1.0" encoding="utf-8"?>
             然后是manifest头
@@ -47,12 +47,12 @@
                             <meta-data android:name="key" android:value="value" />
                         </activity>
 
-                        <!-- provider是一个应用之间共享数据的方式,继承自ContentProvider,默认有一个文件实现FileProvider-->
+                        <!-- provider是一个应用之间共享数据的方式,继承ContentProvider提供接口实现增删改查-->
                         <provider
                             android:name="com.xx.xx.XXProvider" 类名,一般使用supportv4库的FileProvider(android.support.v4.FileProvider)
                             android:authorities="com.xx.xx"     唯一标识
                             android:exported=""                 是否可被其它应用启动
-                            android:grantUriPermission=""       授权文件访问权限
+                            android:grantUriPermission="true"   授权文件访问权限
                             >                                   
                             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:value=@xml/file_paths/>
                         </provider>

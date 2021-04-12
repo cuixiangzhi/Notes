@@ -1,0 +1,10 @@
+Lua
+    注册表 	      	LuaState.l_G.l_registry
+    字符串          LuaState.l_G.strt
+    全局表	      	LuaState.l_gt
+    环境表          LuaState.env
+    GC对象          LuaState.gclist
+    函数Env         Closure.env
+    函数LocVar 		Proto.localvars
+    函数UpVar       LClosure.upvals LuaState.openupval upval一定在外层函数的localvars或者upvals中,外层函数的local是通过openupval间接引用的
+    函数栈帧        全局堆栈L->stack|L->top,函数栈帧L->base.L->ci->base|L->ci->top 保留现场L->ci->savedpc 新指令L->savedpc

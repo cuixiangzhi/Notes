@@ -42,6 +42,7 @@ UE4资源管理
     AndroidPlatformFile
     ApplePlatformFile
     IOSPlatformFile
+    资源路径 类型'/分区/路径/包名.资源名_类型(_C表示类 _Default表示CDO)
 UE4界面架构
     UserWidget.AddToViewport->SNew(FullScreenCanvas)->TakeWidget->FullScreenCanvas.AddSlot(SlateWidget)->ViewportClient.AddViewportWidgetContent(FullScreenCanvas)
     WidgetTree
@@ -57,6 +58,14 @@ UE4启动流程
         创建一个GameInstance,执行Init创建一个DummyWorld
         创建一个GameViewportClient,设置World和GameInstance
         创建一个GameWindow(SWindow),设置窗口各种属性(大小、缩放等)
-        创建一个GameViewport(SViewport),设置子控件SGameLayerManager->SDPIScaler
+        创建一个GameViewport(SViewport),设置子控件
+            SGameLayerManager
+                SDPIScaler
+                    SVerticalBox
+                        SWindowTitleBar
+                        SOverlay
+                            SPlayerCanvas
+                            SOverlay->SUserWidget
+                            SDebugCanvas
         创建一个SceneViewport(FSceneViewport)
-        UUserWidget: SCanvasPanel->SObjectWidget(事件处理)->SCanvasPanel
+        UUserWidget: SCanvasPanel->SObjectWidget(事件处理)->SCanvasPanel(WidgetTree.RootWidget)
