@@ -1,12 +1,5 @@
 android
-    1.android9.0(API28) 安全问题
-        找不到HTTP类 ClassNotFound org.apache.http.xx
-            AndroidManifest.xml application添加<uses-library android:name="org.apache.http.legacy" android:required="false"/>
-        禁止明文传输 CleartextNotPermitted
-            AndroidManifest.xml application添加android:usesCleartextTraffic="true"
-        添加https支持
-            使用System.Net.HttpWebRequest进行https请求,并添加证书验证回调ServicePointManager.ServerCertificateValidationCallback
-    2.android6.0(API23) 权限问题
+    1.android6.0(API23) 权限问题
         关闭启动弹窗
             AndroidManifest.xml 主activity添加<meta-data android:name="unityplayer.SkipPermissionDialog" android:value="true">
         检查权限状态
@@ -16,20 +9,29 @@ android
             onRequestPermissionsResult(int requestCode, string[] permissions, int[] grantResults)
         DontAskMeAgain
             ActivityCompat.shouldShowRequestPermissionRationale(activity, permission) == false
+    2.android9.0(API28) 安全问题
+        找不到HTTP类 ClassNotFound org.apache.http.xx
+            AndroidManifest.xml application添加<uses-library android:name="org.apache.http.legacy" android:required="false"/>
+        禁止明文传输 CleartextNotPermitted
+            AndroidManifest.xml application添加android:usesCleartextTraffic="true"
+        添加https支持
+            使用System.Net.HttpWebRequest进行https请求,并添加证书验证回调ServicePointManager.ServerCertificateValidationCallback
 ios
-    1.iOS9.2系统升级
+    1.iOS录音异常
+        播放音乐时录音报异常,音乐停止播放,切到后台再切回来音乐正常
+            默认Category为SoloAmbient,播放音乐时去录音,iOS会去关闭音乐[[AVAudioSession sharedInstance] setActive:NO,然后报错并且音乐无法恢复
+            解决方案:录音时修改Category为PlayAndRecord(此模式iOS会在听筒播放音乐),录音结束改成SoloAmbient
+    2.iOS9.2系统升级
         支持IPV6-Only网络
             addrinfo hint; hint.ai_flags=AI_DEFAULT; hint.ai_family=PF_UNSPEC;hint.ai_socktype=SOCK_STREAM;
             addrinfo* result;
             getaddrinfo(host,NULL,&hint,&result)
             inet_ntop(result.ai_family,result.ai_addr.sin6_addr,buffer,sizeof(buffer))
             返回值result是一个链表,遍历检查是否存在ai_family==AF_INET6的地址,使用inet_ntop把网络地址转换为IP地址
-    2.iOS13系统升级
+    3.iOS13系统升级
         第二次点击系统键盘无法打开
             TouchScreenKeyboard.Open->[UnityGetGLView() addSubView: editView]->[inputView becomeFirstResponder]
             第二步addView之后系统延迟调用了[inputView resignFirstResponder]把键盘关掉了
             解决方案:延时打开[self performSelector: @selector(delayFunction) withObject:nil afterDelay:0.05]
-    3.iOS录音异常
-        播放音乐时录音报异常,音乐停止播放,切到后台再切回来音乐正常
-            默认Category为SoloAmbient,播放音乐时去录音,iOS会去关闭音乐[[AVAudioSession sharedInstance] setActive:NO,然后报错并且音乐无法恢复
-            解决方案:录音时修改Category为PlayAndRecord(此模式iOS会在听筒播放音乐),录音结束改成SoloAmbient
+    4.iOS14系统升级
+        XCode12支持
