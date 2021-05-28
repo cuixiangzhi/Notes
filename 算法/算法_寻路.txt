@@ -78,8 +78,7 @@
             过滤可行走体素 ********************RecastFilter.cpp********************
                 根据climbHeight计算Y方向相邻体素距离,如果上一个体素可行走并且当前体素不可行走,相邻体素smax距离小于climbHeight,则标记当前区域可行走
                 for span in yspan do
-                    上一个span可行走且当前span不可行走
-                    两个span上边界距离小于climbHeight,标记当前span可行走
+                    上一个span可行走且当前span不可行走,两个span上边界距离小于climbHeight,标记当前span可行走
                 end
                 根据climbHeight计算XZ方向相邻体素距离,如果当前体素周围四个体素有大于或小于climbHeight,则标记为不可行走(悬崖边悬挂物体)
                 for span in yspan do
@@ -104,14 +103,8 @@
                     第一步,初始化rcCompactHeightfield结构体
                     第二步,将rcHeightField内的Span修改格式后存储到rcCompactHeightfield内
                     第三步,检测每个cell内的所有span的相邻span,测试其连通性(检查相邻Span是否可以通过一个agentHeight,并且可以一步走上去climbHeight)RC_NOT_CONNECTED
-
-                过滤边界,距离边界太近的Span标记为不可行走 *****************RecastArea.cpp********************
-                    遍历spans,如果一个Span为不可行走或者相邻的Span有一个不可行走,则标记该Span到达边界的距离为0
-                    检查与周围8个Span的最小距离,XZ轴向距离为2,斜对面距离为3
-                    最终距离小于角色半径的全部标记为不可行走
             可行走区域类型 ********************RecastArea.cpp********************
-                Volume是由顶点集合和area标记构成的
-                会检测每个Span在哪个Volume区域内(这里检测的是y方向范围),并修改其区域ID
+                会检测每个Span在哪个Volume区域(由顶点集合和area标记构成),并修改其区域ID
         
         区域生成:
             rcCompactHeightField            Recast.h

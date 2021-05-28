@@ -7,10 +7,22 @@
         功能背景 越少越好,最好没有
         功能图标 使用动态图集,大图单个使用,提供缓存机制
         压缩格式 统一使用ASTC6x6 关闭MIPMAP 关闭READ/WRITE
-    预设规范
+    使用规范
         图集使用 只能使用公共图集和对应系统的功能图集
         背景使用 只能使用公共背景和对应系统的功能背景
         图标使用 预设上不保留对图标的引用,通过代码动态加载
+音频
+    音频采样 8kHZ:人声 22kHZ:广播 44kHZ:音频 声道:Mono&Stereo
+    音频格式 中长音乐:Streaming+Vorbis 短音效:DeCompressOnLoad+ADPCM 编码:PCM无损1411kbps,AAC有损256kbps,OGG有损128kbps
+    FMOD概念 master.string.bank存储索引数据(event:* bank:* vca:* bus:*) name.bank存储样本数据(metadata|sampledata|streamingdata) vca是event的分组
+    DSPBUFF  FMOD播放声音的缓冲区,缓冲区填充满了才会播放,太大会导致声音延迟,太小CPU消耗上升
+    DSP效果  无线电(失真)、水下声音(高通滤波)、变声(改变音调)
+    音频缓存 LRU缓存 2D:1 3D:5 BG:1 CG:2
+视频
+    视频码率 720P:低码率1Mbps,中码率2Mbps,高码率4Mbps 1080P:低码率2Mbps,中码率4Mbps,高码率8Mbps
+    视频格式 MP4格式:H264视频编码和AAC音频编码 WEBM格式:VP8视频编码和VORBIS音频编码
+动画
+特效
 角色
     身体 LOD0:5000面_3000顶点_1.0_1.0 LOD1:2500面_1600顶点_0.7_0.5 LOD2:600面_500顶点_0.35_0.125 76根骨骼
     衣服 LOD0:1700面_1400顶点_1.0_1.0 LOD1:860面_810顶点_0.24_0.5  LOD2:430面_470顶点_0.19_0.25  31根骨骼(带物理模拟)
@@ -106,15 +118,15 @@
         排除不需要产生Lightmap的物件；合理设置Lightmap（通过Viewmode来控制其密度）；可适当减小Packed lightmap的尺寸，以减小Pack后的浪费（WorldSettings）；
         有可能的话使用Static Directional light减少生成直射光Shadowmap；考虑使用全动态灯光；考虑Foliage(植被)动态，不使用Lightmap；Grass可以使用地形Lightmap，
         避免单独生成（GrassType中设置）；
-模型LOD重用Lightmap；这需要LOD模型在引擎内减面；
-    减小Pre-computed visibility数据密度（手机）
-    适当调整ICL/VLM的密度
-        *WorldSettings中调整；
-        *通过Volume调整；
-    减少不同的Reflection capture的数量
-        *Reflection cubemap无法stream；
-        *可以反复使用几个自定义的Reflection cubemap来替代自动捕捉环境而生成的cubemap；
-        *需要的话适当减小分辨率（Project settings全局）；
+    模型LOD重用Lightmap；这需要LOD模型在引擎内减面；
+        减小Pre-computed visibility数据密度（手机）
+        适当调整ICL/VLM的密度
+            *WorldSettings中调整；
+            *通过Volume调整；
+        减少不同的Reflection capture的数量
+            *Reflection cubemap无法stream；
+            *可以反复使用几个自定义的Reflection cubemap来替代自动捕捉环境而生成的cubemap；
+            *需要的话适当减小分辨率（Project settings全局）；
 代码
     JobSystem
     DrawCall StaticBatch DynamicBatch
@@ -168,7 +180,7 @@
     viewmode
         gameview和sceneview镜头同步 使用overdraw模式查看性能消耗
 动画
-    骨骼动画
+    骨骼动画  动画重定向：骨架完全一致，根据原始骨架和目标骨架的骨骼长度(子骨骼偏移)来计算缩放比例
 	关键帧    AnimationClip,记录了每根骨骼相对于父骨骼的位置、旋转、缩放
 	绑定骨骼  SkinnedMeshRenderer.bones,记录了当前SkinMesh的动画绑定的骨骼
 	绑定姿势  Mesh.bindposes,记录了顶点变换到骨骼坐标系下的变换矩阵(bone.worldToLocal * renderer.localToWorld)
@@ -561,22 +573,6 @@
                 游戏内角色会有很多休闲动作,需要支持动态加载和卸载,支持LRU缓存
             animation_frame
                 动捕的关键帧几乎是满帧,需要简化(删除缩放曲线、简化直线帧)
-        audio_memory
-            dsp_buffer
-                FMOD播放声音会先写入到一个BUFFER内,BUFFER填充满了才会播放,太大会导致声音延迟,太小CPU消耗上升
-            speaker_mode
-                FMOD使用双声道内存会占用两份,最好选用mono模式(默认是stereo)
-            fmod_bank
-                master.string.bank存储了所有event的路径信息,可以通过getStringInfo获取资源信息(event:* bank:* vca:* bus:*)
-                name.bank文件是由metadata|sampledata|streamingdata三部分组成,loadBank时可以指定只加载metadata,sampledata自己控制加载
-            audio_format
-                音乐:Streaming+Vorbis 音效:DeCompressOnLoad+ADPCM 录音频率:8KHZ
-            audio_cache
-                2D:1 2D_ONE:1 3D:5 BG:1 CG:2
-        video_memory
-            video_format
-                720P:低码率1Mbps,中码率2Mbps,高码率4Mbps 1080P:低码率2Mbps,中码率4Mbps,高码率8Mbps
-                MP4格式:H264视频编码和AAC音频编码 WEBM格式:VP8视频编码和VORBIS音频编码
         bundle_memory
             typetree
                 为了做不同版本的类型兼容,开启之后会写入变量类型的信息
@@ -584,15 +580,6 @@
                 lz4分块解压,lzma是整体压缩,lz4占内存小,解压速度快
             size&count
                 每个包多大,什么资源打一个,文件头占用内存是否远小于资源内存
-音频
-    音频采样 8kHZ:人声 22kHZ:广播 44kHZ:音频 声道:Mono&Stereo 编码:PCM无损1411kbps,AAC有损256kbps,OGG有损128kbps
-    音频格式 中长音乐:Streaming+Vorbis 短音效:DeCompressOnLoad+ADPCM
-    音频数量 2D:1 2D_ONE:1 3D:5 BG:1 CG:2
-视频
-    视频码率 720P:低码率1Mbps,中码率2Mbps,高码率4Mbps 1080P:低码率2Mbps,中码率4Mbps,高码率8Mbps
-    视频格式 MP4格式:H264视频编码和AAC音频编码 WEBM格式:VP8视频编码和VORBIS音频编码
-纹理
-动画
 阴影
     1.LODGroup
         使用LODGroup组件设置Render列表,根据网格占屏比选择适当的LODMESH,支持淡入淡出(unity_LODFade)
