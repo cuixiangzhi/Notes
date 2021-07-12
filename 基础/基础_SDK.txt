@@ -5,7 +5,7 @@
     token:      应用敏感数据获取时用于验证,使用appID、appKey、appSecret进行初始化后,会生成一个acces_token,用于后续的API调用
     dpi:        每英寸墨点数，用于描述打印密度
     ppi:        每英寸像素数，用于描述屏幕密度(安卓设备的DPI等价于PPI)
-    dp:         安卓系统的物理尺寸dp=px/ppi*160
+    dp:         安卓系统的物理尺寸px=dp*ppi/160
     dpichart:   DPI_DENSITY_PIXEL ldpi_120_36px mdpi_160_48px hdpi_240_72px xhdpi_320_96px xxhdpi_480_144px
 安卓SDK
     jre:    基础运行环境(java命令)
