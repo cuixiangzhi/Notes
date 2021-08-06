@@ -1,11 +1,11 @@
-UBT生成配置
+UBT编译配置
     Build.cs  
         描述当前模块的生成规则,包括依赖模块、搜索路径、宏定义等等
         依赖分为公有依赖和私有依赖，私有依赖只有当前模块可以访问，私有路径同理
         可以根据目标类型、目标平台、编译方式(Debug|DebugGame|Development)来设置不同的依赖
     Target.cs 
         描述当前目标的模块组成,包括目标类型(Editor|Game)、模块列表、全局定义等
-UHT生成结构
+UHT文件结构
     头文件    
         CURRENT_FILE_ID  当前文件的唯一名字，是GENERATED_BODY的参数之一
         GENERATED_BODY   给当前类添加函数(用文件名和行号来区分不同的类)，包括FObjectInitializer构造函数、UClassConstruct友元函数、execNative蓝图函数
@@ -19,6 +19,16 @@ UHT生成结构
         Z_Construct_UFunction_* 构造UFunction对象
     注册流程
         利用静态对象在Main函数之前生成UClass，把execNative函数记录到Lookup表，把UClass对象添加到全局注册表，启动之后分帧执行注册
+UE4内存管理
+    引用关系
+        UPROPERTY 对于UObject类型的对象，需要使用UE4的UPROPERTY宏
+        UObject 有两种引用方式，一个是添加UProperty引用，一个是使用NewObject创建然后调用AddToRoot和RemoveFromRoot来添加和删除引用
+        MObject 通过智能指针引用，共享指针TSharedPtr=MakeShareable(new T())，共享引用TSharedRef=MakeShared<T>()或this->AsShared()
+        FGCObject MObject引用UObject时需要继承FGCObject并实现AddReferencedObjects，把需要保留的UObject对象加入到GC的有效集合内
+UE4寻路组件
+    ANavMeshBoundsVolume 框选需要生成NavMesh的区域，数据来源是场景内所有的StaticMesh，生成参数在ARecastNavMesh对象上配置
+    ANavModifierVolume   对可寻路区域进行修改裁剪，Area成员可以指定此区域的Cost和Flag，可以用来制作主路和开关，Brush成员可以指定Mesh类型，例如Cone、Box、Stair等等
+    ANavLinkProxy        非连通区域的连接点，连接点可以指定Area类型，通过该成员可以添加额外标记，例如攀爬
 UE4资源管理
     UPackage
     LinkerLoad
