@@ -59,23 +59,19 @@ UE4界面架构
 UE4性能优化
     降低屏幕分辨率 r.ScreenPercentage 10 
 UE4启动流程
-    LaunchWindows LaunchWindows LaunchIOS分别定义了对应平台的Main函数
+    LaunchLinux LaunchWindows LaunchIOS分别定义了对应平台的Main函数
     Main函数内执行FEngineLoop的接口(PreInit Init Tick Exit)
     Init函数内执行GEngine的创建、Init、Start接口
     Tick函数内执行GEngine的Tick接口
-    UEngine.Init 
-    UGameEngine.Init
+    UEngine.Init->UGameEngine.Init
         创建一个GameInstance,执行Init创建一个DummyWorld
         创建一个GameViewportClient,设置World和GameInstance
         创建一个GameWindow(SWindow),设置窗口各种属性(大小、缩放等)
-        创建一个GameViewport(SViewport),设置子控件
-            SGameLayerManager
-                SDPIScaler
-                    SVerticalBox
-                        SWindowTitleBar
-                        SOverlay
-                            SPlayerCanvas
-                            SOverlay->SUserWidget
-                            SDebugCanvas
-        创建一个SceneViewport(FSceneViewport)
+        创建一个GameViewport(SViewport),设置子控件树(SGameLayerManager->SDPIScaler->SVerticalBox->SOverlay->SUserWidget)
         UUserWidget: SCanvasPanel->SObjectWidget(事件处理)->SCanvasPanel(WidgetTree.RootWidget)
+        创建一个SceneViewport(FSceneViewport)
+UE4动画系统
+    LayeredBoneBlend
+        按照POSE的权重去混合指定的骨骼及其子骨骼,每根骨骼的混合权重由基础权重和BlendDepth共同决定,BlendWeight=Depth/BlendDepth
+    PoseAsset&ModifyCurve
+        ModifyCurve结点用来修改输入姿势的Curve数值,PoseAsset是一个由动画资源生成的姿势集合，在动画蓝图中根据权重(输入姿势的Curve信息)计算输出姿势
