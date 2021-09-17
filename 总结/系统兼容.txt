@@ -4,13 +4,15 @@ android
             AndroidManifest.xml 主activity添加<meta-data android:name="unityplayer.SkipPermissionDialog" android:value="true">
         检查权限状态
             ContextCompat.checkSelfPermission(contex, permission) == PackageManager.PERMISSION_GRANTED
-        权限默认开启
-            API23以后的版本默认配置的权限都是未开启的
         主动申请权限
             ActivityCompat.requestPermissions(activity, permission, MY_PERMISSIONS_REQUEST)
             onRequestPermissionsResult(int requestCode, string[] permissions, int[] grantResults)
         DontAskMeAgain
             ActivityCompat.shouldShowRequestPermissionRationale(activity, permission) == false
+        权限默认开启
+            目标版本低于23,设备版本低于23时权限默认开启,设备版本大于等于23时首次启动弹窗提示
+            目标版本大于等于23,设备版本低于23时首次启动弹窗提示,设备版本大于等于23时默认关闭
+            普通权限使用时自动授权,危险权限需要用户主动申请,需要处理危险权限被禁止的情况
     2.android9.0(API28) 安全问题
         找不到HTTP类 ClassNotFound org.apache.http.xx
             AndroidManifest.xml application添加<uses-library android:name="org.apache.http.legacy" android:required="false"/>
