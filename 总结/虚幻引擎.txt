@@ -1,9 +1,9 @@
 UBT编译配置
     Build.cs  
         描述当前模块的生成规则,包括依赖模块、搜索路径、宏定义等等
-        依赖分为公有依赖和私有依赖，私有依赖只有当前模块可以访问，私有路径同理
-        可以根据目标类型、目标平台、编译方式(Debug|DebugGame|Development)来设置不同的依赖
-    Target.cs 
+        依赖模块和搜索路径分公有和私有两种，私有只对当前模块生效
+        可以根据目标类型、目标平台、编译方式来设置不同的依赖集合
+    Target.cs
         描述当前目标的模块组成,包括目标类型(Editor|Game)、模块列表、全局定义等
 UHT文件结构
     头文件    
@@ -18,18 +18,39 @@ UHT文件结构
         Z_Construct_UPackage_*  构造UPackage对象，用来作为当前UClass对象的Outer
         Z_Construct_UFunction_* 构造UFunction对象
     注册流程
-        利用静态对象在Main函数之前生成UClass，把execNative函数记录到Lookup表，把UClass对象添加到全局注册表，启动之后分帧执行注册
+        利用静态对象在Main函数之前生成UClass，把UClass对象添加到全局注册表，启动之后分帧执行注册
 UE4内存管理
     引用关系
-        UPROPERTY 对于UObject类型的对象，需要使用UE4的UPROPERTY宏
-        UObject 有两种引用方式，一个是添加UProperty引用，一个是使用NewObject创建然后调用AddToRoot和RemoveFromRoot来添加和删除引用
-        MObject 通过智能指针引用，共享指针TSharedPtr=MakeShareable(new T())，共享引用TSharedRef=MakeShared<T>()或this->AsShared()
-        FGCObject MObject引用UObject时需要继承FGCObject并实现AddReferencedObjects，把需要保留的UObject对象加入到GC的有效集合内
-UE4寻路组件
+        NewObject UObject独立对象，主动创建后需要使用AddToRoot和RemoveFromRoot来添加和删除引用
+        UPROPERTY UObject成员变量，UObject类型对象需要使用UPROPERTY宏标记，通过生成TokenStream来记录引用关系
+        FGCObject UObject成员变量，非UObject类型对象需要继承FGCObject并重载AddReferencedObjects来记录引用关系
+        SharedPtr 智能指针，TSharedPtr=MakeShareable(new T())
+        SharedRef 智能引用，TSharedRef=MakeShared<T>() || this->AsShared()
+    内存清理
+        定时GC  每隔60秒执行一次引擎分帧GC
+UE4启动流程
+    LaunchLinux LaunchWindows LaunchIOS分别定义了对应平台的Main函数
+    Main函数内执行FEngineLoop的接口(PreInit Init Tick Exit)
+    Init函数内执行GEngine的创建、Init、Start接口
+    Tick函数内执行GEngine的Tick接口
+    UEngine.Init->UGameEngine.Init
+        创建一个GameInstance,执行Init创建一个DummyWorld
+        创建一个GameViewportClient,设置World和GameInstance
+        创建一个GameWindow(SWindow),设置窗口各种属性(大小、缩放等)
+        创建一个GameViewport(SViewport),设置子控件树(SGameLayerManager->SDPIScaler->SVerticalBox->SOverlay->SUserWidget)
+        UUserWidget: SCanvasPanel(AddToViewport时添加)->SObjectWidget(引用UserWidget)->SCanvasPanel(WidgetTree.RootWidget)
+        创建一个SceneViewport(FSceneViewport)
+UE4动画系统
+    LayeredBoneBlend
+        按照POSE的权重去混合指定的骨骼及其子骨骼,每根骨骼的混合权重由基础权重和BlendDepth共同决定,BlendWeight=Depth/BlendDepth
+    PoseAsset&ModifyCurve
+        ModifyCurve结点用来修改输入姿势的Curve数值,PoseAsset是一个由动画资源生成的姿势集合，在动画蓝图中根据权重(输入姿势的Curve信息)计算输出姿势
+UE4寻路系统
     ANavMeshBoundsVolume 框选需要生成NavMesh的区域，数据来源是场景内所有的StaticMesh，生成参数在ARecastNavMesh对象上配置
     ANavModifierVolume   对可寻路区域进行修改裁剪，Area成员可以指定此区域的Cost和Flag，可以用来制作主路和开关，Brush成员可以指定Mesh类型，例如Cone、Box、Stair等等
     ANavLinkProxy        非连通区域的连接点，连接点可以指定Area类型，通过该成员可以添加额外标记，例如攀爬
 UE4资源管理
+    资源路径 类型'/分区/路径/包名.资源名_类型(_C表示类 _Default表示CDO)
     UPackage
     LinkerLoad
         CreateLoader
@@ -52,26 +73,5 @@ UE4资源管理
     AndroidPlatformFile
     ApplePlatformFile
     IOSPlatformFile
-    资源路径 类型'/分区/路径/包名.资源名_类型(_C表示类 _Default表示CDO)
-UE4界面架构
-    UserWidget.AddToViewport->SNew(FullScreenCanvas)->TakeWidget->FullScreenCanvas.AddSlot(SlateWidget)->ViewportClient.AddViewportWidgetContent(FullScreenCanvas)
-    WidgetTree
 UE4性能优化
-    降低屏幕分辨率 r.ScreenPercentage 10 
-UE4启动流程
-    LaunchLinux LaunchWindows LaunchIOS分别定义了对应平台的Main函数
-    Main函数内执行FEngineLoop的接口(PreInit Init Tick Exit)
-    Init函数内执行GEngine的创建、Init、Start接口
-    Tick函数内执行GEngine的Tick接口
-    UEngine.Init->UGameEngine.Init
-        创建一个GameInstance,执行Init创建一个DummyWorld
-        创建一个GameViewportClient,设置World和GameInstance
-        创建一个GameWindow(SWindow),设置窗口各种属性(大小、缩放等)
-        创建一个GameViewport(SViewport),设置子控件树(SGameLayerManager->SDPIScaler->SVerticalBox->SOverlay->SUserWidget)
-        UUserWidget: SCanvasPanel->SObjectWidget(事件处理)->SCanvasPanel(WidgetTree.RootWidget)
-        创建一个SceneViewport(FSceneViewport)
-UE4动画系统
-    LayeredBoneBlend
-        按照POSE的权重去混合指定的骨骼及其子骨骼,每根骨骼的混合权重由基础权重和BlendDepth共同决定,BlendWeight=Depth/BlendDepth
-    PoseAsset&ModifyCurve
-        ModifyCurve结点用来修改输入姿势的Curve数值,PoseAsset是一个由动画资源生成的姿势集合，在动画蓝图中根据权重(输入姿势的Curve信息)计算输出姿势
+    降低屏幕分辨率 r.ScreenPercentage 10

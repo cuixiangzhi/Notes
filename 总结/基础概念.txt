@@ -1,0 +1,11 @@
+音频
+视频
+音频
+    音频采样 8kHZ:人声 22kHZ:广播 44kHZ:音频 声道:Mono&Stereo
+    音频格式 中长音乐:Streaming+Vorbis 短音效:DeCompressOnLoad+ADPCM 编码:PCM无损1411kbps,AAC有损256kbps,OGG有损128kbps
+    FMOD概念 master.string.bank存储索引数据(event:* bank:* vca:* bus:*) name.bank存储样本数据(metadata|sampledata|streamingdata) vca是event的分组
+    DSPBUFF  FMOD播放声音的缓冲区,缓冲区填充满了才会播放,太大会导致声音延迟,太小CPU消耗上升
+    DSP效果  无线电(失真)、水下声音(高通滤波)、变声(改变音调)
+视频
+    视频码率 720P:低码率1Mbps,中码率2Mbps,高码率4Mbps 1080P:低码率2Mbps,中码率4Mbps,高码率8Mbps
+    视频格式 MP4格式:H264视频编码和AAC音频编码 WEBM格式:VP8视频编码和VORBIS音频编码

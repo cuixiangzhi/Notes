@@ -4,6 +4,8 @@ android
             AndroidManifest.xml 主activity添加<meta-data android:name="unityplayer.SkipPermissionDialog" android:value="true">
         检查权限状态
             ContextCompat.checkSelfPermission(contex, permission) == PackageManager.PERMISSION_GRANTED
+        权限默认开启
+            API23以后的版本默认配置的权限都是未开启的
         主动申请权限
             ActivityCompat.requestPermissions(activity, permission, MY_PERMISSIONS_REQUEST)
             onRequestPermissionsResult(int requestCode, string[] permissions, int[] grantResults)
