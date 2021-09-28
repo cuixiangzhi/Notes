@@ -73,5 +73,8 @@ UE4资源管理
     AndroidPlatformFile
     ApplePlatformFile
     IOSPlatformFile
-UE4性能优化
-    降低屏幕分辨率 r.ScreenPercentage 10
+UE4工具扩展
+    菜单扩展 LoadModule->Module.GetExtensibilityManager->FExtensibilityManager.AddExtender->FExtender.AddMenuExtension->FMenuBuilder.AddMenuEntry
+    右键菜单 FAssetTypeAction_Base GetActions GetSupportedClass OpenAssetEditor
+    工具菜单 TCommand.RegisterCommands(FUICommandInfo) FUICommandList.MapAction
+    命令扩展 UCommandlet.Main
