@@ -129,7 +129,7 @@ IO模型
 网络通信
 	sys/socket arpa/inet netinet/in
 	winsock2 comment(lib,"ws2_2.lib")
-	INVALID_SOCKET SOCKET_ERROR INADDR_ANY
+	INVALID_SOCKET SOCKET_ERROR INADDR_ANY(0.0.0.0代指本机所有IP)
 	创建连接
 			int sock = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
 			地址

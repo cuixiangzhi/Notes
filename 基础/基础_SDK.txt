@@ -21,6 +21,7 @@
     assets: 有些jar库使用了外部的资源或者配置文件,需要放在assets(对应于apk/assets目录)文件夹下
     obb:    googleplay对apk大小做了限制,需要把apk的一部分资源拆分出来打成obb包(main|patch.版本号.包名.obb)
     keystore 安卓应用打包签名所需要的文件,用于标识一个应用,相同签名的应用会覆盖安装
+    ActivityThread 安卓应用主线程
     AndroidManifest:
         安卓apk配置文件
             首先是一个xml文件头 <?xml version="1.0" encoding="utf-8"?>
