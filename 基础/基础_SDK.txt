@@ -87,6 +87,6 @@
     .xcarchive  中间文件(包含了.app和dSYM符号表文件),生成命令 xcodebuild archive -scheme * -configuration * -archivepath *.xcarchive
     .ipa        安装包,生成命令 xcodebuild -exportArchive -archivePath *.xcarchive -configuration D|R -exportPath *.ipa -exportOptionsPlist
     .app        执行程序
-    .appleid    分为个人、公司、企业三种,企业账号只能用来测试(不能发布到appstore,会提示未受信任的企业开发者)
-    .certificates 证书文件,通过钥匙串生成CSR文件(设备绑定)用来申请证书(只包含公钥),导出p12文件(包含公钥和私钥)给项目用
-    .provisioning 描述文件,生成描述文件时需要指定APPID、证书列表(当前账号支持哪些证书)、设备列表(开发和发布ADHOC都需要指定,发布APPSTORE和发布INHOUSE不需要指定)
+    .appleid    分为个人、公司、企业三种,企业账号只能用来测试，并且APPID不可以使用通配符，描述文件和APPID一一对应
+    .certificates 证书文件,通过钥匙串生成CSR文件用来申请证书(只包含公钥),导出p12文件(包含公钥和私钥)给项目用
+    .provisioning 描述文件,生成描述文件时需要指定APPID、证书、设备列表(INHOUSE模式或者正式发布不需要指定)
