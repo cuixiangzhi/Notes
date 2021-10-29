@@ -94,6 +94,8 @@
 		pthread_create(pthread_t &pid,NULL,void* loopfunc,this);
 		CreateThread(NULL,0,DWORD WINAPI loopfunc,this,DWORD &pid)
 		pthread_self()获取线程ID
+	线程唤醒
+		wakeup阻塞在select调用的线程，更新select的目标(修改fdset数组)
 	线程退出
 		pthread_cancel();
 		pthread_exit(NULL);

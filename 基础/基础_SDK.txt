@@ -19,9 +19,10 @@
     aar:    aar是一个包含自定义UI和字体等资源和代码的类库,例如调用API之后弹出一个窗口,窗口的UI和字体都是库内的
     dex:    apk的java字节码会转换成dex字节码,由android系统的dvm(dalvik)虚拟机执行
     assets: 有些jar库使用了外部的资源或者配置文件,需要放在assets(对应于apk/assets目录)文件夹下
-    obb:    googleplay对apk大小做了限制,需要把apk的一部分资源拆分出来打成obb包(main|patch.版本号.包名.obb)
-    keystore 安卓应用打包签名所需要的文件,用于标识一个应用,相同签名的应用会覆盖安装
-    ActivityThread 安卓应用主线程
+    obb:    googleplay对apk大小做了限制,需要把apk的一部分资源拆分出来打成obb包(main.版本号.包名.obb)
+    keystore 安卓应用打包签名所需要的文件,用于标识一个应用,相同签名的应用会覆盖安装,可以使用keytool命令生成keystore文件(注意要加上时间戳)
+    resign: 首先使用zip命令把META-INF签名信息删掉(不能用rar文件解压),然后使用jarsigner命令重新签名(注意添加-digestalg和-sigalg选项)
+    meta-inf: 应用内所有文件的RSA签名信息(MF:APK文件签名 SF:MF内容签名 RSA:SF文件签名)
     AndroidManifest:
         安卓apk配置文件
             首先是一个xml文件头 <?xml version="1.0" encoding="utf-8"?>
@@ -86,7 +87,7 @@
     scheme      编译任务,指定编译哪几个目标
     .xcarchive  中间文件(包含了.app和dSYM符号表文件),生成命令 xcodebuild archive -scheme * -configuration * -archivepath *.xcarchive
     .ipa        安装包,生成命令 xcodebuild -exportArchive -archivePath *.xcarchive -configuration D|R -exportPath *.ipa -exportOptionsPlist
-    .app        执行程序
+    .app        应用程序,应用目录通过[[NSBundle mainBundle] bundlePath]获取，沙盒目录通过NSHomeDirectory获取(Documents是其子目录)
     .appleid    分为个人、公司、企业三种,企业账号只能用来测试，并且APPID不可以使用通配符，描述文件和APPID一一对应
     .certificates 证书文件,通过钥匙串生成CSR文件用来申请证书(只包含公钥),导出p12文件(包含公钥和私钥)给项目用
     .provisioning 描述文件,生成描述文件时需要指定APPID、证书、设备列表(INHOUSE模式或者正式发布不需要指定)
