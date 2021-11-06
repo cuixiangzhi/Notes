@@ -44,18 +44,18 @@
                         <!-- intent-filter  startActivity或startService的参数是一个intent,intent会和activity的filter配置进行匹配-->
                         <activity android:name="com.xx.xx.Unity3dPlayer"android:label="@string/app_name" android:launchMode="singleTop|singleTask"> 
                             <intent-filter>
-                                <action android:name="android.intent.action.MAIN" />            action.MAIN表示主activity
+                                <action android:name="android.intent.action.MAIN" />            action.MAIN表示主activity action.VIEW显示activity
                                 <category android:name="android.intent.category.LAUNCHER" />    category.LAUNCHER表示在桌面添加启动图标
                             </intent-filter>
                             <meta-data android:name="key" android:value="value" />
                         </activity>
 
-                        <!-- provider是一个应用之间共享数据的方式,继承ContentProvider提供接口实现增删改查-->
+                        <!-- provider是应用之间共享数据的功能,继承ContentProvider提供接口实现增删改查-->
                         <provider
                             android:name="com.xx.xx.XXProvider" 类名,一般使用supportv4库的FileProvider(android.support.v4.FileProvider)
-                            android:authorities="com.xx.xx"     唯一标识
+                            android:authorities="com.xx.xx"     唯一标识，内容提供者生成Uri时要和此处匹配 FileProvider.getUriForFile(activity, authority, file)
+                            android:grantUriPermission="true"   对内容接收者授与分享文件的访问权限，内容接收者通过context.getContentResolver()
                             android:exported=""                 是否可被其它应用启动
-                            android:grantUriPermission="true"   授权文件访问权限
                             >                                   
                             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:value=@xml/file_paths/>
                         </provider>
@@ -91,4 +91,4 @@
     .appleid    分为个人、公司、企业三种,企业账号只能用来测试，并且APPID不可以使用通配符，描述文件和APPID一一对应
     .certificates 证书文件,通过钥匙串生成CSR文件用来申请证书(只包含公钥),导出p12文件(包含公钥和私钥)给项目用
     .provisioning 描述文件,生成描述文件时需要指定APPID、证书、设备列表(INHOUSE模式或者正式发布不需要指定)
-    .entitlements 配置文件，描述了应用可以使用哪些系统服务以及证书信息
+    .entitlements 配置文件，描述了应用可以使用哪些系统服务以及证书信息,需要和描述文件内的服务列表匹配
