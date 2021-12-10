@@ -1,0 +1,9 @@
+1.pip离线安装python库
+    pip --timeout=1000 download -d packages package_name
+    pip install --no-index --find-links=./packages package_name
+2.gradle离线下载仓库
+    .m2->settings.xml-><settings><localRepository>localRepositoryPath</localRepository></settings>
+    gen_repository.py->os.walk->copy_cache_from_(android-gradle/caches/modules-2/files-2.1)_to_(localRepositoryPath)
+3.android重签名指令
+    keytool -genkey -v -keystore android.keystore -alias android -keyalg RSA -keysize 2048 -validity 365
+    jarsigner -verbose -keystore android.keystore -storepass 12345 -signedjar resign.apk sign.apk android

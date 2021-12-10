@@ -13,13 +13,20 @@ android
             目标版本低于23,设备版本低于23时权限默认开启,设备版本大于等于23时首次启动弹窗提示
             目标版本大于等于23,设备版本低于23时首次启动弹窗提示,设备版本大于等于23时默认关闭
             普通权限使用时自动授权,危险权限需要用户主动申请,需要处理危险权限被禁止的情况
-    2.android9.0(API28) 安全问题
+    2.android8.0(API26) 图标问题
+        添加配置文件
+            res目录下添加drawable-anydpi-v26/app_icon.xml,root为<adaptive-icon xmlns=""></adaptive-icon>
+            xml内容为<background android:drawable="@drawable/ic_background"/> <foreground android:drawable="@drawable/ic_foreground"/>
+    3.android9.0(API28) 安全问题
         找不到HTTP类 ClassNotFound org.apache.http.xx
             AndroidManifest.xml application添加<uses-library android:name="org.apache.http.legacy" android:required="false"/>
         禁止明文传输 CleartextNotPermitted
             AndroidManifest.xml application添加android:usesCleartextTraffic="true"
         添加https支持
             使用System.Net.HttpWebRequest进行https请求,并添加证书验证回调ServicePointManager.ServerCertificateValidationCallback
+    4.android10.0(API29) 存储权限
+        读写外部存储根目录(API30之后不再支持)
+            AndroidManifest.xml application添加android:useLegacyExternalStorage="true"
 ios
     1.iOS录音异常
         播放音乐时录音报异常,音乐停止播放,切到后台再切回来音乐正常
