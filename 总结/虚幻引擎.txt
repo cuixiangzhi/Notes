@@ -49,6 +49,11 @@ UE4寻路系统
     ANavMeshBoundsVolume 框选需要生成NavMesh的区域，数据来源是场景内所有的StaticMesh，生成参数在ARecastNavMesh对象上配置
     ANavModifierVolume   对可寻路区域进行修改裁剪，Area成员可以指定此区域的Cost和Flag，可以用来制作主路和开关，Brush成员可以指定Mesh类型，例如Cone、Box、Stair等等
     ANavLinkProxy        非连通区域的连接点，连接点可以指定Area类型，通过该成员可以添加额外标记，例如攀爬
+UE4工具扩展
+    菜单扩展 LoadModule->Module.GetExtensibilityManager->FExtensibilityManager.AddExtender->FExtender.AddMenuExtension->FMenuBuilder.AddMenuEntry
+    右键菜单 FAssetTypeAction_Base GetActions GetSupportedClass OpenAssetEditor
+    工具菜单 TCommands.RegisterCommands()->FUICommandList.MapAction->FExtender.AddMenuExtension->Module.AddExtender
+    命令扩展 UCommandlet.Main
 UE4资源管理
     资源路径 类型'/分区/路径/包名.资源名_类型(_C表示类 _Default表示CDO)
     UPackage
@@ -73,8 +78,3 @@ UE4资源管理
     AndroidPlatformFile
     ApplePlatformFile
     IOSPlatformFile
-UE4工具扩展
-    菜单扩展 LoadModule->Module.GetExtensibilityManager->FExtensibilityManager.AddExtender->FExtender.AddMenuExtension->FMenuBuilder.AddMenuEntry
-    右键菜单 FAssetTypeAction_Base GetActions GetSupportedClass OpenAssetEditor
-    工具菜单 TCommand.RegisterCommands(FUICommandInfo) FUICommandList.MapAction
-    命令扩展 UCommandlet.Main
