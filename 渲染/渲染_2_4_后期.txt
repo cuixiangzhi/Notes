@@ -20,7 +20,7 @@
     ZPrePass
         剔除AlphaTest物体,把AlphaTest的物体用ColorMask提前写深度,然后正常渲染的时候改成ZEqual
     EV值计算
-        EV=log2(lux/2.5) L=pow(2,EV)*(K/S) S是感光度默认为100,K是常数(常规值为12.5,UE4是100)
+        EV=log2(lux/2.5) L=pow(2,EV)*(K/S) Expouse=1/pow(2,EV+EC) S是感光度默认为100,K是常数(常规值为12.5,UE4是100),EC是曝光补偿
 后期特效
     景深效果
         原理:利用深度差确定模糊范围,也就是模糊的焦距
