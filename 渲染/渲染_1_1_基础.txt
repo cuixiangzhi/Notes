@@ -1,7 +1,6 @@
 垂直同步
-	生产者:渲染线程,执行SwapBuffer时先等待渲染结束(glFlush)然后交换前后缓冲区,开启垂直同步之后不在VBLANK时间内会被阻塞
-	消费者:显示系统,显示硬件按照固定帧率读取前缓冲区,通过DP|VGA|HDMI等接口输出到显示器,输出包含HSYNC VSYNC DATA等等
-	三缓冲:一个Buffer队列和一个历史帧Buffer,SwapBuffer填充Buffer队列并申请新的Buffer(通过SwapInterval控制填充间隔),Display消耗Buffer队列并更新历史帧Buffer
+	生产者:渲染线程,执行SwapBuffer时先等待渲染结束然后交换前后缓冲区,开启垂直同步之后不在VBLANK时间内会被阻塞,可通过SwapInterval调整需要等待的VBLANK次数
+	消费者:显示系统,显卡按照固定帧率通过DP|VGA|HDMI等接口把信号和前缓冲区数据输出到显示器,输出包含HSYNC VSYNC DATA等等,显卡可根据显示器调整输出帧率
 逐边裁剪
 	1.已知多边形顶点数组s,定义新多边形顶点数组f
 	2.遍历多边形每条边,检测边的两个顶点
