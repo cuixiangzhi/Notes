@@ -52,5 +52,10 @@ ios
             TouchScreenKeyboard.Open->[UnityGetGLView() addSubView: editView]->[inputView becomeFirstResponder]
             第二步addView之后系统延迟调用了[inputView resignFirstResponder]把键盘关掉了
             解决方案:延时打开[self performSelector: @selector(delayFunction) withObject:nil afterDelay:0.05]
-    4.iOS14系统升级
-        XCode12支持
+    4.iOS应用目录规则
+        目录规则及iCloud备份
+            Documents 存放其它APP可以查看的文件,例如拍照类App生成的照片
+            ApplicationSupport 存放应用本身的文件,例如游戏日志、角色配置之类的
+            获取路径可以使用 [NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES) objectAtIndex:0]
+            创建路径可以使用 [NSFileManager defaultManager]
+            关闭iCloud备份 [[NSURL fileURLWithPath:applicationSupportPath] setResourceValue: [NSNumber numberWithBool:YES] forKey:NSURLIsExcludeFromBackupKey error:&error]
