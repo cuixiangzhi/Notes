@@ -27,14 +27,14 @@ android
     4.android10.0(API29) 权限问题
         读写外部存储根目录(API30之后不再支持)
             AndroidManifest.xml application添加android:useLegacyExternalStorage="true"
-		IMEI和IMSI的接口调用会抛出异常(权限改成了READ_PRIVILEGED_PHONE_STATE,且只有系统应用可以获取)
-			IMEI(getDeviceId)和IMSI(getSubscriberId)接口不可以再使用
-	5.android11.0(API30) 可见列表
-		获取设备上已安装应用时要配置可见列表
-			AndroidManifest.xml queries添加package或者intent来表明要访问哪些应用(例如打开url需要访问浏览器应用)
-	6.android12.0(API31) 导出进程
-		android:exported
-			所有的activity都要添加android:exported选项,主activity必须是true
+        IMEI和IMSI的接口调用会抛出异常(权限改成了READ_PRIVILEGED_PHONE_STATE,且只有系统应用可以获取)
+            IMEI(getDeviceId)和IMSI(getSubscriberId)接口不可以再使用
+    5.android11.0(API30) 可见列表
+        获取设备上已安装应用时要配置可见列表
+            AndroidManifest.xml queries添加package或者intent来表明要访问哪些应用(例如打开url需要访问浏览器应用)
+    6.android12.0(API31) 导出进程
+        android:exported
+            所有的activity都要添加android:exported选项,主activity必须是true
 ios
     1.iOS录音异常
         播放音乐时录音报异常,音乐停止播放,切到后台再切回来音乐正常
