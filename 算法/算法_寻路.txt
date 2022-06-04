@@ -81,17 +81,16 @@
                 for span in yspan do
                     上一个span可行走且当前span不可行走,两个span上边界距离小于climbHeight,标记当前span可行走
                 end
-                根据climbHeight计算XZ方向相邻体素距离,如果当前体素周围四个体素有大于或小于climbHeight,则标记为不可行走(悬崖边悬挂物体)
-                for span in yspan do
-                    for spand in 四周 do
-                        第一个spand下边是空的,此时检查span和spand之间是否有agentHeight的间隙,有则标记span不可行走
-                        检查后续spand和span是否可以站人(agentHeight),并且下边界之差是否太大(climbHeight),太大说明是个悬崖,标记span不可行走
-                    end
-                end
                 根据climbHeight计算Y方向相邻体素之间的空隙,如果小于agentHeight,说明该体素不可行走
                 for span in yspan do
                     span->smax和span->next->smin的差是否大于agentHeight,否则标记span不可行走
-                end       
+                end  
+                根据climbHeight计算XZ方向相邻体素距离,如果当前体素周围四个体素有大于或小于climbHeight,则标记为不可行走(悬崖边悬挂物体)
+                for span in yspan do
+                    for spand in 四周 do
+                        检查spand和span表面高度差是否大与climbHeight,大于说明是个悬崖,标记span不可行走
+                    end
+                end     
             创建压缩高度场 ********************Recast.cpp********************
                 创建CompactHeightfield,只记录上表面即行走面及其与上表面距离的高度场,并记录了与四周的连通性
                     rcCompactHeightfield
