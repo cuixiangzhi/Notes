@@ -23,8 +23,8 @@
 			mysql 	utf8最多支持三个字节,手机上的emoji表情需要使用utf8mb4存储
 		编译器编码
 			MSVC
-				源码编码: 源代码文件的编码,分为带BOM和不带BOM,UTF8的BOM是0xEFBBBF
-				程序编码: 编译之后的编码,可以选择多字节字符集(char类型,编码和系统一致)和UNICODE字符集(w_char类型mbstowc,utf16)
+				源码编码: 源文件编码,分为带BOM和不带BOM,UTF8的BOM是0xEFBBBF
+				程序编码: 运行时编码,可以选择多字节字符集(char类型,编码和系统一致)和UNICODE字符集(w_char类型)
 				编码转换: wcstombs把char类型转换为wchar类型  mbstowcs把wchar类型转换为char类型
 			GCC
 				源码编码: -finput-charset=utf-8 不设置则默认UTF-8
