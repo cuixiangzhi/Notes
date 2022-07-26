@@ -30,9 +30,10 @@
 				源码编码: -finput-charset=utf-8 不设置则默认UTF-8
 				程序编码: -fexec-charset=utf-8  不设置则默认UTF-8
 	文件格式
-		ELF格式 unix下二进制文件格式
+		ELF格式
 			包含一个ELF文件头、一个程序头表、一个分节表(可选)、和多个SEGMENT(每个SEGMENT包含多个权限相同的SECTION)
-			.text代码段 .data|.bss|.rodata数据段 .dynsym导出符号表 .dynstr字符串表
+			.dynsym导出符号表 .dynstr字符串表
+			.text代码段 .data|.bss|.rodata数据段
 			.init代码段 main进入前,通过编译特性标记__attribute__(constructor())
 			.fini代码段 main退出后,通过编译特性标记__attribute__(destructor())
 	文件权限
