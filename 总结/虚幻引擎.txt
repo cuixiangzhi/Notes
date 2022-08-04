@@ -7,8 +7,8 @@ UBT编译配置
         描述当前目标的模块组成,包括目标类型(Editor|Game)、模块列表、全局定义等
 UHT文件结构
     头文件    
-        CURRENT_FILE_ID  当前文件的唯一名字，是GENERATED_BODY的参数之一
-        GENERATED_BODY   给当前类添加函数(用文件名和行号来区分不同的类)，包括FObjectInitializer构造函数、UClassConstruct友元函数、execNative蓝图函数
+        CURRENT_FILE_ID  当前文件的唯一名字，在generated.h内定义，是GENERATED_BODY的参数之一
+        ?GENERATED_BODY  给当前类添加函数(?前缀由CURRENT_FILE_ID和行号构成)，包括FObjectInitializer构造函数、execNative蓝图函数、ConstructUClass友元函数
         DECLARE_CLASS    当前类的UClass类型声明，包含UPackage路径、StaticClass函数、GetPrivateStaticClass函数(UClass对象构造)、_DefaultConstructor(类默认构造函数)
         DECLARE_FUNCTION 把成员函数包装为静态函数供蓝图调用(BlueprintCallable蓝图可调用 BlueprintNativeEvent蓝图可重载带默认实现 BlueprintImplementableEvent蓝图可重载)
         STRUCT_OFFSET    根据类指针和成员变量地址计算成员变量偏移，使用系统宏offsetof(s,m)来实现(size_t)(&((Class*)0)->Property)
@@ -56,25 +56,7 @@ UE4工具扩展
     命令扩展 UCommandlet.Main
 UE4资源管理
     资源路径 类型'/分区/路径/包名.资源名_类型(_C表示类 _Default表示CDO)
-    UPackage
-    LinkerLoad
-        CreateLoader
-            FAsyncArchive 
-                IAsyncReadFileHandle=PlarformFile.OpenAsyncRead 
-                IAsyncReadRequest=Handle.ReadRequest 
-                Request.PollCompletion
-            FArchiveFileReaderGeneric Handle=PlatformFile.OpenRead Handle.Read
-    IFileManager
-    FileManagerGeneric
-    PlatformFileManager
-        SetPlatformFile
-            TopmostPlatformFile
-        TickActivePlatformFile
-    IPlatformFile
-        LowLevel:职责链下一层
-    PakPlatformFile
-        Mount:把一个PAK文件挂载到指定路径下,类似于linux的挂载
-    WindowsPlatformFile
-    AndroidPlatformFile
-    ApplePlatformFile
-    IOSPlatformFile
+    路径名字 PackageName:/分区/路径/包名 Filename:相对于项目EXE的文件路径(../../../Engine/Content/路径/包名)
+    加载类型 PackageName->AsyncLoadingThread->FAsyncPackage->FLinkerLoad->Loader(FileReader)
+    加载流程 LoadPackage->QueuePackage->TickAsyncLoading->TickAsyncPackage->CreateLinker->LoadImport->LoadExport->PreLoad(Serialize)->PostLoad
+    平台文件 IFileManager->FileManagerGeneric->PlatformFileManager->TopmostPlatformFile(职责链模式,CustomPlatformFile->PakPlatformFile->WindowsPlatformFile)
