@@ -38,7 +38,7 @@
                 特征配置    <uses-feature android:name="android.hardware.camera" android:required="true|false" >
                 屏幕配置    <supports-screens android:resizeable=true android:smallScreens|normalScreens|largeScreebs|xlargeScreens|anyDensity/>
                 应用配置
-                    <application android:label="@string/app_name" android:icon="@drawable:app_icon" android:debuggable调试 android:usesCleartextTraffic明文HTTP android:largeHeap >
+                    <application android:label="@string/app_name" android:icon="@drawable:app_icon" android:debuggable调试 android:usesCleartextTraffic明文HTTP android:largeHeap android:name="自定义程序类名">
                         <!-- activity       activity是一个活动窗口,使用setContentView来显示不同的控件 -->
                         <!-- launchMode     singleTop栈顶单例,在栈顶新建activity singleTask栈内单例,弹出它上面的所有activity-->
                         <!-- intent-filter  startActivity或startService的参数是一个intent,intent会和activity的filter配置进行匹配-->
