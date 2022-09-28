@@ -35,6 +35,8 @@ android
     6.android12.0(API31) 导出进程
         android:exported
             所有的activity都要添加android:exported选项,主activity必须是true
+		PendingIntent
+			间接Intent调用必须指定PendingIntent.FLAG_IMMUTABLE或者PendingIntent.FLAG_MUTABLE
 ios
     1.iOS录音异常
         播放音乐时录音报异常,音乐停止播放,切到后台再切回来音乐正常
