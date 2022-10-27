@@ -31,9 +31,11 @@
 				程序编码: -fexec-charset=utf-8  不设置则默认UTF-8
 	文件格式
 		ELF格式
-			包含一个ELF文件头、一个程序头表、一个分节表(可选)、和多个SEGMENT(每个SEGMENT包含多个权限相同的SECTION)
-			.dynsym导出符号表 .dynstr字符串表
-			.text代码段 .data|.bss|.rodata数据段
+			包含一个ELF文件头和多个SEGMENT(每个SEGMENT包含多个权限相同的SECTION)
+			.symtab所有符号表(链接阶段的表,执行strip命令时会删除该表,.symstr存储符号名字) 
+			.dynsym导入导出符号表(运行时需要的表,.dynstr存储符号名字)
+			.dynamic 动态链接表 
+			.text代码段 .bss未初始化数据段 .data可读写数据段 .rodata只读数据段
 			.init代码段 main进入前,通过编译特性标记__attribute__(constructor())
 			.fini代码段 main退出后,通过编译特性标记__attribute__(destructor())
 	文件权限
