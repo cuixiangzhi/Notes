@@ -1,5 +1,11 @@
 android
-    1.android6.0(API23) 权限问题
+	1.android4.4(API19) 路径问题
+		URI转PATH方式
+			com.android.externalstorage.documents     内容由手机文件夹提供
+			com.android.providers.downloads.documents 内容由系统Download提供
+			com.android.providers.media.documents     内容由系统DCIM Pictures Movies Music Recent提供
+			content://package.fileprovider/sharepath  内容由包名对应的应用提供
+    2.android6.0(API23) 权限问题
         关闭启动弹窗
             AndroidManifest.xml 主activity添加<meta-data android:name="unityplayer.SkipPermissionDialog" android:value="true">
         检查权限状态
@@ -13,30 +19,35 @@ android
             目标版本低于23,设备版本低于23时权限默认开启,设备版本大于等于23时首次启动弹窗提示
             目标版本大于等于23,设备版本低于23时首次启动弹窗提示,设备版本大于等于23时默认关闭
             普通权限使用时自动授权,危险权限需要用户主动申请,需要处理危险权限被禁止的情况
-    2.android8.0(API26) 图标问题
+    3.android7.0(API24) 分享问题
+        文件分享方式
+            当前应用的文件分享给其它应用时必须配置FileProvider(指定授权路径和授权标识符),使用FileProvider.getUriForFile来获取Uri传递给其它应用
+    4.android8.0(API26) 图标问题
         添加配置文件
             res目录下添加drawable-anydpi-v26/app_icon.xml,root为<adaptive-icon xmlns=""></adaptive-icon>
             xml内容为<background android:drawable="@drawable/ic_background"/> <foreground android:drawable="@drawable/ic_foreground"/>
-    3.android9.0(API28) 安全问题
+    5.android9.0(API28) 安全问题
         找不到HTTP类 ClassNotFound org.apache.http.xx
             AndroidManifest.xml application添加<uses-library android:name="org.apache.http.legacy" android:required="false"/>
         禁止明文传输 CleartextNotPermitted
             AndroidManifest.xml application添加android:usesCleartextTraffic="true"
         添加https支持
             使用System.Net.HttpWebRequest进行https请求,并添加证书验证回调ServicePointManager.ServerCertificateValidationCallback
-    4.android10.0(API29) 权限问题
+    6.android10.0(API29) 权限问题
+		分区存储
+			
         读写外部存储根目录(API30之后不再支持)
             AndroidManifest.xml application添加android:useLegacyExternalStorage="true"
         IMEI和IMSI的接口调用会抛出异常(权限改成了READ_PRIVILEGED_PHONE_STATE,且只有系统应用可以获取)
             IMEI(getDeviceId)和IMSI(getSubscriberId)接口不可以再使用
-    5.android11.0(API30) 可见列表
+    7.android11.0(API30) 可见列表
         获取设备上已安装应用时要配置可见列表
             AndroidManifest.xml queries添加package或者intent来表明要访问哪些应用(例如打开url需要访问浏览器应用)
-    6.android12.0(API31) 导出进程
+    8.android12.0(API31) 导出进程
         android:exported
             所有的activity都要添加android:exported选项,主activity必须是true
-		PendingIntent
-			间接Intent调用必须指定PendingIntent.FLAG_IMMUTABLE或者PendingIntent.FLAG_MUTABLE
+        PendingIntent
+            间接Intent调用必须指定PendingIntent.FLAG_IMMUTABLE或者PendingIntent.FLAG_MUTABLE
 ios
     1.iOS录音异常
         播放音乐时录音报异常,音乐停止播放,切到后台再切回来音乐正常
