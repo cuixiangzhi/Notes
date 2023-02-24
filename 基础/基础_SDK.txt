@@ -50,7 +50,7 @@
                             <meta-data android:name="key" android:value="value" />
                         </activity>
 
-                        <!-- provider是应用之间共享数据的功能,继承ContentProvider提供接口实现增删改查-->
+                        <!-- provider是应用之间共享数据的功能(生成Uri传给第三方APP),继承ContentProvider提供接口实现增删改查-->
                         <provider
                             android:name="com.xx.xx.XXProvider" 类名,一般使用supportv4库的FileProvider(android.support.v4.FileProvider)
                             android:authorities="com.xx.xx"     唯一标识，内容提供者生成Uri时要和此处匹配 FileProvider.getUriForFile(activity, authority, file)
