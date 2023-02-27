@@ -19,6 +19,7 @@
 			python  分为str和unicode两种对象,decode解码为unicode对象,encode编码为str对象,encode方式有gbk、utf8等等
 			console windows平台默认为GBK,可以通过区域>>管理>>区域设置内的使用UTF-8提供全球语言支持切换系统编码为UTF-8
 			jenkins agent通过java命令启动时可以指定编码,在jenkins上面的系统信息处通过file.encoding查看当前环境编码
+			locale  LC_ALL > LC_* > LANG
 		数据库编码
 			mysql 	utf8最多支持三个字节,手机上的emoji表情需要使用utf8mb4存储
 		编译器编码
