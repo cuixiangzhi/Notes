@@ -34,9 +34,7 @@ android
         添加https支持
             使用System.Net.HttpWebRequest进行https请求,并添加证书验证回调ServicePointManager.ServerCertificateValidationCallback
     6.android10.0(API29) 权限问题
-		分区存储
-			
-        读写外部存储根目录(API30之后不再支持)
+        读写外部存储根目录(API30之后不再支持)和公共目录
             AndroidManifest.xml application添加android:useLegacyExternalStorage="true"
         IMEI和IMSI的接口调用会抛出异常(权限改成了READ_PRIVILEGED_PHONE_STATE,且只有系统应用可以获取)
             IMEI(getDeviceId)和IMSI(getSubscriberId)接口不可以再使用
@@ -48,6 +46,20 @@ android
             所有的activity都要添加android:exported选项,主activity必须是true
         PendingIntent
             间接Intent调用必须指定PendingIntent.FLAG_IMMUTABLE或者PendingIntent.FLAG_MUTABLE
+        CameraPermission
+            访问相机应用需要添加queries->intent->android.media.action.IMAGE_CAPTURE
+    9.应用跳转(android6.0+)
+        deeplink(弹出应用选择框)
+            在主Activity内配置<category android:name="android.intent.category.BROWSABLE&DEFAULT&VIEW"/> <data android:scheme="https" host="www.example.com" pathPrefix="deeplink">
+            调用方: intent.setData(Uri.parse("https://www.example.com/deeplink?id=123456")); startActivity(intent);
+            接收方: 在onCreate或onNewIntent函数内处理Intent对象,解析scheme是否为支持的scheme
+        applink(直接拉起应用,需要翻墙)
+            在deeplink的基础上配置assetlinks.json文件(放到deeplink配置的域名.wellknown目录下)
+            指纹导出命令:keytool -list -v -keystore my-release-key.keystore
+        universallink
+            首先在entitlements文件内配置<key>com.apple.developer.associated-domains</key><array><string>applinks:www.example.com</string></array>
+            在applinks对应的域名根目录下配置apple-app-site-association文件(主要内容是appID=TEAMID.BUNDLEID和path=pathPrefix)
+            重写AppDelegate的continueUserActivity函数
 ios
     1.iOS录音异常
         播放音乐时录音报异常,音乐停止播放,切到后台再切回来音乐正常
