@@ -7,3 +7,9 @@
 3.android重签名指令
     keytool -genkey -v -keystore android.keystore -alias android -keyalg RSA -keysize 2048 -validity 365
     jarsigner -verbose -keystore android.keystore -storepass 12345 -signedjar resign.apk sign.apk android
+4.android&ios符号表
+    nm -D
+5.android动态库依赖
+    readelf -h
+6.ios区分动态库和静态库
+    file framework
