@@ -41,13 +41,13 @@ android
     7.android11.0(API30) 可见列表
         获取设备上已安装应用时要配置可见列表
             AndroidManifest.xml queries添加package或者intent来表明要访问哪些应用(例如打开url需要访问浏览器应用)
+        CameraPermission
+            访问相机应用需要添加queries->intent->android.media.action.IMAGE_CAPTURE
     8.android12.0(API31) 导出进程
         android:exported
             所有的activity都要添加android:exported选项,主activity必须是true
         PendingIntent
             间接Intent调用必须指定PendingIntent.FLAG_IMMUTABLE或者PendingIntent.FLAG_MUTABLE
-        CameraPermission
-            访问相机应用需要添加queries->intent->android.media.action.IMAGE_CAPTURE
     9.应用跳转(android6.0+)
         deeplink(弹出应用选择框)
             在主Activity内配置<category android:name="android.intent.category.BROWSABLE&DEFAULT&VIEW"/> <data android:scheme="https" host="www.example.com" pathPrefix="deeplink">
