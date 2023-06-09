@@ -78,6 +78,11 @@
 		对齐规则
 			变量的起始地址是有效对齐值的倍数,有效对齐值=min{自身对齐,指定对齐} 自身对齐=min{最大成员,指定对齐}
 			注意点:32位机器指定对齐默认为4,64位机器指定对齐默认为8
+	内存屏障
+		高速缓存：L1L2是内核独享,L3是内核共享
+		MESI协议：M:等待回写 E:独占 S:共享一致 I:无效
+		指令重排：编译器在保证单线程逻辑正确的情况下优化指令数量，会导致多线程逻辑错误
+		内存屏障：禁止指令重排序，保证读取最新值或写入对其它内核可见 LOADLOAD两次读取 LOADSTORE先读后写 STORESTORE两次写入 STORELOAD先写后读
 进程管理
 	进程关系
 		父子进程: fork创建进程,pid为0是子进程,大于0是父进程,调用execl(path,name,args)覆盖进程空间执行新程序代码
@@ -85,13 +90,6 @@
 		孤儿进程: 子进程的状态,父进程退出但是子进程没有退出,子进程会由init进程收养
 		守护进程: 后台进程执行监测任务,使用deamon()函数实现即可
 线程管理
-	内存屏障
-		高速缓存：L1L2是内核独享,L3是内核共享
-		MESI协议：M:等待回写 E:独占 S:共享一致 I:无效
-		内核缓冲：S状态下写数据会等待其它内核响应I消息，增加一个BUFFER利用等待时间去执行其它指令
-		无效队列：收到I消息并不会立即去设置缓存状态，同时立即返回ACK减少内核的等待时间
-		指令重排：编译器在保证单线程逻辑正确的情况下优化指令数量，会导致多线程逻辑错误
-		内存屏障：禁止指令重排序，保证读取最新值或写入对其它内核可见 LOADLOAD两次读取 LOADSTORE先读后写 STORESTORE两次写入 STORELOAD先写后读
 	线程进程
 		进程的创建需要分配独立的地址空间,代码段、数据段、堆栈段
 		线程的创建只需要很小的空间,比进程消耗小很多,线程切换比进程切换速度快
@@ -128,10 +126,9 @@
 			释放 sem_post(sem_t)
 		注意点
 			原子性: 语句编译之后只有一条指令(i++有三条 读 加 赋值) CAS指令(compareAndSwap)
-			有序性: java编译器会对指令进行重排序优化,volatile修饰符可以保证变量的读写操作的前后语句不会交换顺序
-			互斥锁: java.reentrantlock(可重入锁)  cs.lock(语法糖) cs.monitor ue4.fcriticalsection
-			读写锁: java.reentrantreadwritelock  ue4.frwlock
-			区域锁: java.synchronized(可重入锁)  ue4.fscopedlock 
+			有序性: 
+			互斥锁: java.reentrantlock cs.lock ue4.fcriticalsection pthread_mutex_lock
+			区域锁: java.synchronized  ue4.fscopedlock cs.lock 同一线程可以多次调用,不同线程互斥调用
 			自旋锁: 循环等待,降低线程切换开销 ue4.fspinlock
 	数据队列
 		环形缓冲区
