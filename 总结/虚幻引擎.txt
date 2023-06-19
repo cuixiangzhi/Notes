@@ -39,7 +39,10 @@ UE4启动流程
         创建一个GameWindow(SWindow),设置窗口各种属性(大小、缩放等)
         创建一个GameViewport(SViewport),设置子控件树(SGameLayerManager->SDPIScaler->SVerticalBox->SOverlay->SUserWidget)
         UUserWidget: SCanvasPanel(AddToViewport时添加)->SObjectWidget(引用UserWidget)->SCanvasPanel(WidgetTree.RootWidget)
-        创建一个SceneViewport(FSceneViewport)
+        创建一个SceneViewport(FSceneViewport),引用了ViewportClient和SViewport,是一个FRenderTarget
+        切换GameMode,创建LocalPlayer,加载DefaultMap,创建PlayerController,创建PlayerCameraManager,创建DefaultCharacter
+    UEngine.Tick->UGameEngine.Tick
+        Worlds.Tick->Levels.Tick->Actors.Tick->Cameras.Tick->Slates.Tick
 UE4动画系统
     LayeredBoneBlend
         按照POSE的权重去混合指定的骨骼及其子骨骼,每根骨骼的混合权重由基础权重和BlendDepth共同决定,BlendWeight=Depth/BlendDepth
