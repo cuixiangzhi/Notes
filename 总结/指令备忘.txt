@@ -2,14 +2,35 @@
     pip --timeout=1000 download -d packages package_name
     pip install --no-index --find-links=./packages package_name
 2.gradle离线下载仓库
-    .m2->settings.xml-><settings><localRepository>localRepositoryPath</localRepository></settings>
+    GRADLE_USER_HOME&&.m2->settings.xml-><settings><localRepository>localRepositoryPath</localRepository></settings>
     gen_repository.py->os.walk->copy_cache_from_(android-gradle/caches/modules-2/files-2.1)_to_(localRepositoryPath)
-3.android重签名指令
-    keytool -genkey -v -keystore android.keystore -alias android -keyalg RSA -keysize 2048 -validity 365
-    jarsigner -verbose -keystore android.keystore -storepass 12345 -signedjar resign.apk sign.apk android
-4.android&ios符号表
+3.android证书&重签指令
+    创建证书: keytool -genkey -v -keystore ${certpath} -alias ${certname} -keyalg RSA -sigalg SHA512withRSA -keysize 4096 -validity 3650
+    证书指纹: keytool -list -v -keystore ${certpath} -storepass ${password}
+    证书公钥: keytool -list -rfc -keystore ${certpath} -storepass ${password} | openssl x509 -pubkey
+    重签命令: jarsigner -verbose -keystore ${certpath} -storepass ${password} -signedjar resign.apk sign.apk android
+    重签命令: apksigner sign --ks ${certpath} --ks-key-alias ${certname} --ks-pass pass:${password} nosign.apk
+4.mac&ios证书&重签指令
+    创建钥匙: security create-keychain -p ${keypass} ~/Library/Keychains/codesign.keychain
+    钥匙解锁: security unlock-keychain -p ${keypass} ~/Library/Keychains/codesign.keychain
+    导入证书: security import ${certpath} -P ${certpass} -k ~/Library/Keychains/codesign.keychain -T /usr/bin/security -T /usr/bin/codesign -t agg
+              security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k ${keypass} -D '${certname}' -t private ~/Library/Keychains/codesign.keychain
+    证书名称: openssl pkcs12 -nodes -in ${certpath} -password pass:${password} | openssl x509 -subject | awk -F'[=/]' ${print $6}
+    证书指纹: openssl pkcs12 -nodes -in ${certpath} -password pass:${password} | openssl x509 -fingerprint -sha1|-sha256
+    证书公钥: openssl pkcs12 -nodes -in ${certpath} -password pass:${password} | openssl x509 -pubkey
+    重签命令: security unlock-keychain -p ${keypass} ~/Library/Keychains/codesign.keychain
+              security list-keychains -d user -s ~/Library/Keychains/codesign.keychain
+              ls | grep -E '.framework|.dylib' | xargs codesign -vfs "${certname}"
+    签名验证: codesign -d *.app | codesign -d --entitlements - *.app
+5.windows证书&重签指令
+    查看证书: openssl x509 -inform der -in ${certpath} -noout -subject
+    重签命令: signtool sign /v /f ${certpath} /p ${password} /fd sha1 /tr http://timestamp.digicert.com
+    重签命令: signtool sign /v /f ${certpath} /p ${password} /as /fd sha256 /tr http://timestamp.digicert.com
+6.android&ios符号表
     nm -D
-5.android动态库依赖
-    readelf -h
-6.ios区分动态库和静态库
+7.android动态库依赖
+    readelf -d
+8.windows动态库依赖
+    dumpbin /DEPENDENTS
+9.ios区分动态库和静态库
     file framework
