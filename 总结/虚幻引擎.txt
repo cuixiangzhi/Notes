@@ -29,20 +29,20 @@ UE4内存管理
     内存清理
         定时GC  每隔60秒执行一次引擎分帧GC
 UE4启动流程
-    LaunchLinux LaunchWindows LaunchIOS分别定义了对应平台的Main函数
+    LaunchWindows LaunchAndroid LaunchIOS分别定义了对应平台的Main函数
     Main函数内执行FEngineLoop的接口(PreInit Init Tick Exit)
-    Init函数内执行GEngine的创建、Init、Start接口
-    Tick函数内执行GEngine的Tick接口
+    Init函数内执行GEngine的New、Init、Start
+    Tick函数内执行GEngine的Tick
     UEngine.Init->UGameEngine.Init
         创建一个GameInstance,执行Init创建一个DummyWorld
         创建一个GameViewportClient,设置World和GameInstance
         创建一个GameWindow(SWindow),设置窗口各种属性(大小、缩放等)
         创建一个GameViewport(SViewport),设置子控件树(SGameLayerManager->SDPIScaler->SVerticalBox->SOverlay->SUserWidget)
         UUserWidget: SCanvasPanel(AddToViewport时添加)->SObjectWidget(引用UserWidget)->SCanvasPanel(WidgetTree.RootWidget)
-        创建一个SceneViewport(FSceneViewport),引用了ViewportClient和SViewport,是一个FRenderTarget
+        创建一个SceneViewport(FSceneViewport),引用了ViewportClient和SViewport,是一个FRenderTarget,用来处理渲染逻辑
         切换GameMode,创建LocalPlayer,加载DefaultMap,创建PlayerController,创建PlayerCameraManager,创建DefaultCharacter
     UEngine.Tick->UGameEngine.Tick
-        Worlds.Tick->Levels.Tick->Actors.Tick->Cameras.Tick->Slates.Tick
+        Worlds.Tick->Levels.Tick->Actors.Tick->Tickables.Tick->Cameras.Tick->Slates.Tick
 UE4动画系统
     LayeredBoneBlend
         按照POSE的权重去混合指定的骨骼及其子骨骼,每根骨骼的混合权重由基础权重和BlendDepth共同决定,BlendWeight=Depth/BlendDepth
@@ -63,3 +63,21 @@ UE4资源管理
     加载类型 PackageName->AsyncLoadingThread->FAsyncPackage->FLinkerLoad->Loader(FileReader)
     加载流程 LoadPackage->QueuePackage->TickAsyncLoading->TickAsyncPackage->CreateLinker->LoadImport->LoadExport->PreLoad(Serialize)->PostLoad
     平台文件 IFileManager->FileManagerGeneric->PlatformFileManager->TopmostPlatformFile(职责链模式,CustomPlatformFile->PakPlatformFile->WindowsPlatformFile)
+    材质映射 Material->QualityLevel->ShaderMap->VertexFactory->ShaderType
+    PSO缓存
+        首次构建
+            1.COOK开关: DefaultEngine.ini->[DevOptions.Shaders]->NeedsShaderStableKeys=True
+            2.COOK资源: 生成scl.csv(一个Global,一个Project,存放在Project/Saved/Cooked/Platform/Project/Metadata/PipelineCaches/)
+        收集缓存
+            1.收集开关: DefaultEngine.ini->[ConsoleVariables]->r.ShaderPipelineCache.Enabled=True;
+            2.开始收集: r.ShaderPipelineCache.LogPSO 1; r.ShaderPipelineCache.Open FileName;
+            3.保存文件: r.ShaderPipelineCache.SaveUserCache 1; r.ShaderPipelineCache.Save; 
+            4.停止收集: r.ShaderPipelineCache.SaveUserCache 0; r.ShaderPipelineCache.LogPSO 0; r.ShaderPipelineCache.Close
+            5.运行结果: 不同质量等级运行之后在指定目录下生成*.rec.upipelinecache,其中安卓:UE4Game\MyGame\MyGame\Saved\CollectedPSOs  苹果:MyGame\Saved\CollectedPSOs
+        合并缓存
+            1.拷贝缓存: 把收集到*.rec.upipelinecache存放到同一目录下(例如Build/Platform/PSOCache)
+            2.生成配置: UE4Editor-Cmd.exe uprojectPath -run=ShaderPipelineCacheTools expand Build/Platform/PSOCache/*.rec.upipelinecache Build/Platform/PSOCache/*.scl.csv Build/Platform/PSOCache/Project_GLSL_ES3_1_ANDROID.stablepc.csv|Project_SF_METAL.stablepc.csv
+            3.COOK资源: 把生成的*.stablepc.csv存放到Build/Platform/PipelineCaches/,执行COOK时生成Content/PipelineCaches/Platform/*.stable.upipelinecache
+UE4配置系统
+    加载顺序 (引擎)Base.ini->(引擎)BaseEngine.ini->(引擎)BasePlatformEngine.ini->(项目)DefaultEngine.ini->(引擎)PlatformEngine.ini->(项目)PlatformEngine.ini->(用户)UserEngine.ini->(项目)UserEngine.ini
+    用户目录 AppData/Local/Unreal Engine/Engine/Config/UserEngine.ini

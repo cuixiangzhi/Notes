@@ -1,9 +1,9 @@
 android
 	1.android4.4(API19) 路径问题
 		URI转PATH方式
-			com.android.externalstorage.documents     内容由手机文件夹提供
-			com.android.providers.downloads.documents 内容由系统Download提供
-			com.android.providers.media.documents     内容由系统DCIM Pictures Movies Music Recent提供
+			content://com.android.externalstorage.documents/document/primary:path 内容由外存文件夹提供
+			content://com.android.providers.downloads.documents/document/raw:id   内容由系统Download提供
+			content://com.android.providers.media.documents/document/image:id     内容由系统DCIM Pictures Movies Music Recent提供
 			content://package.fileprovider/sharepath  内容由包名对应的应用提供
     2.android6.0(API23) 权限问题
         关闭启动弹窗
@@ -41,7 +41,8 @@ android
             IMEI(getDeviceId)和IMSI(getSubscriberId)接口不可以再使用
     7.android11.0(API30) 可见列表
         获取设备上已安装应用时要配置可见列表
-            AndroidManifest.xml queries添加package或者intent来表明要访问哪些应用(例如打开url需要访问浏览器应用)
+            AndroidManifest.xml queries添加package或者intent来表明要访问哪些应用
+            访问浏览器需要添加queries->intent->android.intent.action.VIEW&BROWSABLE
         CameraPermission
             访问相机应用需要添加queries->intent->android.media.action.IMAGE_CAPTURE
     8.android12.0(API31) 导出进程
