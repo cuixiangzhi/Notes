@@ -9,6 +9,7 @@
     证书指纹: keytool -list -v -keystore ${certpath} -storepass ${password}
     证书公钥: keytool -list -rfc -keystore ${certpath} -storepass ${password} | openssl x509 -pubkey
     重签命令: jarsigner -verbose -keystore ${certpath} -storepass ${password} -signedjar resign.apk sign.apk android
+    签名数据: openssl asn1parse -i -inform der -in CERT.RSA | openssl pkcs7 -inform DER -in META-INF/CERT.RSA -noout -print_certs -text
     重签命令: apksigner sign --ks ${certpath} --ks-key-alias ${certname} --ks-pass pass:${password} nosign.apk
     签名分块: kvsize ID-Value kvsize magicvalue v2ID:0x7109871a
     分块结构: signeddata(digits(algorithm&signature)|certificates)|signatures(algorithm&signature)|publickey
