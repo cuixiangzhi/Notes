@@ -10,8 +10,9 @@
     证书公钥: keytool -list -rfc -keystore ${certpath} -storepass ${password} | openssl x509 -pubkey
     重签命令: jarsigner -verbose -keystore ${certpath} -storepass ${password} -signedjar resign.apk sign.apk android
     重签命令: apksigner sign --ks ${certpath} --ks-key-alias ${certname} --ks-pass pass:${password} nosign.apk
+    签名分块: kvsize ID-Value kvsize magicvalue v2ID:0x7109871a
+    分块结构: signeddata(digits(algorithm&signature)|certificates)|signatures(algorithm&signature)|publickey
     签名验证: apksigner verify -v
-    签名分块: sizeofblock ID-value sizeofblock magicvalue v2ID:0x7109871a
 4.mac&ios证书&重签指令
     创建钥匙: security create-keychain -p ${keypass} ~/Library/Keychains/codesign.keychain
     钥匙解锁: security unlock-keychain -p ${keypass} ~/Library/Keychains/codesign.keychain
