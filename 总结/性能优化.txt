@@ -5,6 +5,7 @@
     SwappedDirty:压缩内存(可以被ZRAM机制压缩的内存，不可控制)
     NativeHeap:依赖库内存 DalvikHeap:虚拟机内存 SOMMAP:库文件内存 GL&EGL:显存
     UE4STAT分析命令 llmfull:内存分类统计 rhi:显存
+    SHOWMAP <PID>显示内存分布情况(模拟器虚拟内存)
 资源缓存
     数据缓存
     图片缓存
