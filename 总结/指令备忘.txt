@@ -34,7 +34,9 @@
     nm -D
     addr2line -f -C -e *.so addr
 7.android动态库依赖
-    readelf -d
+    查看依赖: readelf -d
+    查看分节: readelf -S *.so
+    分节内容: readelf -p section *.so
 8.windows动态库依赖
     dumpbin /DEPENDENTS
 9.ios区分动态库和静态库

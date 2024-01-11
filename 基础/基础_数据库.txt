@@ -1,44 +1,44 @@
 SQL语言
     数据类型   INT BIGINT TEXT FLOAT UNSIGNED CHAR定长 VARCHAR变长 
     创建数据库 CREATE DATABASE name ENGINE=InooDB DEFAULT CHARSET=utf8mb4 DEFAULT COLLATE utf8mb4_unicode_ci
-	删除数据库 DROP DATABASE name
-	数据库编码 console->client->connect->database->results
-	创建表   CREATE TABLE name (KEY TYPE,约束)
-	复制表   CREATE TABLE name SELECT * FROM name
-	修改表   ALTER TABLE name ADD|DROP|MODIFY COLUMN
-	添加索引 CREATE INDEX name ON table(key);
-	添加数据 INSERT INTO name (keys) VALUES(...)
-	删除数据 DELETE FROM name WHERE key=val
-	修改数据 UPDATE name SET key=val WHERE key=val
-	查询数据 SELECT * FROM name WHERE CONDITION ORDERBY* DESC|ASC LIKE %string%
-	多表查询 INNER|LEFT|RIGHT|FULL JOIN name ON
+    删除数据库 DROP DATABASE name
+    数据库编码 console->client->connect->database->results
+    创建表   CREATE TABLE name (KEY TYPE,约束)
+    复制表   CREATE TABLE name SELECT * FROM name
+    修改表   ALTER TABLE name ADD|DROP|MODIFY COLUMN
+    添加索引 CREATE INDEX name ON table(key);
+    添加数据 INSERT INTO name (keys) VALUES(...)
+    删除数据 DELETE FROM name WHERE key=val
+    修改数据 UPDATE name SET key=val WHERE key=val
+    查询数据 SELECT * FROM name WHERE CONDITION ORDERBY* DESC|ASC LIKE %string%
+    多表查询 INNER|LEFT|RIGHT|FULL JOIN name ON
 事务处理
-	事务性质 原子性、一致性、隔离性、持久化
-	事务类型 ReadUnCommited ReadCommited RepeatableRead Serializable
-	事务流程 开始事务Begin 回滚事务Rollback 提交事务Commit
+    事务性质 原子性、一致性、隔离性、持久化
+    事务类型 ReadUnCommited ReadCommited RepeatableRead Serializable
+    事务流程 开始事务Begin 回滚事务Rollback 提交事务Commit
 存储过程
-	delimiter //
-	drop procedure name//
-	create procedure name(var)
-	begin
-		declare @name type;
-		set @name = 1;
-		start transaction;
-			if end if;
-		commit;
-	end //;
-	delimiter ;
+    delimiter //
+    drop procedure name//
+    create procedure name(var)
+    begin
+        declare @name type;
+        set @name = 1;
+        start transaction;
+            if end if;
+        commit;
+    end //;
+    delimiter ;
 主流数据库 
-	mysql   硬盘数据库,服务器持久化存储
-	sqlite  硬盘数据库,适用于客户端保存临时数据
-	redis   内存数据库,服务器缓存提升性能
-	mongodb 内存数据库,利用mmap文件映射实现  
-	sharemem内存数据库,本地进程共享,利用shm库实现
-	nosql   非关系型数据库,关系型数据库以表格形式存储,非关系型以OBJ方式存储
-			redis mongodb sharedmemory都是nosql,方便快速获取、设置属性,适合高并发读写
-	odbc    对数据库的封装,具体的数据库实现作为ODBC数据源进行配置(数据库IP以及端口)
+    mysql   硬盘数据库,服务器持久化存储
+    sqlite  硬盘数据库,适用于客户端保存临时数据
+    redis   内存数据库,服务器缓存提升性能
+    mongodb 内存数据库,利用mmap文件映射实现  
+    sharemem内存数据库,本地进程共享,利用shm库实现
+    nosql   非关系型数据库,关系型数据库以表格形式存储,非关系型以OBJ方式存储
+            redis mongodb sharedmemory都是nosql,方便快速获取、设置属性,适合高并发读写
+    odbc    对数据库的封装,具体的数据库实现作为ODBC数据源进行配置(数据库IP以及端口)
 名词解释
-	SQL注入  sql语句是拼接起来的,要存储的内容包含恶意的sql语句(修改查询条件、添加额外的sql语句)
-	缓存穿透 查询的数据在缓存和数据库中都没有,每次都要到数据库查询,数据库压力增大
-	缓存击穿 同一时间查询同一条缓存中没有的数据,没做加锁处理导致数据库查询压力增大
-	缓存雪崩 缓存数据同一时间到期,导致数据库查询压力增大,需要对缓存时间做随机
+    SQL注入  sql语句是拼接起来的,要存储的内容包含恶意的sql语句(修改查询条件、添加额外的sql语句)
+    缓存穿透 查询的数据在缓存和数据库中都没有,每次都要到数据库查询,数据库压力增大
+    缓存击穿 同一时间查询同一条缓存中没有的数据,没做加锁处理导致数据库查询压力增大
+    缓存雪崩 缓存数据同一时间到期,导致数据库查询压力增大,需要对缓存时间做随机

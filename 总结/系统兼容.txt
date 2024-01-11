@@ -1,10 +1,10 @@
 android
-	1.android4.4(API19) 路径问题
-		URI转PATH方式
-			content://com.android.externalstorage.documents/document/primary:path 内容由外存文件夹提供
-			content://com.android.providers.downloads.documents/document/raw:id   内容由系统Download提供
-			content://com.android.providers.media.documents/document/image:id     内容由系统DCIM Pictures Movies Music Recent提供
-			content://package.fileprovider/sharepath  内容由包名对应的应用提供
+    1.android4.4(API19) 路径问题
+        URI转PATH方式
+            content://com.android.externalstorage.documents/document/primary:path 内容由外存文件夹提供
+            content://com.android.providers.downloads.documents/document/raw:id   内容由系统Download提供
+            content://com.android.providers.media.documents/document/image:id     内容由系统DCIM Pictures Movies Music Recent提供
+            content://package.fileprovider/sharepath  内容由包名对应的应用提供
     2.android6.0(API23) 权限问题
         关闭启动弹窗
             AndroidManifest.xml 主activity添加<meta-data android:name="unityplayer.SkipPermissionDialog" android:value="true">
@@ -27,11 +27,16 @@ android
         添加配置文件
             res目录下添加drawable-anydpi-v26/app_icon.xml,root为<adaptive-icon xmlns=""></adaptive-icon>
             xml内容为<background android:drawable="@drawable/ic_background"/> <foreground android:drawable="@drawable/ic_foreground"/>
+            背景必须是不透明PNG,前景内容只占背景中心区域2/3的内容,其它区域必须全透明
     5.android9.0(API28) 安全问题
         找不到HTTP类 ClassNotFound org.apache.http.xx
             AndroidManifest.xml application添加<uses-library android:name="org.apache.http.legacy" android:required="false"/>
         禁止明文传输 CleartextNotPermitted
-            AndroidManifest.xml application添加android:usesCleartextTraffic="true"
+            AndroidManifest.xml application添加android:usesCleartextTraffic="true"或android:networkSecurityConfig="@xml/network_security_config"
+            <?xml version="1.0" encoding="utf-8"?>
+            <network-security-config>
+                <base-config cleartextTrafficPermitted="true" />
+            </network-security-config>
         添加https支持
             使用System.Net.HttpWebRequest进行https请求,并添加证书验证回调ServicePointManager.ServerCertificateValidationCallback
     6.android10.0(API29) 权限问题
