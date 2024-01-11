@@ -53,10 +53,11 @@ UE4寻路系统
     ANavModifierVolume   对可寻路区域进行修改裁剪，Area成员可以指定此区域的Cost和Flag，可以用来制作主路和开关，Brush成员可以指定Mesh类型，例如Cone、Box、Stair等等
     ANavLinkProxy        非连通区域的连接点，连接点可以指定Area类型，通过该成员可以添加额外标记，例如攀爬
 UE4工具扩展
-    菜单扩展 LoadModule->Module.GetExtensibilityManager->FExtensibilityManager.AddExtender->FExtender.AddMenuExtension->FMenuBuilder.AddMenuEntry
+    添加扩展 LoadModule(LevelEditor)->Module.GetMenuExtensibilityManager.AddExtender(把菜单按钮命令扩展信息加到关卡编辑器里面)
+    扩展实现 FExtender.AddMenuExtension->FMenuBuilder.BeginSection->AddMenuEntry&AddSubMenu(添加命令)->FMenuBuilder.EndSection
+    命令实现 TCommands.RegisterCommands()->UI_COMMOND(定义命令)->FUICommandList.MapAction(绑定操作)->AddMenuEntry
     右键菜单 FAssetTypeAction_Base GetActions GetSupportedClass OpenAssetEditor
-    工具菜单 TCommands.RegisterCommands()->FUICommandList.MapAction->FExtender.AddMenuExtension->Module.AddExtender
-    命令扩展 UCommandlet.Main
+    插件扩展 UCommandlet.Main
 UE4资源管理
     资源路径 类型'/分区/路径/包名.资源名_类型(_C表示类 _Default表示CDO)
     路径名字 PackageName:/分区/路径/包名 Filename:相对于项目EXE的文件路径(../../../Engine/Content/路径/包名)
